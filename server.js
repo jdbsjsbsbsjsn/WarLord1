@@ -70,7 +70,16 @@ function buildIdx() {
   }
   if (changed) save();
 }
-const ID_RE = /^[a-z0-9_]{3,16}$/;
+const ID_RE = /^[a-z0-9_]{4,20}$/;
+const ID_MSG = 'آیدی باید ۴ تا ۲۰ نویسه از حروف انگلیسی، عدد یا _ باشد';
+// قانون رمز عبور (فقط برای ثبت‌نام و تعویض رمز): حداقل ۸ نویسه، هم حرف انگلیسی و هم عدد، و حداقل یک حرف بزرگ
+function pwErr(p) {
+  if (p.length < 8) return 'رمز باید حداقل ۸ کاراکتر باشد';
+  if (p.length > 64) return 'رمز نباید بیشتر از ۶۴ کاراکتر باشد';
+  if (!/[A-Za-z]/.test(p) || !/[0-9]/.test(p)) return 'رمز باید همزمان شامل حرف انگلیسی و عدد باشد';
+  if (!/[A-Z]/.test(p)) return 'رمز باید حداقل یک حرف انگلیسی بزرگ داشته باشد';
+  return '';
+}
 const flushAndExit = () => { clearTimeout(saveT); persist().then(() => process.exit(0)); };
 process.on('SIGTERM', flushAndExit); process.on('SIGINT', flushAndExit);
 
@@ -112,7 +121,7 @@ const hashPw = (p, salt) => crypto.scryptSync(p, salt, 32).toString('hex');
 function pushFL(k) {
   const u = db.users[k]; if (!u || !conns.has(k)) return;
   sendU(k, { t: 'fl',
-    me: { w: u.ow | 0, tr: u.tr | 0, tag: u.tag, id: u.id || '' },
+    me: { w: u.ow | 0, tr: u.tr | 0, tag: u.tag, id: u.id || '', pc: u.pc | 0 },
     friends: u.friends.map(f => ({ u: nameOf(f), on: conns.has(f), busy: inMatch.has(f), w: db.users[f] ? db.users[f].ow | 0 : 0, tag: db.users[f] ? db.users[f].tag : '', id: db.users[f] ? db.users[f].id || '' : '' }))
       .sort((a, b) => b.w - a.w || b.on - a.on || a.u.localeCompare(b.u)),
     inc: u.inc.map(nameOf), out: u.out.map(nameOf) });
@@ -144,13 +153,18 @@ function auth(ws, m) {
   const name = String(m.u || '').trim(), pw = String(m.p || ''), k = key(name);
   if (++ws.tries > 12) return ws.close();
   if (!/^[\p{L}\p{N}_]{3,16}$/u.test(name)) return err('نام کاربری باید ۳ تا ۱۶ حرف یا عدد باشد');
-  if (pw.length < 4 || pw.length > 64) return err('رمز باید حداقل ۴ کاراکتر باشد');
+  if (!pw || pw.length > 64) return err('رمز عبور را درست وارد کن');
   if (m.mode === 'register') {
+    const pe = pwErr(pw); if (pe) return err(pe);
+    if (pw !== String(m.p2 || '')) return err('رمز عبور و تکرار آن یکسان نیست');
+    const id = String(m.id || '').trim().replace(/^@/, '').toLowerCase();
+    if (!ID_RE.test(id)) return err(ID_MSG);
     if (db.users[k]) return err('این نام قبلاً گرفته شده');
+    if (userIds.has(id)) return err('این آیدی قبلاً گرفته شده');
     const salt = crypto.randomBytes(16).toString('hex');
     const tag = randTag(12, userTags);
-    db.users[k] = { name, tag, salt, hash: hashPw(pw, salt), friends: [], inc: [], out: [], mail: [] };
-    userTags.set(tag, k);
+    db.users[k] = { name, tag, id, salt, hash: hashPw(pw, salt), friends: [], inc: [], out: [], mail: [] };
+    userTags.set(tag, k); userIds.set(id, k);
     sendMail(k, { from: 'جنگ‌سالار', title: 'خوش آمدی!', text: 'به جنگ‌سالار خوش آمدی ' + name + '. دوستانت را اضافه کن و با آن‌ها نبرد دوستانه بزن.' });
   } else {
     const u = db.users[k];
@@ -222,7 +236,7 @@ function profileOf(viewer, k) {
   const u = db.users[k], me = db.users[viewer]; if (!u) return null;
   const c = myClan(u);
   const rel = k === viewer ? 'self' : me.friends.includes(k) ? 'friend' : me.out.includes(k) ? 'out' : me.inc.includes(k) ? 'inc' : 'none';
-  return { name: u.name, tag: u.tag, id: u.id || '', w: u.ow | 0, tr: u.tr | 0,
+  return { name: u.name, tag: u.tag, id: u.id || '', w: u.ow | 0, tr: u.tr | 0, pc: u.pc | 0,
     on: conns.has(k), busy: inMatch.has(k), rel, clan: c ? { name: c.name, tag: c.tag } : null };
 }
 function search(ws, m) {
@@ -235,10 +249,27 @@ function search(ws, m) {
   const c = ck && db.clans[ck];
   send(ws, { t: 'sres', q, p: null, clan: c ? { name: c.name, tag: c.tag, n: c.members.length, mode: c.mode, owner: nameOf(c.owner) } : null });
 }
+function chPw(ws, m) {                        // تعویض رمز: رمز فعلی + رمز جدید (با همان قانون ثبت‌نام) + تکرار
+  const me = ws.u, U = db.users[me];
+  if (++ws.tries > 12) return ws.close();
+  const o = String(m.o || ''), n = String(m.n || '');
+  if (!o || o.length > 64 || !crypto.timingSafeEqual(Buffer.from(U.hash, 'hex'), Buffer.from(hashPw(o, U.salt), 'hex')))
+    return toast(ws, 'رمز فعلی اشتباه است');
+  const pe = pwErr(n); if (pe) return toast(ws, pe);
+  if (n !== String(m.n2 || '')) return toast(ws, 'رمز جدید و تکرار آن یکسان نیست');
+  if (n === o) return toast(ws, 'رمز جدید باید با رمز فعلی فرق داشته باشد');
+  U.salt = crypto.randomBytes(16).toString('hex'); U.hash = hashPw(n, U.salt);
+  for (const [t, v] of Object.entries(db.sessions)) if (v === me && t !== ws.tok) delete db.sessions[t];   // نشست‌های دستگاه‌های دیگر باطل می‌شود
+  save(); send(ws, { t: 'pwok' });
+}
+function setCol(ws, m) {                      // رنگ پروفایل: عدد ۰ تا ۵
+  const me = ws.u, c = m.c | 0;
+  if (c < 0 || c > 5) return;
+  db.users[me].pc = c; save(); pushFL(me);
+}
 function setId(ws, m) {
   const me = ws.u, U = db.users[me], v = String(m.id || '').trim().replace(/^@/, '').toLowerCase();
-  if (!v) { if (U.id) { userIds.delete(U.id); delete U.id; save(); pushFL(me); pushFriendsOf(me); } return toast(ws, 'آیدی حذف شد'); }
-  if (!ID_RE.test(v)) return toast(ws, 'آیدی باید ۳ تا ۱۶ نویسه از حروف انگلیسی، عدد یا _ باشد');
+  if (!ID_RE.test(v)) return toast(ws, v ? ID_MSG : 'آیدی نمی‌تواند خالی باشد');
   if (v === U.id) return;
   if (userIds.has(v)) return toast(ws, 'این آیدی قبلاً گرفته شده');
   if (U.id) userIds.delete(U.id);
@@ -249,11 +280,14 @@ function setId(ws, m) {
 /* ---------- قبیله ----------
    وضعیت: open = همه می‌توانند عضو شوند، closed = کسی نمی‌تواند عضو شود، invite = فقط با دعوتِ سازنده (از پروفایل بازیکن) */
 const CMODES = new Set(['open', 'closed', 'invite']);
+const clanChat = new Map();   // کلید قبیله -> آخرین پیام‌های چت (در حافظه؛ با ری‌استارت سرور پاک می‌شود)
+const CHATMAX = 50;
 const myClan = u => (u && u.clan && db.clans[u.clan]) || null;
 const clanInfo = (c, k) => ({ name: c.name, tag: c.tag, mode: c.mode, owner: nameOf(c.owner), mine: c.owner === k, members: c.members.map(nameOf) });
 function pushClan(k) {
   const u = db.users[k]; if (!u || !conns.has(k)) return;
   const c = myClan(u); sendU(k, { t: 'clan', clan: c ? clanInfo(c, k) : null });
+  if (c) sendU(k, { t: 'clchat', msgs: clanChat.get(u.clan) || [] });
 }
 function joinClan(k, ck) {
   const c = db.clans[ck], u = db.users[k]; if (!c || !u) return;
@@ -294,6 +328,17 @@ function clans(ws, m) {
     if ((T.mail || []).some(x => x.type === 'cinv' && key(x.clan) === key(c.name))) return toast(ws, 'قبلاً دعوت شده');
     sendMail(t, { type: 'cinv', from: U.name, clan: c.name, title: 'دعوت به قبیله', text: U.name + ' تو را به قبیلهٔ «' + c.name + '» دعوت کرده است.' });
     toast(ws, 'دعوت برای ' + nameOf(t) + ' فرستاده شد');
+  } else if (m.t === 'clsay') {
+    const c = myClan(U); if (!c) return;
+    const tx = String(m.tx || '').replace(/\s+/g, ' ').trim().slice(0, 500);
+    if (!tx) return;
+    const now = Date.now();
+    if (now - (ws.lastSay || 0) < 800) return toast(ws, 'کمی آهسته‌تر پیام بده');
+    ws.lastSay = now;
+    const a = clanChat.get(U.clan) || [], msg = { u: U.name, tx, ts: now };
+    a.push(msg); if (a.length > CHATMAX) a.shift();
+    clanChat.set(U.clan, a);
+    c.members.forEach(k => sendU(k, { t: 'clmsg', m: msg }));
   } else if (m.t === 'clacc' || m.t === 'cldec') {
     const a = U.mail || [], i = a.findIndex(e => e.id === m.u && e.type === 'cinv'); if (i < 0) return;
     const x = a[i]; a.splice(i, 1); save(); pushMail(me);
@@ -435,8 +480,10 @@ wss.on('connection', ws => {
       case 'mdel': { const a = db.users[me].mail || []; const i = a.findIndex(e => e.id === m.id); if (i >= 0) { a.splice(i, 1); save(); pushMail(me); } return; }
       case 'search': return search(ws, m);
       case 'setid': return setId(ws, m);
+      case 'setcol': return setCol(ws, m);
+      case 'chpw': return chPw(ws, m);
       case 'pfget': { const k = resolveUser(m.u); if (k) send(ws, { t: 'pf', p: profileOf(me, k) }); return; }
-      case 'clcreate': case 'cllist': case 'cljoin': case 'clinv': case 'clacc': case 'cldec': return clans(ws, m);
+      case 'clcreate': case 'cllist': case 'cljoin': case 'clinv': case 'clacc': case 'cldec': case 'clsay': return clans(ws, m);
       case 'inv': return invite(ws, m);
       case 'invcancel': { const v = invOut.get(me); if (v) endInv(v, 'cancel'); return; }
       case 'invdec': { const v = invIn.get(me); if (v && v.from === key(m.u)) endInv(v, 'declined'); return; }
