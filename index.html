@@ -67,6 +67,7 @@ button em{font-style:normal;font-size:11px;font-weight:500;opacity:.8}
 #nw:hover:not(:disabled){opacity:1}
 #cf{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(8,9,12,.74)}
 #cf[hidden]{display:none}
+#tgo{position:fixed;inset:0;z-index:95;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(8,9,12,.86)}#tgo[hidden]{display:none}#tgo .cfbox{gap:10px}#tgo button{font:inherit;font-size:15px;min-height:44px;border-radius:12px;border:1px solid var(--line);background:var(--panel2);color:var(--fg);cursor:pointer}#tgo button.pr{background:var(--gold);color:var(--ink);border-color:var(--gold);font-weight:700}#tgo button:disabled{opacity:.45}#tgv{direction:ltr;unicode-bidi:isolate;font-size:22px;font-weight:700;letter-spacing:1px;color:var(--gold);background:var(--bg);border:1px dashed var(--gold);border-radius:12px;padding:12px 8px;user-select:all;-webkit-user-select:all;word-break:break-all}
 .cfbox{width:min(340px,100%);background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px 16px 14px;display:flex;flex-direction:column;gap:8px;text-align:center}
 .cfbox h2{margin:0;font-size:18px}.cfbox p{margin:0;color:var(--mut);font-size:13px}
 .cfb{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
@@ -170,7 +171,7 @@ button em{font-style:normal;font-size:11px;font-weight:500;opacity:.8}
 #tb .tbq{position:relative;flex:none;width:48px;min-height:48px;height:48px;padding:0;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--fg);font-size:22px;line-height:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;cursor:pointer}
 #tb .tbq small{font-size:9px;font-weight:700;direction:rtl}
 #tb .tbq .badge{position:absolute;top:-6px;right:-6px;margin:0;padding:0 6px;font-size:11px}
-#tbName{flex:1;min-width:0;height:48px;min-height:48px;padding:0 14px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--gold);font:inherit;font-size:16px;font-weight:700;direction:rtl;text-align:start;display:flex;align-items:center;cursor:pointer;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+#tbName{flex:1;min-width:0;height:48px;min-height:48px;padding:0 14px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--gold);font:inherit;font-size:16px;font-weight:700;direction:ltr;text-align:left;gap:8px;display:flex;align-items:center;cursor:pointer;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 #tbDrop{position:absolute;top:54px;right:0;min-width:170px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:6px;box-shadow:0 8px 24px rgba(0,0,0,.55);direction:rtl}
 #tbDrop[hidden]{display:none}
 #tbDrop button{width:100%;min-height:44px;flex-direction:row;justify-content:flex-start;gap:8px;font-size:15px;background:transparent;border:0;color:var(--fg)}
@@ -190,8 +191,9 @@ button em{font-style:normal;font-size:11px;font-weight:500;opacity:.8}
 .ml small{color:var(--mut);font-size:11px}
 .ml .mb{display:flex;flex-direction:column;gap:8px;font-size:13px;line-height:1.7}
 .ml .mb .row button{min-height:36px}
-.tbn{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;line-height:1.25;min-width:0;overflow:hidden}
-.tbn b{font-size:16px;max-width:100%;overflow:hidden;text-overflow:ellipsis}.tbn small{font-size:11px;font-weight:400;color:var(--mut);direction:ltr;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.tbn{flex:1;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;line-height:1.25;min-width:0;overflow:hidden}
+.tbn b{unicode-bidi:plaintext;text-align:left;font-size:16px;max-width:100%;overflow:hidden;text-overflow:ellipsis}.tbn small{font-size:11px;font-weight:400;color:var(--mut);direction:ltr;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.tbtr{flex:none;font-size:16px;font-weight:700;color:var(--gold);direction:ltr;white-space:nowrap}.tbav{flex:none;width:34px;height:34px;display:flex}.tbav svg,.pfav svg{display:block;width:100%;height:100%}.pfav{flex:none;width:64px;height:64px;align-self:center}.pcsw button.sw.av{min-height:52px;background:#111;display:flex;align-items:center;justify-content:center;padding:3px}.pcsw button.sw.av svg{width:100%;height:100%;max-width:46px}
 .idl{direction:ltr;unicode-bidi:isolate;font-size:12px;color:var(--mut);display:flex;gap:10px;justify-content:center;flex-wrap:wrap}.idl .cp{cursor:pointer;color:var(--gold)}
 .fr .nm{display:flex;flex-direction:column;line-height:1.3;min-width:0}.fr .nm small{direction:ltr;text-align:start;font-size:11px}
 .setp{display:flex;flex-direction:column;gap:12px}.setp[hidden]{display:none}.setgo{min-height:58px;flex-direction:column;gap:2px}.setgo small{font-size:11px;font-weight:400;color:var(--mut)}
@@ -260,7 +262,7 @@ button em{font-style:normal;font-size:11px;font-weight:500;opacity:.8}
 <div id="auHint" class="sec" hidden>رمز: حداقل ۸ کاراکتر، شامل حرف انگلیسی و عدد، و حداقل یک حرف بزرگ (A-Z)</div>
 <div class="row"><button id="auLogin" class="pr" type="button">ورود</button><button id="auReg" type="button">ثبت‌نام</button></div>
 <div id="auMsg"></div><button id="auOff" class="ghost" type="button">بازی حضوری (یک دستگاه)</button></div></div>
-<div class="scr" id="scrMenu" hidden><div class="box"><h2 id="mnName"></h2>
+<div class="scr" id="scrMenu" hidden><div class="box">
 <button id="mnBattle" class="big pr" type="button">⚔️ نبرد</button>
 </div></div>
 <div class="scr" id="scrFr" hidden><div class="box"><h2>دوستان</h2>
@@ -287,7 +289,7 @@ button em{font-style:normal;font-size:11px;font-weight:500;opacity:.8}
 <div id="btList"></div><div id="btMsg"></div><button id="btBack" type="button">بازگشت</button></div></div>
 <div id="tb" hidden>
 <button id="tbFr" class="tbq" type="button" aria-label="لیست دوستان">👥<small>دوستان</small></button>
-<button id="tbName" type="button"><span class="tbn"><b id="tbN"></b><small id="tbT"></small></span></button>
+<button id="tbName" type="button"><span id="tbAv" class="tbav" hidden></span><span class="tbn"><b id="tbN"></b><small id="tbT"></small></span><span id="tbTr" class="tbtr"></span></button>
 <button id="tbMn" class="tbq" type="button" aria-label="منو">☰<span id="tbMnB" class="badge" hidden></span></button>
 <div id="tbDrop" hidden><button id="tbMail" type="button">✉️ نامه‌ها<span id="tbMailB" class="badge" hidden></span></button><button id="tbOff" type="button">🎮 بازی حضوری</button><button id="tbSet" type="button">⚙️ تنظیمات</button></div>
 </div>
@@ -321,15 +323,17 @@ button em{font-style:normal;font-size:11px;font-weight:500;opacity:.8}
 <div class="sec">🎨 رنگ پروفایل</div><div class="pcsw" id="pcSw"></div>
 <div class="sec">💬 رنگ کادر چت قبیله (بقیه هم کادر پیام تو را با همین رنگ می‌بینند)</div><div class="pcsw" id="ccSw"></div>
 <div class="cmsg me" id="ccPrev" style="align-self:center;max-width:100%"><small id="ccPrevN"></small>این پیش‌نمایش کادر چت توست</div>
+<div class="sec">🖼 نماد پروفایل (طرح سیاه و سفید؛ دوباره لمس کنی برداشته می‌شود)</div><div class="pcsw" id="avSw"></div>
 <button class="setBack" type="button">بازگشت</button></div>
 </div></div>
 <div class="scr" id="scrPf" hidden><div class="box pfbox"><div class="pfbn"><span id="pfCvT"></span></div><div class="pfin">
-<div class="pfinfo"><div class="pft"><h2 id="pfName"></h2><div id="pfId"></div><div id="pfSub" style="color:var(--mut);font-size:12px"></div></div></div>
+<div class="pfinfo"><div class="pfav" id="pfAv" hidden></div><div class="pft"><h2 id="pfName"></h2><div id="pfId"></div><div id="pfSub" style="color:var(--mut);font-size:12px"></div></div></div>
 <div class="pfstat"><div><span>⚔️</span><b id="pfW">-</b>بردهای رسمی</div><div><span>🏆</span><b id="pfT">-</b>جام‌ها</div></div>
 <button id="pfAdd" class="pr" type="button" hidden>➕ افزودن دوست</button>
 <button id="pfInv" class="pr" type="button" hidden>🛡 دعوت به قبیله</button><button id="pfBack" type="button">بازگشت</button></div></div></div>
 <div id="invPop" hidden><b id="ipT"></b><div class="row"><button id="ipYes" class="pr" type="button">قبول</button><button id="ipNo" type="button">رد</button></div></div>
 <div class="scr" id="scrLoad" hidden><img id="ldImg" alt="" src="loading.jpg"><div id="ldBox"><b>در حال بارگذاری…</b><div id="ldBar"><i></i></div><b id="ldPct">1%</b></div></div>
+<div id="tgo" hidden role="dialog" aria-modal="true"><div class="cfbox"><h2>✅ حساب ساخته شد</h2><p>قبل از هر کاری، این تگ را جایی ذخیره کن (اسکرین‌شات بگیر یا کپی کن). برای بازیابی حساب و ورود دوباره حتماً لازم است.</p><div id="tgv"></div><button id="tgc" type="button">📋 کپی تگ</button><button id="tgok" class="pr" type="button" disabled>تگ را ذخیره کردم</button></div></div>
 <div id="toast" hidden></div>
 <div id="cf" hidden role="dialog" aria-modal="true" aria-labelledby="cft"><div class="cfbox"><h2 id="cft"></h2><p id="cfp"></p><div class="cfb"><button id="cfn" type="button">انصراف</button><button id="cfy" type="button"></button></div></div></div>
 <script>
@@ -338,6 +342,8 @@ let RS=(Date.now()^0x5bd1e995)|0;
 function RL(){RS=RS+0x6D2B79F5|0;let t=Math.imul(RS^RS>>>15,1|RS);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}
 let ONLINE=false,ME=2,LOBBY=true,CONN=false,tmSent=0,MATCH=false,OFFG=false,oppName='',oppOn=true,abortInfo=null,swapped=false;
 const mine=()=>!ONLINE||(CONN&&!LOBBY&&ME===P);
+/* انتخاب و چیدن هم‌زمان (فقط آنلاین): برای هر بازیکن یک وضعیت جدا نگه می‌داریم و دستور هر کس روی وضعیت خودش اجرا می‌شود */
+var FIN=[false,false],DSV=null,DSW=false,BEGINQ=false;
 const H={
 acro:{n:'شوالیه آکروبات',i:'🤸',hp:1750,d:390,r:1,m:3,c:2,o1:1},
 aka:{n:'آکاناها',i:'🥷',hp:1600,d:500,r:1,m:3,c:2,o1:1},
@@ -398,7 +404,7 @@ function synStart(){SY=[0,1].map(o=>{const m={};U.filter(u=>u.o===o).forEach(u=>
   if(SY[o]['اهریمن']>=2)shuf(foe.filter(u=>!sy(u,'مشکی',2))).slice(0,4).forEach(u=>u.bl=5)})}
 function add(k,o,c,r){const h=H[k],u={k,o,c,r,hp:h.hp,max:h.hp,mv:h.m,act:false,fly:0,weak:0,crit:0,ammo:6,ok:0,chg:0,bonus:0,used:false,sh2:2,fire:false,sn:0,kc:0,sc:0};U.push(u);return u}
 /* ===== مرحلهٔ انتخاب و چیدن قهرمان (۱۶۰ ثانیه برای هر بازیکن) ===== */
-function init(){NOGAME=false;clearTimeout(autoT);autoT=0;PK=[[],[]];SP=[[],[]];DX=[[],[]];zoneClear();smnGen++;LOCK=0;spl=null;shopOpen=false;U=[];P=0;T=0;E=[7,7];D=[0,0];ST=[];SC=[0,0];sel=null;mode='mv';over=false;MV=0;msg='';startDraft(0)}
+function init(){NOGAME=false;clearTimeout(autoT);autoT=0;PK=[[],[]];SP=[[],[]];DX=[[],[]];zoneClear();smnGen++;LOCK=0;spl=null;shopOpen=false;U=[];P=0;T=0;E=[7,7];D=[0,0];ST=[];SC=[0,0];sel=null;mode='mv';over=false;MV=0;msg='';if(ONLINE)startDraftBoth();else startDraft(0)}
 const shuf=a=>{for(let i=a.length-1;i>0;i--){const j=RL()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a},rnd=a=>a[RL()*a.length|0];
 /* ===== اکسیر هیروها: هر هیرو هنگام انتخاب از همان ۴۴ اکسیرِ طلسم‌ها کم می‌کند؛ بدون اکسیر کافی خرید ممکن نیست ===== */
 const XC={acro:5,aka:6,cri:11,doj:5,pri:4,raf:5,bri:5,ali:5,mar:4,mak:6,and:4,zep:7,jack:6,blk:8,jal:5,ikh:4,col:6,ear:6,ik:4,iw:4,mus:9,ske:5,bud:3,que:4,fd:8,ft:8,mac:6,eld:6,spg:5,med:10,eli:7,ber:5,dk:6,gq:6,dn:4,dw:6},XT=44,
@@ -412,6 +418,9 @@ function fixOff(o){if(o.some(afford))return o;const c=[...DR.pool].filter(afford
 function finishPick(){phase='place';drClosed=false;DR.offer=[];if(!unp.includes(tray))tray=unp[0]||null}
 function startDraft(o){shopOpen=false;drClosed=false;P=o;phase='pick';tray=null;sel=null;unp=[];dl=Date.now()+160000;
  DR={picks:[],pool:new Set(Object.keys(H).filter(k=>!(k in SMN))),offer:[]};PK[o]=DR.picks;DR.offer=mkOffer();draw()}
+const dsSnap=()=>({P,phase,DR,unp,tray,sel,dl}),dsLoad=d=>{P=d.P;phase=d.phase;DR=d.DR;unp=d.unp;tray=d.tray;sel=d.sel;dl=d.dl};
+function startDraftBoth(){FIN=[false,false];DSV=[null,null];DSW=true;BEGINQ=false;
+ try{[0,1].forEach(o=>{startDraft(o);DSV[o]=dsSnap()});dsLoad(DSV[ME===1?1:0])}finally{DSW=false}draw()}
 function mkOffer(){return fixOff(mkOffer0())}
 function mkOffer0(){const pool=[...DR.pool],last=DR.picks[DR.picks.length-1];if(!last)return shuf(pool).slice(0,6);
  const[a,b]=TR[last],has=(k,t)=>TR[k].includes(t),A=pool.filter(k=>has(k,a)),B=pool.filter(k=>has(k,b)),o=[];
@@ -423,20 +432,20 @@ function mkOffer0(){const pool=[...DR.pool],last=DR.picks[DR.picks.length-1];if(
  const N=pool.filter(k=>!o.includes(k)&&!has(k,a)&&!has(k,b)),F=pool.filter(k=>!o.includes(k));
  if(N.length||F.length)o.push(rnd(N.length?N:F));
  return shuf(o)}
-function pick(k){if(phase!=='pick'||!DR.offer.includes(k)||!afford(k))return;DR.pool.delete(k);DR.picks.push(k);unp.push(k);tray=k;sel=null;
+function pick(k){if(ONLINE&&FIN[P])return;if(phase!=='pick'||!DR.offer.includes(k)||!afford(k))return;DR.pool.delete(k);DR.picks.push(k);unp.push(k);tray=k;sel=null;
  if(DR.picks.length<7&&[...DR.pool].some(afford))DR.offer=mkOffer();else finishPick();draw()}
-function placeTap(c,r){if(phase==='play')return;const u=at(c,r),own=P===0?r>=4:r<4;
+function placeTap(c,r){if(phase==='play'||(ONLINE&&FIN[P]))return;const u=at(c,r),own=P===0?r>=4:r<4;
  if(u){if(u.o!==P)return;if(sel&&sel!==u&&!tray){[sel.c,u.c]=[u.c,sel.c];[sel.r,u.r]=[u.r,sel.r];sel=null}else{sel=u;tray=null}}
  else if(own){if(tray){add(tray,P,c,r);unp.splice(unp.indexOf(tray),1);tray=unp[0]||null;sel=null}else if(sel){sel.c=c;sel.r=r;sel=null}}
  draw()}
-function randPlace(){const f=[];for(let c=0;c<COLS;c++)for(let r=P?0:4;r<(P?4:8);r++)if(!at(c,r))f.push([c,r]);
+function randPlace(){if(ONLINE&&FIN[P])return;const f=[];for(let c=0;c<COLS;c++)for(let r=P?0:4;r<(P?4:8);r++)if(!at(c,r))f.push([c,r]);
  shuf(f);unp.splice(0).forEach(k=>{const p=f.pop();add(k,P,p[0],p[1])});tray=null}
-function confirmPlace(){if(phase!=='place'||unp.length)return;if(P===0)startDraft(1);else beginPlay()}
+function confirmPlace(){if(phase!=='place'||unp.length)return;if(ONLINE){if(FIN[P])return;FIN[P]=true;if(FIN[0]&&FIN[1])BEGINQ=true;return}if(P===0)startDraft(1);else beginPlay()}
 function beginPlay(){shopOpen=false;phase='play';P=0;T=0;E=[7,7];D=[0,0];ST=[];SC=[0,0];sel=null;tray=null;mode='mv';over=false;LOG=[];lastMsg='';synStart();msg='بازی شروع شد. نوبت '+NM[0]+'.';startTurn();draw()}
-setInterval(()=>{if(NOGAME||phase==='play'||!U||LOBBY)return;const s=Math.max(0,Math.ceil((dl-Date.now())/1000));$('tn').textContent=PX(s);$('tn').style.color=s<=10?'var(--bad)':'';
+setInterval(()=>{if(NOGAME||phase==='play'||!U||LOBBY||over)return;if(ONLINE&&FIN[ME]){$('tn').textContent='⏳';$('tn').style.color='';return}const s=Math.max(0,Math.ceil((dl-Date.now())/1000));$('tn').textContent=PX(s);$('tn').style.color=s<=10?'var(--bad)':'';
  if(s<1){if(!ONLINE)drTimeout();else if(P===ME&&!tmSent){tmSent=1;net({a:'to'})}}},250);
-function drTimeout(){tmSent=0;for(let g=0;g<20&&phase==='pick'&&DR.offer.length;g++){let a=DR.offer.filter(afford);if(!a.length){DR.offer=fixOff(DR.offer);a=DR.offer.filter(afford)}if(!a.length)break;pick(rnd(a))}if(phase==='pick')finishPick();if(phase==='place'){randPlace();confirmPlace()}}
-function drUI(){let h;const X='<button type="button" class="dx" data-a="x">✕ بستن</button>',any=[...DR.pool].some(afford),
+function drTimeout(){if(ONLINE&&FIN[P])return;tmSent=0;for(let g=0;g<20&&phase==='pick'&&DR.offer.length;g++){let a=DR.offer.filter(afford);if(!a.length){DR.offer=fixOff(DR.offer);a=DR.offer.filter(afford)}if(!a.length)break;pick(rnd(a))}if(phase==='pick')finishPick();if(phase==='place'){randPlace();confirmPlace()}}
+function drUI(){if(ONLINE&&FIN[ME]){$('dr').innerHTML='<div class="dh"><span>✅ چیدمانت تأیید شد؛ منتظر '+esc(oppName)+' هستیم…</span></div>';return}let h;const X='<button type="button" class="dx" data-a="x">✕ بستن</button>',any=[...DR.pool].some(afford),
  hn=unp.length?'<div class="dp hn">'+(tray&&H[tray]?'📍 «'+esc(H[tray].n)+'» را همین حالا با زدن روی یکی از خانه‌های رنگیِ نیمهٔ خودت مستقر کن.':'📍 '+PX(unp.length)+' مهره هنوز چیده نشده؛ از لیست پایین یکی را انتخاب کن.')+'</div>':'';
  if(phase==='pick')h='<div class="dh"><span>'+NM[P]+': قهرمان '+PX(DR.picks.length+1)+' از ۷ را انتخاب کن</span><span class="xl">💧 '+PX(elLeft(P))+'</span>'+X+'</div>'+hn+'<div class="of">'
   +DR.offer.map(k=>{const q=H[k],ok=afford(k);return '<button type="button" class="oc t'+P+'" data-k="'+k+'"'+(ok?'':' disabled')+'><span class="r1"><b>'+esc(q.n)+'</b><span class="xc'+(ok?'':' no')+'">💧'+PX(hc(k))+'</span></span><span class="tr">'+TR[k].join(' · ')+'</span><small>جان '+PX(q.hp)+' · ضربه '+PX(q.d)+' · برد '+PX(q.r)+' · حرکت '+PX(q.m)+'</small></button>'}).join('')+'</div>'
@@ -622,13 +631,13 @@ function cbRender(){const b=$('cb');b.hidden=!cbOpen;if(!cbOpen)return;
    txt=on?(nx?'فعال ✓ · '+PX(nx-n)+' قهرمان دیگر تا سطح بعد':'فعال ✓ · سطح کامل'):(nx?'نیاز به '+PX(nx-n)+' قهرمان دیگر تا فعال شدن':'');
    return '<div class="cr'+(on?' on':'')+'"><span class="n">'+PX(n)+' / '+PX(nx||th[th.length-1]||n)+'</span><b>'+t+'</b><small>'+txt+'</small></div>'}).join('');
   return '<div class="cbp t'+o+'"><h3>'+NM[o]+' · '+PX(PK[o].length)+' قهرمان</h3>'+(rows||'<div class="dp">هنوز قهرمانی انتخاب نشده</div>')+'</div>'};
- b.innerHTML='<div class="cbh"><span>کمبوهای انتخاب‌شده</span><button type="button" data-x="1">بستن</button></div><div class="cbc">'+col(0)+col(1)+'</div>'}
-function ui(){cbRender();
+ b.innerHTML='<div class="cbh"><span>کمبوهای انتخاب‌شده</span><button type="button" data-x="1">بستن</button></div><div class="cbc">'+(ONLINE&&phase!=='play'?col(ME):col(0)+col(1))+'</div>'}
+function ui(){if(DSW)return;cbRender();
  // سربرگ: اکسیر دو طرف و حرکت باقی‌مانده
- const dr=phase!=='play';$('ctl').hidden=$('msg').hidden=dr;$('dr').hidden=!dr||drClosed||(ONLINE&&P!==ME);$('dbtn').hidden=!(dr&&drClosed);
- if(dr&&drClosed){const tn=tray&&H[tray]?H[tray].n:'';$('dbtn').innerHTML='<span>📂 '+(phase==='pick'?'انتخاب هیرو':'چیدمان')+'</span>'+(tn?'<em>مستقر کن: '+esc(tn)+'</em>':'')}$('dr').dataset.pos=P===0?'top':'bottom';
- [0,1].forEach(o=>{const n=dr?7:Math.max(7,E[o]),on=dr?(o<P?7:o===P?DR.picks.length:0):E[o];let h='';for(let i=0;i<n;i++)h+='<i'+(i<on?' class="on"':'')+'></i>';
-  $('p'+o).innerHTML=h;$('s'+o).classList.toggle('act',!over&&P===o);$('s'+o).querySelector('.ex').textContent=dr?PX(on)+'/۷ · 💧'+PX(elLeft(o)):PX(Math.max(0,E[o]))+' اکسیر'});
+ const dr=phase!=='play'&&!abortInfo;$('ctl').hidden=$('msg').hidden=dr;$('dr').hidden=!dr||drClosed||(ONLINE&&P!==ME);$('dbtn').hidden=!(dr&&drClosed);
+ if(dr&&drClosed){const tn=tray&&H[tray]?H[tray].n:'';$('dbtn').innerHTML='<span>📂 '+(phase==='pick'?'انتخاب هیرو':'چیدمان')+'</span>'+(tn?'<em>مستقر کن: '+esc(tn)+'</em>':'')}$('dr').dataset.pos=(ONLINE||P===0)?'top':'bottom';
+ [0,1].forEach(o=>{const n=dr?7:Math.max(7,E[o]),on=dr?(ONLINE?PK[o].length:(o<P?7:o===P?DR.picks.length:0)):E[o];let h='';for(let i=0;i<n;i++)h+='<i'+(i<on?' class="on"':'')+'></i>';
+  $('p'+o).innerHTML=h;$('s'+o).classList.toggle('act',!over&&P===o);$('s'+o).querySelector('.ex').textContent=dr?PX(on)+'/۷'+((ONLINE&&o!==ME)?'':' · 💧'+PX(elLeft(o))):PX(Math.max(0,E[o]))+' اکسیر'});
  if(!dr)$('tn').style.color='';$('tn').textContent=dr?PX(Math.max(0,Math.ceil((dl-Date.now())/1000))):over?'—':PX(MV);$('turn').dataset.p=over?'':P;
  $('tl').textContent=dr?(phase==='pick'?'انتخاب قهرمان · ':'چیدمان · ')+NM[P]:over?'پایان بازی':'حرکت باقی‌مانده · نوبت '+NM[P];
  // کارت قهرمان انتخاب‌شده
@@ -649,7 +658,7 @@ function ui(){cbRender();
  // پیام‌ها
  if(msg!==lastMsg){if(msg.startsWith('بازی شروع شد'))LOG=[];if(msg)LOG.unshift(msg);LOG=LOG.slice(0,3);lastMsg=msg}
  $('msg').innerHTML=LOG.map((m,i)=>'<p'+(i?' class="old"':'')+'>'+esc(m)+'</p>').join('');
- const e=$('end');e.hidden=!over||[...unitG.keys()].some(x=>x.vq&&x.vq.length);if(over)endText()}
+ const e=$('end');e.hidden=!over||(!abortInfo&&[...unitG.keys()].some(x=>x.vq&&x.vq.length));if(over)endText()}
 /* ===== لایهٔ نمایش سه‌بعدی (Three.js) — منطق بازی بالاتر از این خط دست‌نخورده است ===== */
 const CELL_X=c=>1.5*c, CELL_Z=(c,r)=>SQ*(r+((c&1)?.5:0));
 const CTR=new THREE.Vector3(3.75,0,6.5);
@@ -2033,7 +2042,7 @@ function syncTiles(){
   if(swT.some(t=>t.c===c&&t.r===r))f=0x14b8a6;
   if(abL.some(t=>t.c===c&&t.r===r))f=0xf5c832;
   if(mode==='mv'&&hitT.some(t=>t.c===c&&t.r===r))f=0xe63c3c;
-  if(phase!=='play'&&(P===0?r>=4:r<4))f=P?0x12336a:0x5a1a15;const m=tiles[c][r].material;m.emissive.setHex(f);m.emissiveIntensity=f?.6:0;if(f)hlTiles.push(m)}
+  if(phase!=='play'&&(P===0?r>=4:r<4))f=(ONLINE||!P)?0x5a1a15:0x12336a;const m=tiles[c][r].material;m.emissive.setHex(f);m.emissiveIntensity=f?.6:0;if(f)hlTiles.push(m)}
  if(sel){ringMesh.visible=true;ringMesh.position.set(CELL_X(sel.c),.03,CELL_Z(sel.c,sel.r))}else ringMesh.visible=false}
 function loop(){
  requestAnimationFrame(loop);const dt=Math.min(.05,clock.getDelta()),t=clock.elapsedTime;
@@ -2139,7 +2148,7 @@ function shopRender(){const b=$('shop'),pre=phase!=='play';$('shp').hidden=!pre|
 $('shop').onclick=e=>{const t=e.target.closest('[data-s],[data-tab],[data-x]');if(!t)return;const d=t.dataset;
  if(d.x){shopOpen=false}else if(d.tab!==undefined){shopTab=+d.tab}
  else{if(mine())net({a:'shop',k:d.s});else flash('نوبت حریف است');return}draw()};
-function shopSel(k){const S=SPELLS[k];if(phase==='play'){if(S.s){msg='این طلسم احضاریه هنوز فعال نشده است.';shopOpen=false}else{spl=k;shopOpen=false;msg='«'+S.n+'»: روی صفحه نگه دار و بکش تا کاشی‌های هدف نشان داده شود، رها کنی اجرا می‌شود.'}}
+function shopSel(k){if(ONLINE&&phase!=='play'&&FIN[P])return;const S=SPELLS[k];if(phase==='play'){if(S.s){msg='این طلسم احضاریه هنوز فعال نشده است.';shopOpen=false}else{spl=k;shopOpen=false;msg='«'+S.n+'»: روی صفحه نگه دار و بکش تا کاشی‌های هدف نشان داده شود، رها کنی اجرا می‌شود.'}}
   else{const i=SP[P].indexOf(k);if(i>=0)SP[P].splice(i,1);else if(SP[P].length<4&&elLeft(P)>=S.x)SP[P].push(k);if(phase==='pick')DR.offer=fixOff(DR.offer)}draw()}
 $('shp').onclick=()=>{shopOpen=!shopOpen;shopTab=0;draw()};
 $('spb').onclick=()=>{if(spl){if(mine())net({a:'spc'})}else{shopOpen=!shopOpen;draw()}};
@@ -2176,7 +2185,7 @@ function smnAct(u,next,gen){if(gen!==smnGen)return;if(u.fr>0||u.jl>0||u.fz>0)ret
 function smnRun(auto){if(phase!=='play'||over||LOCK)return false;const L=U.filter(u=>u.hp>0&&u.o===P&&(u.k in SMN));if(!L.length)return false;const gen=smnGen;LOCK=1;let i=0;
  const step=()=>{if(gen!==smnGen)return;if(over||i>=L.length){LOCK=0;if(!over)endTurn0(auto);return}const u=L[i++];if(u.hp<=0||!U.includes(u))return step();smnAct(u,()=>setTimeout(step,250),gen)};
  setTimeout(step,300);return true}
-function draw(){ if(!renderer||NOGAME)return; syncUnits();syncStatues();syncTiles();ui();shopRender();autoCheck()}
+function draw(){ if(DSW||!renderer||NOGAME)return; syncUnits();syncStatues();syncTiles();ui();shopRender();autoCheck()}
 function canMv(u){return !over&&phase==='play'&&u.o===P&&MV>=1&&u.mv>=1&&(!u.act||u.fm)&&!u.mb&&!(u.k==='ikh'&&!u.rel)}
 function swapMates(u){return canMv(u)?U.filter(x=>x.hp>0&&x.o===u.o&&x!==u&&dist(u,x)===1):[]}
 function handleCell(c,r){if(LOCK)return;if(!mine())return flash('نوبت حریف است');net({a:'cell',x:c,y:r})}
@@ -2205,13 +2214,13 @@ if(document.fonts&&document.fonts.load)document.fonts.load('bold 20px Vazirmatn'
 $('ab').onclick=()=>{if(!sel||LOCK)return;if(!mine())return flash('نوبت حریف است');net({a:'ab'})};
 function abClick(){if(!sel||LOCK)return;if(['raf','doj','pri','mak','jal','ikh','col','ear','mus','bud','que','mac','cri','ske','spg','gq','dn','dw'].includes(sel.k)){useAb(sel,sel)}else if(sel.k==='acro'){useAb(sel,abT(sel)[0])}else{mode=mode==='ab'?'mv':'ab';msg=mode==='ab'?'هدف قابلیت را روی صفحه انتخاب کن.':'';draw()}};
 let cfStep=0,cfTm=0;
-function cfRender(){const s2=cfStep===2,y=$('cfy');$('cft').textContent=s2?'مطمئنی؟':'بازی جدید شروع شود؟';
+function cfRender(){const s2=cfStep===2,y=$('cfy');if(cfStep===3){$('cft').textContent='تسلیم می‌شوی؟';$('cfp').textContent='با تسلیم، بازی را می‌بازی و حریف همان لحظه برنده می‌شود.';y.textContent='بله، تسلیم';clearTimeout(cfTm);y.disabled=false;return}$('cft').textContent=s2?'مطمئنی؟':'بازی جدید شروع شود؟';
  $('cfp').textContent=s2?'تأیید دوم: بازی فعلی کامل پاک می‌شود و برگشتی ندارد.':'بازی فعلی از بین می‌رود.';
  y.textContent=s2?'بله، بازی جدید':'ادامه';clearTimeout(cfTm);y.disabled=s2;if(s2)cfTm=setTimeout(()=>{y.disabled=false},1200)}
 function cfOpen(){cfStep=1;cfRender();$('cf').hidden=false;$('cfn').focus()}
 function cfClose(){cfStep=0;clearTimeout(cfTm);$('cf').hidden=true}
 $('cfn').onclick=cfClose;
-$('cfy').onclick=()=>{if(cfStep===1){cfStep=2;cfRender();$('cfn').focus()}else if(cfStep===2){cfClose();net({a:'init'})}};
+$('cfy').onclick=()=>{if(cfStep===1){cfStep=2;cfRender();$('cfn').focus()}else if(cfStep===2){cfClose();net({a:'init'})}else if(cfStep===3){cfClose();if(MATCH&&!over)sendW({t:'forfeit'})}};
 $('cf').onclick=e=>{if(e.target===$('cf'))cfClose()};
 addEventListener('keydown',e=>{if(e.key==='Escape'&&cfStep)cfClose()});
 $('nw').onclick=()=>MATCH?forfeitAsk():cfOpen();
@@ -2856,7 +2865,7 @@ const sendW=o=>{if(WS&&WS.readyState===1)WS.send(JSON.stringify(o))};
 function toast(t){const e=$('toast');e.textContent=t;e.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>e.hidden=true,2600)}
 function flash(t){flashMsg=t;flashT=Date.now()+1500;netUI()}
 function showScr(id){curScr=id;['scrAuth','scrMenu','scrFr','scrBt','scrPf','scrDev','scrClan','scrClanNew','scrClanJoin'].forEach(s=>$(s).hidden=s!==id);if(id==='scrFr'||id==='scrBt')renderFL();if(id==='scrClan')renderClan(true);if(id==='scrMenu')mnTitle();barUI()}
-function mnTitle(){$('mnName').textContent='سلام '+myName+(FL.me?' · 🏆 '+FL.me.w+' برد':'')}
+function mnTitle(){}
 function hideScr(){['scrAuth','scrMenu','scrFr','scrBt','scrPf','scrDev','scrClan','scrClanNew','scrClanJoin'].forEach(s=>$(s).hidden=true);curScr='';barUI()}
 /* --- نوار لودینگ پرشی (۱ تا ۱۰۰) و موزیک ورود --- */
 const LD_STEPS=[[0,1],[450,46],[950,64],[1600,96],[1950,97],[2350,99],[2800,100]];
@@ -2899,7 +2908,7 @@ function endMatchLocal(){MATCH=false;ONLINE=false;ME=2;LOBBY=true;Q=[];abortInfo
   try{cfClose()}catch(_){}clearTimeout(autoT);autoT=0;NOGAME=true;$('end').hidden=true}
 function finishMatch(){sendW({t:'leave'});loadMode='out';showLoad();
   setTimeout(()=>{endMatchLocal();hideLoad();showScr(AUTHED?'scrMenu':'scrAuth')},3000)}
-function forfeitAsk(){if(!MATCH||over)return;if(confirm('مطمئنی تسلیم می‌شوی؟'))sendW({t:'forfeit'})}
+function forfeitAsk(){if(!MATCH||over)return;cfStep=3;cfRender();$('cf').hidden=false;$('cfn').focus()}
 function reportResult(w){      // پایان بازی: نتیجه خودکار و مستقیم به سرور می‌رود (دست بازیکن نیست)
   if(!MATCH||!ONLINE||RPT||abortInfo)return;RPT=true;
   sendW({t:'result',g:CURG,r:w===ME?'win':w<0?'draw':'loss'})}
@@ -2915,8 +2924,15 @@ function endText(){
 /* --- اجرای دستورهای بازی --- */
 function net(c){
   if(!ONLINE){if(c.a==='init'&&c.seed==null)c.seed=(Math.random()*2147483647)|0;apply(c);return}
+  if(phase!=='play'&&(c.a==='cell'||c.a==='shop'||c.a==='dr'||c.a==='to'))c.o=ME;
   sendW({t:'cmd',c})}
 function apply(c){
+  if(ONLINE&&DSV&&c.o!=null&&phase!=='play'&&(c.a==='cell'||c.a==='shop'||c.a==='dr'||c.a==='to')){
+    if(c.o===ME){apply0(c)}
+    else if(c.o===0||c.o===1){DSV[ME]=dsSnap();DSW=true;dsLoad(DSV[c.o]);try{apply0(c)}finally{DSV[c.o]=dsSnap();dsLoad(DSV[ME]);DSW=false}}
+    if(BEGINQ){BEGINQ=false;DSV=null;beginPlay()}else draw();return}
+  apply0(c)}
+function apply0(c){
   switch(c.a){
    case 'init':RPT=false;RS=c.seed|0;tmSent=0;LOBBY=false;cfClose();init();break;
    case 'cell':handleCell0(c.x,c.y);break;
@@ -2928,7 +2944,7 @@ function apply(c){
    case 'to':if(phase==='pick'||phase==='place')drTimeout();break;
    case 'end':if(phase==='play'&&!over&&!canAct()){clearTimeout(autoT);autoT=0;endTurn(true)}break;
   }}
-function stHash(){const a=JSON.stringify([phase,P,T,E,MV,over,RS,U.map(u=>[u.k,u.o,u.c,u.r,u.hp|0,u.mv,u.act?1:0])]);let h=5381;for(let i=0;i<a.length;i++)h=(h*33^a.charCodeAt(i))|0;return h}
+function stHash(){const a=JSON.stringify([phase==='play'?'p':'d',phase==='play'?P:0,T,E,MV,over,RS,U.map(u=>[u.k,u.o,u.c,u.r,u.hp|0,u.mv,u.act?1:0]),phase==='play'?0:FIN.join()]);let h=5381;for(let i=0;i<a.length;i++)h=(h*33^a.charCodeAt(i))|0;return h}
 setInterval(()=>{
   while(Q.length&&!LOCK){const m=Q.shift();CURG=m.g;
     try{apply(m.c)}catch(e){console.error('apply',m,e)}
@@ -2958,7 +2974,7 @@ function connect(){
   ws.onmessage=ev=>{let m;try{m=JSON.parse(ev.data)}catch(_){return}onMsg(m)}}
 function onMsg(m){
   switch(m.t){
-   case 'authok':AUTHED=true;myName=m.u;myTag=m.tag||'';myId=m.id||'';ls('jt_u',m.u);ls('jt_tok',m.tok);$('auP').value='';$('auP2').value='';$('auId').value='';$('auU').value='';regUI(false);if(!MATCH&&!OFFG&&!(loadMode))showScr('scrMenu');if(m.reg&&m.tag)setTimeout(()=>alert('حساب ساخته شد ✅\n\nتگ ورود تو: #'+m.tag+'\n\nدفعهٔ بعد که خواستی وارد حسابت شوی، به‌جای نام کاربری باید این تگ را بنویسی. آن را جایی یادداشت کن (بعداً هم در تنظیمات می‌بینی‌اش).'),300);break;
+   case 'authok':AUTHED=true;myName=m.u;myTag=m.tag||'';myId=m.id||'';ls('jt_u',m.u);ls('jt_tok',m.tok);$('auP').value='';$('auP2').value='';$('auId').value='';$('auU').value='';regUI(false);if(!MATCH&&!OFFG&&!(loadMode))showScr('scrMenu');if(m.reg&&m.tag)showTagBox(m.tag);break;
    case 'autherr':$('auMsg').textContent=m.msg;if(m.resume){ls('jt_tok',null)}if(!MATCH)showScr('scrAuth');break;
    case 'kicked':AUTHED=false;barUI();toast('با دستگاه دیگری وارد شدی');if(!MATCH)showScr('scrAuth');break;
    case 'toast':toast(m.msg);break;
@@ -2981,7 +2997,7 @@ function onMsg(m){
    case 'cmd':if(MATCH)Q.push({g:m.g,n:m.n,c:m.c});break;
    case 'opp':oppOn=m.on;break;
    case 'h':{const k=m.g+':'+m.n;if(HM[k]!==undefined&&HM[k]!==m.h)desync=true;else OH[k]=m.h;break}
-   case 'abort':if(MATCH&&!over){abortInfo=m;over=true;draw()}break;
+   case 'abort':if(MATCH&&!over){abortInfo=m;over=true;shopOpen=false;try{cfClose()}catch(_){}clearTimeout(autoT);autoT=0;draw()}break;
   }}
 
 /* --- صفحه‌های منو --- */
@@ -3033,7 +3049,7 @@ function barUI(){
   $('tb').hidden=!show;if(!show)closeOv();
   const bs=AUTHED&&!MATCH&&!OFFG&&PAGES.includes(curScr);
   $('bn').hidden=!bs;$('bnL').classList.toggle('on',curScr==='scrDev');$('bnM').classList.toggle('on',curScr==='scrMenu');$('bnR').classList.toggle('on',curScr==='scrClan');
-  $('tbN').textContent=myName||'';$('tbT').textContent=myName?(myId?'@'+myId+' · ':'')+(myTag?'#'+myTag:''):'';
+  $('tbN').textContent=myName||'';$('tbTr').textContent=(FL&&FL.me&&myName)?'🏆 '+(FL.me.tr|0):'';{const a=(FL&&FL.me&&FL.me.av!=null)?FL.me.av|0:-1;$('tbAv').innerHTML=a>=0?avSvg(a):'';$('tbAv').hidden=a<0}$('tbT').textContent=myName?(myId?'@'+myId+' · ':'')+(myTag?'#'+myTag:''):'';
   const un=MAIL.filter(x=>!x.read).length;
   $('tbMnB').hidden=!un;$('tbMnB').textContent=un;$('tbMailB').hidden=!un;$('tbMailB').textContent=un}
 function showPf(p){
@@ -3041,6 +3057,7 @@ function showPf(p){
   $('pfName').textContent=p.name;
   $('pfId').textContent=p.id?'@'+p.id:'';$('pfId').hidden=!p.id;
   $('pfSub').textContent=self?'پروفایل من':(p.on===undefined?'':(p.busy?'در بازی':(p.on?'آنلاین':'آفلاین')));
+  {const a=p.av!=null?p.av|0:-1;$('pfAv').innerHTML=a>=0?avSvg(a):'';$('pfAv').hidden=a<0}
   $('pfCvT').textContent=p.clan?'🛡 '+p.clan.name:'بدون قبیله';$('scrPf').style.setProperty('--pc',PCOLS[(p.pc|0)%12]);
   $('pfW').textContent=st(p.w);$('pfT').textContent=st(p.tr);
   const ad=!self&&(p.rel==='none'||p.rel==='inc');$('pfAdd').hidden=!ad;$('pfAdd').textContent=p.rel==='inc'?'✅ قبول درخواست دوستی':'➕ افزودن دوست';
@@ -3051,20 +3068,41 @@ function openProfile(name,preset){
     if(name===myName)p={name,id:myId,rel:'self',...(FL.me||{}),on:true,busy:false};
     else{const f=FL.friends.find(x=>x.u===name);p=f?{name,id:f.id,w:f.w,on:f.on,busy:f.busy,rel:'friend'}:{name,rel:'none'}}}
   showPf(p);showScr('scrPf');sendW({t:'pfget',u:p.name})}
+let tgT=0;
+function showTagBox(tag){$('tgv').textContent='#'+tag;$('tgok').disabled=true;$('tgo').hidden=false;clearTimeout(tgT);tgT=setTimeout(()=>{$('tgok').disabled=false},4000);
+  $('tgc').onclick=()=>copyTxt('#'+tag,'تگ کپی شد');$('tgok').onclick=()=>{$('tgo').hidden=true}}
 function copyTxt(t,msg){try{navigator.clipboard.writeText(t).then(()=>toast(msg),()=>{})}catch(_){}}
 $('pfAdd').onclick=()=>{if(PF&&PF.name)sendW({t:'fadd',u:PF.name})};
 $('setTagCp').onclick=()=>{if(myTag)copyTxt('#'+myTag,'تگ کپی شد')};
-const PCOLS=['#1f3a5f','#1f4d3a','#5a2230','#3f2a5e','#5a3d22','#3a4350','#17606b','#2e3380','#7a2a63','#55591f','#9a4d1a','#8c2323'],
-  PCN=['آبی شبانه','سبز جنگلی','عنابی','بنفش','قهوه‌ای','فولادی','فیروزه‌ای','نیلی','ارغوانی','زیتونی','نارنجی سوخته','قرمز'];
-// رنگ کادر چت: ۶ رنگ اول پروفایل + ۶ رنگ تیره و باوقار دیگر؛ پیش‌فرض = مشکی (شمارهٔ ۶)
-const CC_DEF=6,CCOLS=[...PCOLS.slice(0,6),'#1c1f26','#134e4a','#1e2559','#521a45','#3b3f17','#6b3a14'],
-  CCN=[...PCN.slice(0,6),'مشکی','سبز دریایی','سرمه‌ای','ارغوانی تیره','زیتونی تیره','مسی تیره'];
+const PCOLS=['#1f3a5f','#1f4d3a','#5a2230','#3f2a5e','#5a3d22','#3a4350','#1c1f26','#134e4a','#1e2559','#521a45','#3b3f17','#6b3a14'],
+  PCN=['آبی شبانه','سبز جنگلی','عنابی','بنفش','قهوه‌ای','فولادی','مشکی','سبز دریایی','سرمه‌ای','ارغوانی تیره','زیتونی تیره','مسی تیره'];
+// رنگ پروفایل و رنگ کادر چت دقیقاً یک فهرست ۱۲تایی‌اند؛ پیش‌فرض کادر چت = مشکی (شمارهٔ ۶)
+const CC_DEF=6,CCOLS=PCOLS,CCN=PCN;
 const ccCol=c=>CCOLS[(c==null?CC_DEF:(c|0))%12]||CCOLS[CC_DEF];
 function renderCc(){const cur=FL.me&&FL.me.cc!=null?FL.me.cc|0:CC_DEF;$('ccSw').innerHTML=CCOLS.map((c,i)=>'<button type="button" class="sw'+(i===cur?' on':'')+'" data-c="'+i+'" style="background:'+c+'" aria-label="'+CCN[i]+'"></button>').join('');$('ccPrev').style.background=ccCol(cur);$('ccPrevN').textContent=myName||''}
 $('ccSw').onclick=e=>{const b=e.target.closest('button[data-c]');if(!b)return;if(FL.me)FL.me.cc=+b.dataset.c;renderCc();sendW({t:'setcc',c:+b.dataset.c})};
-function showSetPane(p){['setM','setS','setP'].forEach(i=>$(i).hidden=i!==p);if(p==='setP'){renderSw();renderCc()}}
+function showSetPane(p){['setM','setS','setP'].forEach(i=>$(i).hidden=i!==p);if(p==='setP'){renderSw();renderCc();renderAv()}}
 $('setGoS').onclick=()=>showSetPane('setS');$('setGoP').onclick=()=>showSetPane('setP');
 document.querySelectorAll('.setBack').forEach(b=>b.onclick=()=>showSetPane('setM'));
+/* ===== نمادهای سیاه و سفید پروفایل (۱۲ طرح SVG) ===== */
+var AVN=['شکوفه رز','اژدها','شمشیرها','تاج','جمجمه','گرگ','سپر','قلعه','تبر','شعله','ماه و ستاره','لنگر'];
+var AVB=[
+/*0 رز*/'<g stroke="#fff" stroke-width="1.6" fill="#000">'+[0,1,2,3,4].map(i=>{const t=(-90+i*72)*Math.PI/180;return '<circle cx="'+(32+13*Math.cos(t)).toFixed(1)+'" cy="'+(32+13*Math.sin(t)).toFixed(1)+'" r="11"/>'}).join('')+[0,1,2,3,4].map(i=>{const t=(-54+i*72)*Math.PI/180;return '<circle cx="'+(32+7*Math.cos(t)).toFixed(1)+'" cy="'+(32+7*Math.sin(t)).toFixed(1)+'" r="7"/>'}).join('')+'<circle cx="32" cy="32" r="5"/><path fill="none" d="M29 32a3 3 0 1 1 3 3"/></g>',
+/*1 اژدها*/'<g fill="#fff"><path d="M12 50 L14 36 L22 30 L18 12 L30 24 L38 10 L40 26 L52 30 L58 40 L46 40 L48 48 L38 44 L30 54 L24 46 Z"/><path d="M52 30 L58 40 L46 40Z" fill="#fff"/></g><g fill="#000"><path d="M34 31 L44 33 L38 36Z"/><circle cx="53" cy="36" r="1.5"/></g><g stroke="#000" stroke-width="1.6" fill="none"><path d="M47 41 L49 45 M42 42 L43 46 M22 38 L30 42"/></g>',
+/*2 شمشیرها*/'<g stroke="#fff" stroke-linecap="round" fill="#fff"><g transform="rotate(45 32 32)"><path d="M32 7 L35 12 V40 H29 V12Z" stroke-width="1"/><path d="M22 42 H42" stroke-width="3.5"/><path d="M32 42 V52" stroke-width="4"/><circle cx="32" cy="55" r="3"/></g><g transform="rotate(-45 32 32)"><path d="M32 7 L35 12 V40 H29 V12Z" stroke-width="1"/><path d="M22 42 H42" stroke-width="3.5"/><path d="M32 42 V52" stroke-width="4"/><circle cx="32" cy="55" r="3"/></g></g>',
+/*3 تاج*/'<g fill="#fff"><path d="M11 47 L9 22 L22 33 L32 15 L42 33 L55 22 L53 47Z"/><circle cx="9" cy="20" r="3.5"/><circle cx="32" cy="12.5" r="3.5"/><circle cx="55" cy="20" r="3.5"/><rect x="11" y="49" width="42" height="5" rx="1.5"/></g><g fill="#000"><circle cx="32" cy="41" r="3"/><circle cx="21" cy="42" r="2.2"/><circle cx="43" cy="42" r="2.2"/></g>',
+/*4 جمجمه*/'<path fill="#fff" d="M32 9C20 9 12 17 12 28c0 7 4 11 9 14v8c0 2 1 3 3 3h16c2 0 3-1 3-3v-8c5-3 9-7 9-14C52 17 44 9 32 9Z"/><g fill="#000"><circle cx="23.5" cy="29" r="5.5"/><circle cx="40.5" cy="29" r="5.5"/><path d="M32 34 L28.5 42 H35.5Z"/></g><path stroke="#000" stroke-width="2" d="M27 46v6M32 46v6M37 46v6"/>',
+/*5 گرگ*/'<path fill="#fff" d="M11 9 L26 20 H38 L53 9 L54 32 L44 50 L32 57 L20 50 L10 32Z"/><g fill="#000"><path d="M17 15 L23 21 L16 25Z"/><path d="M47 15 L41 21 L48 25Z"/><path d="M18 31 L28 36 L19 38Z"/><path d="M46 31 L36 36 L45 38Z"/><path d="M27 47 H37 L32 54Z"/></g><path stroke="#000" stroke-width="1.6" fill="none" d="M32 38 V47"/>',
+/*6 سپر*/'<path fill="#fff" d="M32 8 L53 14 V31 C53 44 44 52 32 58 C20 52 11 44 11 31 V14Z"/><path fill="#000" d="M32 14 L47 18.5 V31 C47 40 41 46 32 51 C23 46 17 40 17 31 V18.5Z"/><g fill="#fff"><rect x="29.5" y="19" width="5" height="26"/><rect x="23" y="26" width="18" height="5"/></g>',
+/*7 قلعه*/'<g fill="#fff"><rect x="11" y="24" width="13" height="30"/><rect x="40" y="24" width="13" height="30"/><rect x="24" y="32" width="16" height="22"/><path d="M11 24v-5h3v3h3v-3h3v3h3v-5h1v7zM40 24v-5h3v3h3v-3h3v3h3v-5h1v7zM24 32v-4h3v2h3v-2h4v2h3v-2h3v4z"/></g><path fill="#000" d="M28 54V44a4 4 0 0 1 8 0V54Z"/><g fill="#000"><rect x="15" y="31" width="3" height="6" rx="1.5"/><rect x="46" y="31" width="3" height="6" rx="1.5"/></g><path stroke="#fff" stroke-width="2" d="M32 28V12"/><path fill="#fff" d="M32 12 L43 16 L32 20Z"/>',
+/*8 تبر*/'<g fill="#fff"><rect x="29.5" y="9" width="5" height="48" rx="2"/><path d="M30 14 C14 8 6 22 13 33 C20 31 26 29 30 27Z"/><path d="M34 14 C50 8 58 22 51 33 C44 31 38 29 34 27Z"/></g><g stroke="#000" stroke-width="1.6" fill="none"><path d="M26 16 C19 15 14 20 14 27"/><path d="M38 16 C45 15 50 20 50 27"/></g>',
+/*9 شعله*/'<path fill="#fff" d="M32 7 C34 19 49 25 47 40 C46 50 39 57 32 57 C24 57 17 50 17 40 C17 31 23 28 25 19 C27 25 30 25 32 7Z"/><path fill="#000" d="M32 30 C34 36 40 38 39 46 C38 51 35 53 32 53 C28 53 25 50 25 46 C25 40 30 38 32 30Z"/>',
+/*10 ماه و ستاره*/'<path fill="#fff" d="M38 9 A23 23 0 1 0 56 40 A18 18 0 1 1 38 9Z"/><path fill="#fff" d="M45 19 L47.2 25 L53.5 25.3 L48.6 29.2 L50.3 35.3 L45 31.8 L39.7 35.3 L41.4 29.2 L36.5 25.3 L42.8 25Z"/>',
+/*11 لنگر*/'<g stroke="#fff" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="32" cy="13" r="4.5" stroke-width="3"/><path d="M32 18 V53" stroke-width="4"/><path d="M23 26 H41" stroke-width="4"/><path d="M11 38 C13 51 22 56 32 54 C42 56 51 51 53 38" stroke-width="4"/><path d="M6 43 L11 36 L17 42 M58 43 L53 36 L47 42" stroke-width="3.5"/></g>'
+];
+function avSvg(i){i=i|0;return (i<0||i>=AVB.length)?'':'<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="'+AVN[i]+'"><circle cx="32" cy="32" r="30.5" fill="#000" stroke="#fff" stroke-width="2"/>'+AVB[i]+'</svg>'}
+function renderAv(){const cur=(FL&&FL.me&&FL.me.av!=null)?FL.me.av|0:-1;$('avSw').innerHTML=AVB.map((_,i)=>'<button type="button" class="sw av'+(i===cur?' on':'')+'" data-a="'+i+'" aria-label="'+AVN[i]+'">'+avSvg(i)+'</button>').join('')}
+$('avSw').onclick=e=>{const b=e.target.closest('button[data-a]');if(!b)return;const cur=(FL&&FL.me&&FL.me.av!=null)?FL.me.av|0:-1,v=+b.dataset.a===cur?-1:+b.dataset.a;if(FL.me)FL.me.av=v;renderAv();barUI();sendW({t:'setav',c:v})};
 function renderSw(){const cur=((FL.me&&FL.me.pc)|0)%12;$('pcSw').innerHTML=PCOLS.map((c,i)=>'<button type="button" class="sw'+(i===cur?' on':'')+'" data-c="'+i+'" style="background:'+c+'" aria-label="'+PCN[i]+'"></button>').join('')}
 $('pwSave').onclick=()=>{const o=$('pwOld').value,n=$('pwNew').value,n2=$('pwNew2').value;
   if(!o)return toast('رمز فعلی را وارد کن');const e=pwErr(n)||(n!==n2?'رمز جدید و تکرار آن یکسان نیست':'');if(e)return toast(e);

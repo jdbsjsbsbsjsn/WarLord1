@@ -165,7 +165,7 @@ const hashPw = (p, salt) => crypto.scryptSync(p, salt, 32).toString('hex');
 function pushFL(k) {
   const u = db.users[k]; if (!u || !conns.has(k)) return;
   sendU(k, { t: 'fl',
-    me: { w: u.ow | 0, tr: u.tr | 0, tag: u.tag, id: u.id || '', pc: u.pc | 0, cc: ccOf(u) },
+    me: { w: u.ow | 0, tr: u.tr | 0, tag: u.tag, id: u.id || '', pc: u.pc | 0, cc: ccOf(u), av: avOf(u) },
     friends: u.friends.map(f => ({ u: nameOf(f), on: conns.has(f), busy: inMatch.has(f), w: db.users[f] ? db.users[f].ow | 0 : 0, id: db.users[f] ? db.users[f].id || '' : '' }))
       .sort((a, b) => b.w - a.w || b.on - a.on || a.u.localeCompare(b.u)),
     inc: u.inc.map(nameOf), out: u.out.map(nameOf) });
@@ -286,7 +286,7 @@ function profileOf(viewer, k) {
   const u = db.users[k], me = db.users[viewer]; if (!u) return null;
   const c = myClan(u);
   const rel = k === viewer ? 'self' : me.friends.includes(k) ? 'friend' : me.out.includes(k) ? 'out' : me.inc.includes(k) ? 'inc' : 'none';
-  return { name: u.name, id: u.id || '', w: u.ow | 0, tr: u.tr | 0, pc: u.pc | 0,
+  return { name: u.name, id: u.id || '', w: u.ow | 0, tr: u.tr | 0, pc: u.pc | 0, av: avOf(u),
     on: conns.has(k), busy: inMatch.has(k), rel, clan: c ? { name: c.name, tag: c.tag } : null };
 }
 function search(ws, m) {
@@ -321,6 +321,12 @@ function chPw(ws, m) {                        // تعویض رمز: رمز فع�
 }
 const NCOL = 12, CC_DEF = 6;                   // تعداد رنگ‌ها (پروفایل و کادر چت) و رنگ پیش‌فرض کادر چت (مشکی)
 const ccOf = u => (u.cc == null ? CC_DEF : u.cc);
+const NAV = 12, avOf = u => (u.av == null ? -1 : u.av);   // نماد پروفایل: ۰ تا ۱۱ یا ‎-۱ = بدون نماد
+function setAv(ws, m) {
+  const me = ws.u, c = m.c | 0;
+  if (c < -1 || c >= NAV) return;
+  db.users[me].av = c; save(); pushFL(me);
+}
 function setCol(ws, m) {                      // رنگ پروفایل: عدد ۰ تا ۱۱
   const me = ws.u, c = m.c | 0;
   if (c < 0 || c >= NCOL) return;
@@ -538,6 +544,7 @@ function inGame(ws, m) {
   const i = mt.p.indexOf(me);
   if (m.t === 'cmd') {
     if (mt.ended || !m.c || !CMDS.has(m.c.a) || !mt.log.length) return;
+    if (m.c.o != null && m.c.o !== i) return;   // انتخاب هم‌زمان: هر بازیکن فقط برای خودش دستور می‌دهد
     push(mt, m.c);
   } else if (m.t === 'h') {
     sendU(mt.p[1 - i], { t: 'h', g: m.g, n: m.n, h: m.h });
@@ -571,6 +578,7 @@ wss.on('connection', ws => {
       case 'setid': return setId(ws, m);
       case 'setcol': return setCol(ws, m);
       case 'setcc': return setCc(ws, m);
+      case 'setav': return setAv(ws, m);
       case 'chpw': return chPw(ws, m);
       case 'pfget': { const k = resolveUser(m.u); if (k) send(ws, { t: 'pf', p: profileOf(me, k) }); return; }
       case 'clcreate': case 'clfind': case 'cljoin': case 'clinv': case 'clacc': case 'cldec': case 'clsay': case 'clleave': return clans(ws, m);
