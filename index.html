@@ -171,7 +171,7 @@ button em{font-style:normal;font-size:11px;font-weight:500;opacity:.8}
 #tb .tbq{position:relative;flex:none;width:48px;min-height:48px;height:48px;padding:0;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--fg);font-size:22px;line-height:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;cursor:pointer}
 #tb .tbq small{font-size:9px;font-weight:700;direction:rtl}
 #tb .tbq .badge{position:absolute;top:-6px;right:-6px;margin:0;padding:0 6px;font-size:11px}
-#tbName{flex:1;min-width:0;height:48px;min-height:48px;padding:0 14px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--gold);font:inherit;font-size:16px;font-weight:700;direction:ltr;text-align:left;gap:8px;display:flex;align-items:center;cursor:pointer;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+#tbName{flex:1;min-width:0;height:48px;min-height:48px;padding:0 14px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--gold);font:inherit;font-size:16px;font-weight:700;direction:ltr;text-align:left;gap:10px;display:grid;grid-template-columns:40px minmax(0,1fr) auto;align-items:center;justify-items:start;cursor:pointer;overflow:hidden;white-space:nowrap}#tbName .tbn{width:100%}#tbName .tbtr{justify-self:end}#tbName .tbav{width:40px;height:40px;align-items:center;justify-content:center;border-radius:50%;box-sizing:border-box;padding:2px;border:3px solid var(--fc,#1f3a5f);box-shadow:0 0 0 1px rgba(255,255,255,.35),0 0 8px var(--fc,#1f3a5f)}
 #tbDrop{position:absolute;top:54px;right:0;min-width:170px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:6px;box-shadow:0 8px 24px rgba(0,0,0,.55);direction:rtl}
 #tbDrop[hidden]{display:none}
 #tbDrop button{width:100%;min-height:44px;flex-direction:row;justify-content:flex-start;gap:8px;font-size:15px;background:transparent;border:0;color:var(--fg)}
@@ -324,7 +324,7 @@ button em{font-style:normal;font-size:11px;font-weight:500;opacity:.8}
 <div class="sec">🎨 رنگ پروفایل</div><div class="pcsw" id="pcSw"></div>
 <div class="sec">💬 رنگ کادر چت قبیله (بقیه هم کادر پیام تو را با همین رنگ می‌بینند)</div><div class="pcsw" id="ccSw"></div>
 <div class="cmsg me" id="ccPrev" style="align-self:center;max-width:100%"><small id="ccPrevN"></small>این پیش‌نمایش کادر چت توست</div>
-<div class="sec">🖼 نماد پروفایل (طرح سیاه و سفید؛ دوباره لمس کنی برداشته می‌شود)</div><div class="pcsw" id="avSw"></div>
+<div class="sec">🖼 نماد پروفایل (طرح سیاه و سفید؛ یکی را انتخاب کن)</div><div class="pcsw" id="avSw"></div>
 <button class="setBack" type="button">بازگشت</button></div>
 </div></div>
 <div class="scr" id="scrPf" hidden><div class="box pfbox"><div class="pfbn"><span id="pfCvT"></span></div><div class="pfin">
@@ -3054,7 +3054,7 @@ function barUI(){
   $('tb').hidden=!show;if(!show)closeOv();
   const bs=AUTHED&&!MATCH&&!OFFG&&PAGES.includes(curScr);
   $('bn').hidden=!bs;$('bnL').classList.toggle('on',curScr==='scrDev');$('bnM').classList.toggle('on',curScr==='scrMenu');$('bnR').classList.toggle('on',curScr==='scrClan');
-  $('tbN').textContent=myName||'';$('tbTr').textContent=(FL&&FL.me&&myName)?'🏆 '+(FL.me.tr|0):'';{const a=(FL&&FL.me&&FL.me.av!=null)?FL.me.av|0:-1;$('tbAv').innerHTML=a>=0?avSvg(a):'';$('tbAv').hidden=a<0}$('tbT').textContent=(myName&&myId)?'@'+myId:'';
+  $('tbN').textContent=myName||'';$('tbTr').textContent=(FL&&FL.me&&myName)?'🏆 '+(FL.me.tr|0):'';{const a=(FL&&FL.me&&FL.me.av!=null&&FL.me.av>=0)?FL.me.av|0:defAv(myName);$('tbAv').innerHTML=avSvg(a);$('tbAv').hidden=false;$('tbAv').style.setProperty('--fc',(typeof PCOLS!=='undefined'&&FL&&FL.me)?PCOLS[(FL.me.pc|0)%12]:'#1f3a5f')}$('tbT').textContent=(myName&&myId)?'@'+myId:'';
   const un=MAIL.filter(x=>!x.read).length;
   $('tbMnB').hidden=!un;$('tbMnB').textContent=un;$('tbMailB').hidden=!un;$('tbMailB').textContent=un}
 function showPf(p){
@@ -3062,7 +3062,7 @@ function showPf(p){
   $('pfName').textContent=p.name;
   $('pfId').textContent=p.id?'@'+p.id:'';$('pfId').hidden=!p.id;
   $('pfSub').textContent=self?'پروفایل من':(p.on===undefined?'':(p.busy?'در بازی':(p.on?'آنلاین':'آفلاین')));
-  {const a=p.av!=null?p.av|0:-1;$('pfAv').innerHTML=a>=0?avSvg(a):'';$('pfAv').hidden=a<0}
+  {const a=(p.av!=null&&p.av>=0)?p.av|0:defAv(p.name);$('pfAv').innerHTML=avSvg(a);$('pfAv').hidden=false}
   $('pfCvT').textContent=p.clan?'🛡 '+p.clan.name:'بدون قبیله';$('scrPf').style.setProperty('--pc',PCOLS[(p.pc|0)%12]);
   $('pfW').textContent=st(p.w);$('pfT').textContent=st(p.tr);
   const ad=!self&&(p.rel==='none'||p.rel==='inc');$('pfAdd').hidden=!ad;$('pfAdd').textContent=p.rel==='inc'?'✅ قبول درخواست دوستی':'➕ افزودن دوست';
@@ -3105,9 +3105,10 @@ var AVB=[
 /*10 ماه و ستاره*/'<path fill="#fff" d="M38 9 A23 23 0 1 0 56 40 A18 18 0 1 1 38 9Z"/><path fill="#fff" d="M45 19 L47.2 25 L53.5 25.3 L48.6 29.2 L50.3 35.3 L45 31.8 L39.7 35.3 L41.4 29.2 L36.5 25.3 L42.8 25Z"/>',
 /*11 لنگر*/'<g stroke="#fff" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="32" cy="13" r="4.5" stroke-width="3"/><path d="M32 18 V53" stroke-width="4"/><path d="M23 26 H41" stroke-width="4"/><path d="M11 38 C13 51 22 56 32 54 C42 56 51 51 53 38" stroke-width="4"/><path d="M6 43 L11 36 L17 42 M58 43 L53 36 L47 42" stroke-width="3.5"/></g>'
 ];
+function defAv(n){n=String(n||'');let h=0;for(let i=0;i<n.length;i++)h+=n.charCodeAt(i);return h%12}
 function avSvg(i){i=i|0;return (i<0||i>=AVB.length)?'':'<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="'+AVN[i]+'"><circle cx="32" cy="32" r="30.5" fill="#000" stroke="#fff" stroke-width="2"/>'+AVB[i]+'</svg>'}
-function renderAv(){const cur=(FL&&FL.me&&FL.me.av!=null)?FL.me.av|0:-1;$('avSw').innerHTML=AVB.map((_,i)=>'<button type="button" class="sw av'+(i===cur?' on':'')+'" data-a="'+i+'" aria-label="'+AVN[i]+'">'+avSvg(i)+'</button>').join('')}
-$('avSw').onclick=e=>{const b=e.target.closest('button[data-a]');if(!b)return;const cur=(FL&&FL.me&&FL.me.av!=null)?FL.me.av|0:-1,v=+b.dataset.a===cur?-1:+b.dataset.a;if(FL.me)FL.me.av=v;renderAv();barUI();sendW({t:'setav',c:v})};
+function renderAv(){const cur=(FL&&FL.me&&FL.me.av!=null&&FL.me.av>=0)?FL.me.av|0:defAv(myName);$('avSw').innerHTML=AVB.map((_,i)=>'<button type="button" class="sw av'+(i===cur?' on':'')+'" data-a="'+i+'" aria-label="'+AVN[i]+'">'+avSvg(i)+'</button>').join('')}
+$('avSw').onclick=e=>{const b=e.target.closest('button[data-a]');if(!b)return;const v=+b.dataset.a;if(FL.me)FL.me.av=v;renderAv();barUI();sendW({t:'setav',c:v})};
 function renderSw(){const cur=((FL.me&&FL.me.pc)|0)%12;$('pcSw').innerHTML=PCOLS.map((c,i)=>'<button type="button" class="sw'+(i===cur?' on':'')+'" data-c="'+i+'" style="background:'+c+'" aria-label="'+PCN[i]+'"></button>').join('')}
 $('pwSave').onclick=()=>{const o=$('pwOld').value,n=$('pwNew').value,n2=$('pwNew2').value;
   if(!o)return toast('رمز فعلی را وارد کن');const e=pwErr(n)||(n!==n2?'رمز جدید و تکرار آن یکسان نیست':'');if(e)return toast(e);

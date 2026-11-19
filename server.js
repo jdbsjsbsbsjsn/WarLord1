@@ -47,6 +47,7 @@ async function loadDb() {
   if (db.pc) db.pc.m = np(db.pc.m);
   const now0 = Date.now();                                          // نشست‌های قدیمی (رشته) به قالب جدید با زمان تبدیل می‌شوند
   for (const t of Object.keys(db.sessions)) { const v = db.sessions[t]; if (typeof v === 'string') db.sessions[t] = { u: v, ts: now0, seen: now0 }; }
+  { let ch = false; for (const k of Object.keys(db.users)) { const u = db.users[k]; if (u.av == null || u.av < 0 || u.av >= 12) { u.av = Math.floor(Math.random() * 12); ch = true; } } if (ch) save(); }
   buildIdx();
   pruneSessions();
   await loadChats();
@@ -303,7 +304,7 @@ async function auth2(ws, m, err) {
       const hash = await hashPw(pw, salt);
       if (db.users[k] || userIds.has(id)) return err('این نام یا آیدی قبلاً گرفته شده');   // همزمانی در طول await
       const tag = randTag(12, userTags);
-      db.users[k] = { name, tag, id, salt, hash, friends: [], inc: [], out: [], mail: [] };
+      db.users[k] = { name, tag, id, salt, hash, friends: [], inc: [], out: [], mail: [], av: Math.floor(Math.random() * NAV) };
       userTags.set(tag, k); userIds.set(id, k); reg = true;
       sendMail(k, { from: 'جنگ‌سالار', title: 'خوش آمدی!', text: 'به جنگ‌سالار خوش آمدی ' + name + '. دوستانت را اضافه کن و با آن‌ها نبرد دوستانه بزن.' });
     } else {
@@ -426,10 +427,10 @@ async function chPw(ws, m) {                  // تعویض رمز: رمز فع�
 }
 const NCOL = 12, CC_DEF = 6;                   // تعداد رنگ‌ها (پروفایل و کادر چت) و رنگ پیش‌فرض کادر چت (مشکی)
 const ccOf = u => (u.cc == null ? CC_DEF : u.cc);
-const NAV = 12, avOf = u => (u.av == null ? -1 : u.av);   // نماد پروفایل: ۰ تا ۱۱ یا ‎-۱ = بدون نماد
+const NAV = 12, avOf = u => ((u.av == null || u.av < 0 || u.av >= NAV) ? ((u.name || '').split('').reduce((a, c) => a + c.charCodeAt(0), 0) % NAV) : u.av);   // نماد پروفایل: ۰ تا ۱۱ یا ‎-۱ = بدون نماد
 function setAv(ws, m) {
   const me = ws.u, c = m.c | 0;
-  if (c < -1 || c >= NAV) return;
+  if (c < 0 || c >= NAV) return;
   db.users[me].av = c; save(); pushFL(me);
 }
 function setCol(ws, m) {                      // رنگ پروفایل: عدد ۰ تا ۱۱
