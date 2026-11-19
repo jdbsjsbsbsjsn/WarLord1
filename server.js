@@ -22,7 +22,7 @@ async function redis(cmd) {
   if (!r.ok || j.error) throw new Error(j.error || ('HTTP ' + r.status));
   return j.result;
 }
-let db = { users: {}, sessions: {} };
+let db = { users: {}, sessions: {}, clans: {} };
 let saveT = 0, chain = Promise.resolve();
 const persist = () => (chain = chain.then(async () => {
   const s = JSON.stringify(db);
@@ -41,7 +41,7 @@ async function loadDb() {
     try { db = JSON.parse(fs.readFileSync(DATA, 'utf8')); } catch {}
     console.log('هشدار: Upstash تنظیم نشده؛ حساب‌ها در data.json ذخیره می‌شوند (ممکن است پاک شوند)');
   }
-  db.users = db.users || {}; db.sessions = db.sessions || {};
+  db.users = db.users || {}; db.sessions = db.sessions || {}; db.clans = db.clans || {};
 }
 const flushAndExit = () => { clearTimeout(saveT); persist().then(() => process.exit(0)); };
 process.on('SIGTERM', flushAndExit); process.on('SIGINT', flushAndExit);
@@ -136,7 +136,7 @@ function login(ws, k, tok) {
   if (old && old !== ws) { old.u = null; send(old, { t: 'kicked' }); old.close(4001); }
   ws.u = k; ws.tok = tok; conns.set(k, ws);
   send(ws, { t: 'authok', u: nameOf(k), tok });
-  pushFL(k); pushFriendsOf(k); pushMail(k);
+  pushFL(k); pushFriendsOf(k); pushMail(k); pushClan(k);
   const mt = inMatch.get(k); if (mt) resumeMatch(mt, k, ws);
 }
 function leaveSession(ws) {                  // خروج یا قطع اتصال
@@ -175,6 +175,63 @@ function friends(ws, m) {
     drop(U.friends, t); if (T) drop(T.friends, me);
   }
   save(); pushFL(me); pushFL(t);
+}
+
+/* ---------- قبیله ----------
+   وضعیت: open = همه می‌توانند عضو شوند، closed = کسی نمی‌تواند عضو شود، invite = فقط با دعوتِ سازنده (از پروفایل بازیکن) */
+const CMODES = new Set(['open', 'closed', 'invite']);
+const myClan = u => (u && u.clan && db.clans[u.clan]) || null;
+const clanInfo = (c, k) => ({ name: c.name, mode: c.mode, owner: nameOf(c.owner), mine: c.owner === k, members: c.members.map(nameOf) });
+function pushClan(k) {
+  const u = db.users[k]; if (!u || !conns.has(k)) return;
+  const c = myClan(u); sendU(k, { t: 'clan', clan: c ? clanInfo(c, k) : null });
+}
+function joinClan(k, ck) {
+  const c = db.clans[ck], u = db.users[k]; if (!c || !u) return;
+  c.members.push(k); u.clan = ck; save();
+  c.members.forEach(pushClan);
+  if (c.owner !== k) sendMail(c.owner, { from: 'جنگ‌سالار', title: 'عضو جدید قبیله', text: u.name + ' به قبیلهٔ «' + c.name + '» پیوست.' });
+}
+function clans(ws, m) {
+  const me = ws.u, U = db.users[me];
+  if (m.t === 'clcreate') {
+    if (myClan(U)) return toast(ws, 'تو الان عضو یک قبیله هستی');
+    const name = String(m.name || '').trim().replace(/\s+/g, ' '), ck = key(name);
+    if (!/^[\p{L}\p{N}_ ]{3,20}$/u.test(name)) return toast(ws, 'نام قبیله باید ۳ تا ۲۰ حرف یا عدد باشد');
+    if (!CMODES.has(m.mode)) return;
+    if (db.clans[ck]) return toast(ws, 'این نام قبلاً گرفته شده');
+    db.clans[ck] = { name, owner: me, mode: m.mode, members: [me], ts: Date.now() };
+    U.clan = ck; save(); pushClan(me); send(ws, { t: 'clmade' });
+  } else if (m.t === 'cllist') {
+    const list = Object.values(db.clans).filter(c => c.mode === 'open')
+      .sort((a, b) => b.members.length - a.members.length || a.name.localeCompare(b.name)).slice(0, 40)
+      .map(c => ({ name: c.name, n: c.members.length, owner: nameOf(c.owner) }));
+    send(ws, { t: 'cls', list });
+  } else if (m.t === 'cljoin') {
+    if (myClan(U)) return toast(ws, 'تو الان عضو یک قبیله هستی');
+    const ck = key(m.name), c = db.clans[ck];
+    if (!c) return toast(ws, 'این قبیله وجود ندارد');
+    if (c.mode !== 'open') return toast(ws, 'این قبیله باز نیست');
+    joinClan(me, ck);
+  } else if (m.t === 'clinv') {
+    const c = myClan(U), t = key(m.u), T = db.users[t];
+    if (!c || c.owner !== me) return toast(ws, 'فقط سازندهٔ قبیله می‌تواند دعوت کند');
+    if (c.mode !== 'invite') return toast(ws, 'قبیلهٔ تو «با دعوت» نیست');
+    if (!T) return toast(ws, 'کاربری با این نام پیدا نشد');
+    if (t === me) return toast(ws, 'نمی‌توانی خودت را دعوت کنی');
+    if (myClan(T)) return toast(ws, nameOf(t) + ' عضو یک قبیله است');
+    if ((T.mail || []).some(x => x.type === 'cinv' && key(x.clan) === key(c.name))) return toast(ws, 'قبلاً دعوت شده');
+    sendMail(t, { type: 'cinv', from: U.name, clan: c.name, title: 'دعوت به قبیله', text: U.name + ' تو را به قبیلهٔ «' + c.name + '» دعوت کرده است.' });
+    toast(ws, 'دعوت برای ' + nameOf(t) + ' فرستاده شد');
+  } else if (m.t === 'clacc' || m.t === 'cldec') {
+    const a = U.mail || [], i = a.findIndex(e => e.id === m.u && e.type === 'cinv'); if (i < 0) return;
+    const x = a[i]; a.splice(i, 1); save(); pushMail(me);
+    if (m.t === 'cldec') return;
+    if (myClan(U)) return toast(ws, 'تو الان عضو یک قبیله هستی');
+    const ck = key(x.clan), c = db.clans[ck];
+    if (!c || c.mode !== 'invite') return toast(ws, 'این دعوت دیگر معتبر نیست');
+    joinClan(me, ck);
+  }
 }
 
 /* ---------- دعوت به نبرد ---------- */
@@ -301,6 +358,7 @@ wss.on('connection', ws => {
       case 'fadd': case 'facc': case 'fdec': case 'frem': return friends(ws, m);
       case 'mrd': { const x = (db.users[me].mail || []).find(e => e.id === m.id); if (x && !x.read) { x.read = true; save(); pushMail(me); } return; }
       case 'mdel': { const a = db.users[me].mail || []; const i = a.findIndex(e => e.id === m.id); if (i >= 0) { a.splice(i, 1); save(); pushMail(me); } return; }
+      case 'clcreate': case 'cllist': case 'cljoin': case 'clinv': case 'clacc': case 'cldec': return clans(ws, m);
       case 'inv': return invite(ws, m);
       case 'invcancel': { const v = invOut.get(me); if (v) endInv(v, 'cancel'); return; }
       case 'invdec': { const v = invIn.get(me); if (v && v.from === key(m.u)) endInv(v, 'declined'); return; }

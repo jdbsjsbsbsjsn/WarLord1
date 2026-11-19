@@ -194,7 +194,13 @@ button em{font-style:normal;font-size:11px;font-weight:500;opacity:.8}
 .pfstat div{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:8px 4px;font-size:12px;color:var(--mut)}
 .pfstat b{display:block;font-size:20px;color:var(--fg)}
 #scrMenu,#scrFr,#scrBt,#scrPf,#scrDev{padding-top:calc(env(safe-area-inset-top,0px) + 72px)}
-#scrMenu,#scrDev{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 84px)}
+#scrClan,#scrClanNew,#scrClanJoin{padding-top:calc(env(safe-area-inset-top,0px) + 72px)}
+#scrMenu,#scrDev,#scrClan{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 84px)}
+.box button.blk{background:#000;color:#fff;border-color:#555}
+.box button.cm{align-items:flex-start;text-align:start;min-height:56px;padding:8px 12px;gap:2px}.box button.cm small{font-weight:400;color:var(--mut);font-size:12px}
+.box button.cm.on{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}
+#clMsg{font-size:13px;color:var(--bad);min-height:18px}
+.clcard{display:flex;flex-direction:column;gap:6px;text-align:start}.clcard h3{margin:0;font-size:20px;color:var(--gold);text-align:center}
 #scrDev .box{color:var(--mut);font-size:18px;font-weight:700}
 @keyframes slL{from{transform:translateX(-40px);opacity:0}to{transform:none;opacity:1}}
 @keyframes slR{from{transform:translateX(40px);opacity:0}to{transform:none;opacity:1}}
@@ -224,7 +230,15 @@ button em{font-style:normal;font-size:11px;font-weight:500;opacity:.8}
 <div class="row"><input id="frU" placeholder="نام کاربری دوست" maxlength="16" autocapitalize="off" spellcheck="false"><button id="frAdd" class="pr" type="button" style="flex:none">افزودن</button></div>
 <div id="frList"></div><button id="frBack" type="button">بازگشت</button></div></div>
 <div class="scr" id="scrDev" hidden><div class="box"><h2>🚧</h2>در دست توسعه است</div></div>
-<div id="bn" hidden><button id="bnL" type="button">🛠<small>به‌زودی</small></button><button id="bnM" class="on" type="button">⚔️<small>بازی</small></button><button id="bnR" type="button">·<small>—</small></button></div>
+<div id="bn" hidden><button id="bnL" type="button">🛠<small>به‌زودی</small></button><button id="bnM" class="on" type="button">⚔️<small>بازی</small></button><button id="bnR" type="button">🛡<small>قبیله</small></button></div>
+<div class="scr" id="scrClan" hidden><div class="box"><h2>🛡 قبیله</h2><div id="clBody" style="display:flex;flex-direction:column;gap:12px"></div></div></div>
+<div class="scr" id="scrClanNew" hidden><div class="box"><h2>ساخت قبیله</h2>
+<input id="clName" placeholder="نام قبیله" maxlength="20" autocomplete="off" spellcheck="false">
+<button class="cm on" data-m="open" type="button">🌍 باز<small>همه می‌توانند عضو شوند</small></button>
+<button class="cm" data-m="closed" type="button">🔒 بسته<small>هیچ‌کس نمی‌تواند عضو شود</small></button>
+<button class="cm" data-m="invite" type="button">✉️ با دعوت<small>فقط با دعوت تو؛ از پروفایل بازیکن‌ها دعوت می‌کنی</small></button>
+<div id="clMsg"></div><div class="row"><button id="clMake" class="pr" type="button">ساخت</button><button id="clNewBack" type="button">بازگشت</button></div></div></div>
+<div class="scr" id="scrClanJoin" hidden><div class="box"><h2>قبیله‌های باز</h2><div id="clJoinList"></div><button id="clJoinBack" type="button">بازگشت</button></div></div>
 <div class="scr" id="scrBt" hidden><div class="box"><h2 id="btT">با کی نبرد می‌زنی؟</h2>
 <div id="btList"></div><div id="btMsg"></div><button id="btBack" type="button">بازگشت</button></div></div>
 <div id="tb" hidden>
@@ -243,7 +257,7 @@ button em{font-style:normal;font-size:11px;font-weight:500;opacity:.8}
 <div class="scr" id="scrPf" hidden><div class="box pfbox"><h2 id="pfName"></h2><div id="pfSub" style="color:var(--mut);font-size:13px"></div>
 <div class="pfstat"><div><b id="pfW">-</b>برد</div><div><b id="pfL">-</b>باخت</div><div><b id="pfD">-</b>مساوی</div></div>
 <div style="color:var(--mut);font-size:13px">اطلاعات بیشتر پروفایل به‌زودی اضافه می‌شود.</div>
-<button id="pfBack" type="button">بازگشت</button></div></div>
+<button id="pfInv" class="pr" type="button" hidden>🛡 دعوت به قبیله</button><button id="pfBack" type="button">بازگشت</button></div></div>
 <div id="invPop" hidden><b id="ipT"></b><div class="row"><button id="ipYes" class="pr" type="button">قبول</button><button id="ipNo" type="button">رد</button></div></div>
 <div class="scr" id="scrLoad" hidden><img id="ldImg" alt="" src="loading.jpg"><div id="ldBox"><b>در حال بارگذاری…</b><div id="ldBar"><i></i></div><b id="ldPct">1%</b></div></div>
 <div id="toast" hidden></div>
@@ -2771,9 +2785,9 @@ const ls=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k);v===null?lo
 const sendW=o=>{if(WS&&WS.readyState===1)WS.send(JSON.stringify(o))};
 function toast(t){const e=$('toast');e.textContent=t;e.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>e.hidden=true,2600)}
 function flash(t){flashMsg=t;flashT=Date.now()+1500;netUI()}
-function showScr(id){curScr=id;['scrAuth','scrMenu','scrFr','scrBt','scrPf','scrDev'].forEach(s=>$(s).hidden=s!==id);if(id==='scrFr'||id==='scrBt')renderFL();if(id==='scrMenu')mnTitle();barUI()}
+function showScr(id){curScr=id;['scrAuth','scrMenu','scrFr','scrBt','scrPf','scrDev','scrClan','scrClanNew','scrClanJoin'].forEach(s=>$(s).hidden=s!==id);if(id==='scrFr'||id==='scrBt')renderFL();if(id==='scrClan')renderClan();if(id==='scrMenu')mnTitle();barUI()}
 function mnTitle(){$('mnName').textContent='سلام '+myName+(FL.me?' · 🏆 '+FL.me.w+' برد':'')}
-function hideScr(){['scrAuth','scrMenu','scrFr','scrBt','scrPf','scrDev'].forEach(s=>$(s).hidden=true);curScr='';barUI()}
+function hideScr(){['scrAuth','scrMenu','scrFr','scrBt','scrPf','scrDev','scrClan','scrClanNew','scrClanJoin'].forEach(s=>$(s).hidden=true);curScr='';barUI()}
 /* --- نوار لودینگ پرشی (۱ تا ۱۰۰) و موزیک ورود --- */
 const LD_STEPS=[[0,1],[450,46],[950,64],[1600,96],[1950,97],[2350,99],[2800,100]];
 function ldSet(p){$('ldBar').firstElementChild.style.width=p+'%';$('ldPct').textContent=p+'%'}
@@ -2878,6 +2892,9 @@ function onMsg(m){
    case 'autherr':$('auMsg').textContent=m.msg;if(m.resume){ls('jt_tok',null)}if(!MATCH)showScr('scrAuth');break;
    case 'kicked':AUTHED=false;barUI();toast('با دستگاه دیگری وارد شدی');if(!MATCH)showScr('scrAuth');break;
    case 'toast':toast(m.msg);break;
+   case 'clan':CLAN=m.clan||null;if(curScr==='scrClan')renderClan();if(curScr==='scrClanJoin'&&CLAN)showScr('scrClan');break;
+   case 'clmade':showScr('scrClan');break;
+   case 'cls':renderClJoin(m.list||[]);break;
    case 'mail':MAIL=m.mail||[];barUI();if(!$('ovMail').hidden)renderMail();break;
    case 'fl':FL=m;barUI();if(!$('ovFr').hidden)renderTbFr();if(curScr==='scrMenu')mnTitle();if(curScr==='scrFr'||curScr==='scrBt')renderFL();break;
    case 'invin':invFrom=m.from;$('ipT').textContent=m.from+' تو را به نبرد دعوت کرد ⚔️';$('invPop').hidden=false;break;
@@ -2902,7 +2919,7 @@ $('auOff').onclick=offline;$('tbOff').onclick=()=>{closeOv();offline()};
 $('mnBattle').onclick=()=>showScr('scrBt');
 $('frBack').onclick=()=>showScr('scrMenu');
 $('btBack').onclick=()=>{if(invWait)sendW({t:'invcancel'});showScr('scrMenu')};
-$('setOut').onclick=()=>{closeOv();sendW({t:'logout'});ls('jt_tok',null);AUTHED=false;myName='';MAIL=[];FL={friends:[],inc:[],out:[]};showScr('scrAuth')};
+$('setOut').onclick=()=>{closeOv();sendW({t:'logout'});ls('jt_tok',null);AUTHED=false;myName='';MAIL=[];CLAN=null;FL={friends:[],inc:[],out:[]};showScr('scrAuth')};
 $('frAdd').onclick=()=>{const u=$('frU').value.trim();if(!u)return;sendW({t:'fadd',u});$('frU').value=''};
 $('ipYes').onclick=()=>{if(invFrom)sendW({t:'invacc',u:invFrom});$('invPop').hidden=true};
 $('ipNo').onclick=()=>{if(invFrom)sendW({t:'invdec',u:invFrom});$('invPop').hidden=true;invFrom=null};
@@ -2924,14 +2941,14 @@ function renderFL(){
   else sendW({t:a,u})});
 
 /* --- نوار بالا: لیست دوستان، نام حساب، منوی کشویی (نامه‌ها) --- */
-let MAIL=[],selFr='',openMail='';
-const TB_SCR=['scrMenu','scrFr','scrBt','scrPf','scrDev'];
+let MAIL=[],selFr='',openMail='',CLAN=null,clMode='open';
+const TB_SCR=['scrMenu','scrFr','scrBt','scrPf','scrDev','scrClan','scrClanNew','scrClanJoin'];
 function closeOv(){$('ovSet').hidden=true;$('ovFr').hidden=true;$('ovMail').hidden=true;$('tbDrop').hidden=true;selFr='';openMail=''}
 function barUI(){
   const show=AUTHED&&!MATCH&&!OFFG&&TB_SCR.includes(curScr);
   $('tb').hidden=!show;if(!show)closeOv();
-  const bs=AUTHED&&!MATCH&&!OFFG&&(curScr==='scrMenu'||curScr==='scrDev');
-  $('bn').hidden=!bs;$('bnL').classList.toggle('on',curScr==='scrDev');$('bnM').classList.toggle('on',curScr==='scrMenu');
+  const bs=AUTHED&&!MATCH&&!OFFG&&PAGES.includes(curScr);
+  $('bn').hidden=!bs;$('bnL').classList.toggle('on',curScr==='scrDev');$('bnM').classList.toggle('on',curScr==='scrMenu');$('bnR').classList.toggle('on',curScr==='scrClan');
   $('tbName').textContent=myName||'';
   const un=MAIL.filter(x=>!x.read).length;
   $('tbMnB').hidden=!un;$('tbMnB').textContent=un;$('tbMailB').hidden=!un;$('tbMailB').textContent=un}
@@ -2939,21 +2956,23 @@ function openProfile(name){
   closeOv();const self=name===myName,f=FL.friends.find(x=>x.u===name),st=self?(FL.me||{}):(f?{w:f.w}:{});
   $('pfName').textContent=name;$('pfSub').textContent=self?'پروفایل من':(f?(f.busy?'در بازی':(f.on?'آنلاین':'آفلاین')):'');
   $('pfW').textContent=st.w!==undefined?st.w:'-';$('pfL').textContent=st.l!==undefined?st.l:'-';$('pfD').textContent=st.d!==undefined?st.d:'-';
+  $('pfInv').hidden=!(CLAN&&CLAN.mine&&CLAN.mode==='invite'&&!self);
   showScr('scrPf')}
 $('tbName').onclick=()=>openProfile(myName);
-$('bnL').onclick=()=>pageGo('scrDev','inL');$('bnM').onclick=()=>pageGo('scrMenu','inR');
+$('bnL').onclick=()=>goPage('scrDev');$('bnM').onclick=()=>goPage('scrMenu');$('bnR').onclick=()=>goPage('scrClan');
 /* کشیدن انگشت: راست = صفحه چپ (در دست توسعه)، چپ = برگشت به منو؛ صفحه راست فعلاً خالی */
+const PAGES=['scrDev','scrMenu','scrClan'];
+function goPage(id){const a=PAGES.indexOf(curScr),b=PAGES.indexOf(id);pageGo(id,b>a?'inR':'inL')}
 function pageGo(id,cls){if(curScr===id)return;showScr(id);const e=$(id);e.classList.remove('inL','inR');void e.offsetWidth;e.classList.add(cls)}
 let sw=null;
 document.addEventListener('touchstart',e=>{const t=e.touches[0];
-  sw=(e.touches.length===1&&(curScr==='scrMenu'||curScr==='scrDev')&&!e.target.closest('input,textarea,.ovl'))?{x:t.clientX,y:t.clientY}:null},{passive:true});
+  sw=(e.touches.length===1&&PAGES.includes(curScr)&&!e.target.closest('input,textarea,.ovl'))?{x:t.clientX,y:t.clientY}:null},{passive:true});
 document.addEventListener('touchend',e=>{if(!sw)return;const t=e.changedTouches[0],dx=t.clientX-sw.x,dy=t.clientY-sw.y;sw=null;
   if(Math.abs(dx)<60||Math.abs(dx)<Math.abs(dy)*1.5)return;
   if(!$('ovFr').hidden||!$('ovMail').hidden||!$('ovSet').hidden)return;
-  if(dx>0&&curScr==='scrMenu')pageGo('scrDev','inL');
-  else if(dx<0&&curScr==='scrDev')pageGo('scrMenu','inR')},{passive:true});
+  const i=PAGES.indexOf(curScr),n=PAGES[dx>0?i-1:i+1];if(n)goPage(n)},{passive:true});
 document.addEventListener('touchcancel',()=>{sw=null},{passive:true});
-/* $('bnR'): دکمه سمت راست — فعلاً بدون کار، بعداً تعریف می‌شود */
+
 $('pfBack').onclick=()=>showScr('scrMenu');
 $('tbMn').onclick=e=>{e.stopPropagation();const o=$('tbDrop').hidden;closeOv();$('tbDrop').hidden=!o};
 document.addEventListener('click',e=>{if(!$('tbDrop').hidden&&!e.target.closest('#tbDrop'))$('tbDrop').hidden=true});
@@ -2986,6 +3005,7 @@ function renderMail(){
     return '<div class="ml'+(x.read?'':' un')+'" data-id="'+x.id+'"><div class="mh"><b>'+esc(x.title||'نامه')+'</b><small>'+mailTime(x.ts)+'</small></div>'
     +(op?'<div class="mb"><small>از: '+esc(x.from||'')+'</small><div>'+esc(x.text||'')+'</div><div class="row">'
       +(pend?'<button class="pr" data-a="facc" data-u="'+esc(x.from)+'">قبول</button><button data-a="fdec" data-u="'+esc(x.from)+'">رد</button>':'')
+      +(x.type==='cinv'?'<button class="pr" data-a="clacc" data-u="'+esc(x.id)+'">قبول</button><button data-a="cldec" data-u="'+esc(x.id)+'">رد</button>':'')
       +'<button data-a="mdel">حذف نامه</button></div></div>':'')+'</div>'}).join('')
    :'<div class="sec">نامه‌ای نداری.</div>'}
 $('ovMailList').onclick=e=>{
@@ -2993,6 +3013,27 @@ $('ovMailList').onclick=e=>{
   if(b){const a=b.dataset.a;if(a==='mdel'){sendW({t:'mdel',id});if(openMail===id)openMail=''}else sendW({t:a,u:b.dataset.u});return}
   if(e.target.closest('.mh')){openMail=openMail===id?'':id;const x=MAIL.find(m=>m.id===id);if(openMail&&x&&!x.read)sendW({t:'mrd',id});renderMail()}};
 
+
+/* --- قبیله --- */
+const CL_MODE={open:'🌍 باز · همه می‌توانند عضو شوند',closed:'🔒 بسته · کسی نمی‌تواند عضو شود',invite:'✉️ با دعوت · فقط با دعوت سازنده'};
+function renderClan(){
+  $('clBody').innerHTML=CLAN?'<div class="clcard"><h3>'+esc(CLAN.name)+'</h3><div class="sec">'+CL_MODE[CLAN.mode]+'</div><div class="sec">👑 سازنده: '+esc(CLAN.owner)+'</div>'
+    +'<div class="sec">اعضا ('+CLAN.members.length+')</div>'+CLAN.members.map(n=>'<div class="fr"><b>'+esc(n)+'</b></div>').join('')+'</div>'
+   :'<button class="big pr" data-a="new" type="button">🛡 ساخت قبیله</button><button class="big blk" data-a="join" type="button">عضو شدن در یک قبیله</button>'}
+$('clBody').onclick=e=>{const b=e.target.closest('button[data-a]');if(!b)return;
+  if(b.dataset.a==='new'){$('clName').value='';$('clMsg').textContent='';clMode='open';clModeUI();showScr('scrClanNew')}
+  else{$('clJoinList').innerHTML='<div class="sec">در حال بارگذاری…</div>';showScr('scrClanJoin');sendW({t:'cllist'})}};
+function clModeUI(){document.querySelectorAll('#scrClanNew .cm').forEach(b=>b.classList.toggle('on',b.dataset.m===clMode))}
+document.querySelectorAll('#scrClanNew .cm').forEach(b=>b.onclick=()=>{clMode=b.dataset.m;clModeUI()});
+$('clMake').onclick=()=>{const name=$('clName').value.trim().replace(/\s+/g,' ');
+  if(name.length<3){$('clMsg').textContent='نام قبیله باید حداقل ۳ حرف باشد';return}
+  $('clMsg').textContent='';sendW({t:'clcreate',name,mode:clMode})};
+$('clNewBack').onclick=()=>showScr('scrClan');$('clJoinBack').onclick=()=>showScr('scrClan');
+function renderClJoin(L){
+  if(curScr!=='scrClanJoin')return;
+  $('clJoinList').innerHTML=L.length?L.map(c=>'<div class="fr"><span><b>'+esc(c.name)+'</b><small>👥 '+c.n+'</small></span><button class="pr" data-n="'+esc(c.name)+'">عضو شو</button></div>').join(''):'<div class="sec">هنوز قبیلهٔ بازی وجود ندارد.</div>'}
+$('clJoinList').onclick=e=>{const b=e.target.closest('button[data-n]');if(b)sendW({t:'cljoin',name:b.dataset.n})};
+$('pfInv').onclick=()=>sendW({t:'clinv',u:$('pfName').textContent});
 
 showScr('scrAuth');
 if(ls('jt_tok'))$('auMsg').textContent='';
