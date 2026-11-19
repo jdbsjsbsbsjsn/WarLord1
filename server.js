@@ -22,7 +22,9 @@ async function redis(cmd) {
   if (!r.ok || j.error) throw new Error(j.error || ('HTTP ' + r.status));
   return j.result;
 }
-let db = { users: {}, sessions: {}, clans: {} };
+/* همهٔ جدول‌ها بدون prototype ساخته می‌شوند تا نام‌هایی مثل constructor یا __proto__ شبیه کاربر/قبیله/نشست دیده نشوند */
+const np = o => Object.assign(Object.create(null), o || {});
+let db = { users: np(), sessions: np(), clans: np(), chats: np() };
 let saveT = 0, chain = Promise.resolve();
 const persist = () => (chain = chain.then(async () => {
   const s = JSON.stringify(db);
@@ -41,8 +43,12 @@ async function loadDb() {
     try { db = JSON.parse(fs.readFileSync(DATA, 'utf8')); } catch {}
     console.log('هشدار: Upstash تنظیم نشده؛ حساب‌ها در data.json ذخیره می‌شوند (ممکن است پاک شوند)');
   }
-  db.users = db.users || {}; db.sessions = db.sessions || {}; db.clans = db.clans || {}; db.chats = db.chats || {};
+  db.users = np(db.users); db.sessions = np(db.sessions); db.clans = np(db.clans); db.chats = np(db.chats);
+  if (db.pc) db.pc.m = np(db.pc.m);
+  const now0 = Date.now();                                          // نشست‌های قدیمی (رشته) به قالب جدید با زمان تبدیل می‌شوند
+  for (const t of Object.keys(db.sessions)) { const v = db.sessions[t]; if (typeof v === 'string') db.sessions[t] = { u: v, ts: now0, seen: now0 }; }
   buildIdx();
+  pruneSessions();
   await loadChats();
 }
 /* ---------- چت قبیله‌ها ----------
@@ -129,8 +135,17 @@ process.on('SIGTERM', flushAndExit); process.on('SIGINT', flushAndExit);
 
 /* ---------- HTTP: صفحهٔ بازی و عکس لودینگ ---------- */
 const MIME = { '.jpg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp' };
+const FORCE_HTTPS = process.env.FORCE_HTTPS === '1';
 const server = http.createServer((req, res) => {
-  const p = new URL(req.url, 'http://x').pathname;
+  if (FORCE_HTTPS && req.headers['x-forwarded-proto'] === 'http' && req.url !== '/health') {
+    res.writeHead(301, { location: 'https://' + req.headers.host + req.url }); return res.end();
+  }
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Referrer-Policy', 'no-referrer');
+  res.setHeader('Content-Security-Policy', "frame-ancestors 'none'; object-src 'none'; base-uri 'none'; form-action 'none'");
+  if (FORCE_HTTPS) res.setHeader('Strict-Transport-Security', 'max-age=31536000');
+  let p; try { p = new URL(req.url, 'http://x').pathname; } catch { res.writeHead(400).end('bad'); return; }
   if (p === '/' || p === '/index.html') {
     res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
     return res.end(fs.readFileSync(path.join(__dirname, 'index.html')));
@@ -165,7 +180,65 @@ const send = (ws, o) => ws && ws.readyState === 1 && ws.send(JSON.stringify(o));
 const sendU = (k, o) => send(conns.get(k), o);
 const toast = (ws, msg) => send(ws, { t: 'toast', msg });
 const seed = () => (Math.random() * 2147483647) | 0;
-const hashPw = (p, salt) => crypto.scryptSync(p, salt, 32).toString('hex');
+/* scrypt غیرهمزمان با سقف هم‌زمانی تا حلقهٔ سرور قفل نشود */
+let scryptRun = 0; const scryptQ = [];
+const SCRYPT_MAX = 3, SCRYPT_QMAX = 30;
+function hashPw(p, salt) {
+  return new Promise((ok, no) => {
+    const go = () => { scryptRun++; crypto.scrypt(p, salt, 32, (e, b) => { scryptRun--; const n = scryptQ.shift(); if (n) n(); e ? no(e) : ok(b.toString('hex')); }); };
+    if (scryptRun < SCRYPT_MAX) go();
+    else if (scryptQ.length >= SCRYPT_QMAX) no(new Error('busy'));
+    else scryptQ.push(go);
+  });
+}
+const hashEq = (hex, got) => { const a = Buffer.from(hex, 'hex'), b = Buffer.from(got, 'hex'); return a.length === b.length && crypto.timingSafeEqual(a, b); };
+
+/* نام‌ها: فقط حروف فارسی یا فقط لاتین (مخلوط نه) + عدد لاتین + _ ؛ جلوی حروف مشابه (سیریلیک، عربی ي/ك و ...) */
+const FA_CH = '\u0622\u0627\u0628\u067E\u062A\u062B\u062C\u0686\u062D\u062E\u062F\u0630\u0631\u0632\u0698\u0633\u0634\u0635\u0636\u0637\u0638\u0639\u063A\u0641\u0642\u06A9\u06AF\u0644\u0645\u0646\u0648\u0647\u06CC\u0626\u0624\u0621';
+const NAME_FA = new RegExp('^[' + FA_CH + '0-9_]+$'), NAME_EN = /^[A-Za-z0-9_]+$/;
+function nameOk(n, space) {
+  if (space) n = n.replace(/ +/g, '_');
+  if (!/[^0-9_]/.test(n)) return false;                    // فقط عدد/زیرخط نباشد
+  return NAME_EN.test(n) || NAME_FA.test(n);
+}
+
+/* ---------- محدودیت نرخ (در حافظه) ---------- */
+const TRUST_PROXY = process.env.TRUST_PROXY === '1';
+const RL_AUTH_IP = +process.env.RL_AUTH_IP || 20;        // تلاش ورود/ثبت‌نام در ۱۰ دقیقه برای هر IP
+const RL_REG_IP = +process.env.RL_REG_IP || 5;           // ثبت‌نام جدید در ساعت برای هر IP
+const RL_TAG_FAIL = +process.env.RL_TAG_FAIL || 8;       // رمز اشتباه در ۱۵ دقیقه برای هر حساب
+const RL_REG_ALL = +process.env.RL_REG_ALL || 200;       // ثبت‌نام جدید در ساعت در کل سرور
+const MAX_USERS = +process.env.MAX_USERS || 100000;
+const IP_CONN_MAX = +process.env.IP_CONN_MAX || 20;
+const rlMap = new Map();
+function rl(k, max, win) {                               // true = مجاز (و شمرده می‌شود)
+  const n = Date.now(); let e = rlMap.get(k);
+  if (!e || e.r <= n) { e = { c: 0, r: n + win }; rlMap.set(k, e); }
+  return ++e.c <= max;
+}
+const rlPeek = (k, max) => { const e = rlMap.get(k); return !e || e.r <= Date.now() || e.c < max; };
+function rlSweep() { const n = Date.now(); for (const [k, e] of rlMap) if (e.r <= n) rlMap.delete(k); }
+function clientIp(req) {
+  if (TRUST_PROXY) { const x = String(req.headers['x-forwarded-for'] || '').split(',').map(s => s.trim()).filter(Boolean); if (x.length) return x[x.length - 1]; }
+  return req.socket.remoteAddress || '?';
+}
+const ipConns = new Map();
+function ipConnOk(ip) { const n = (ipConns.get(ip) || 0) + 1; if (n > IP_CONN_MAX) return false; ipConns.set(ip, n); return true; }
+function ipConnDone(ip) { const n = (ipConns.get(ip) || 0) - 1; if (n <= 0) ipConns.delete(ip); else ipConns.set(ip, n); }
+
+/* ---------- نشست‌ها: انقضا و سقف ---------- */
+const SESS_TTL = (+process.env.SESSION_DAYS || 30) * 86400000;
+const SESS_PER_USER = 5;
+function pruneSessions() {
+  const n = Date.now(), per = new Map();
+  const arr = Object.keys(db.sessions).map(t => [t, db.sessions[t]]).sort((a, b) => b[1].seen - a[1].seen);
+  let ch = false;
+  for (const [t, s] of arr) {
+    const c = (per.get(s.u) || 0) + 1; per.set(s.u, c);
+    if (n - s.seen > SESS_TTL || !db.users[s.u] || c > SESS_PER_USER) { delete db.sessions[t]; ch = true; }
+  }
+  if (ch && typeof save === 'function') save();
+}
 
 function pushFL(k) {
   const u = db.users[k]; if (!u || !conns.has(k)) return;
@@ -192,42 +265,62 @@ function sendMail(k, m) {
 const drop = (arr, v) => { const i = arr.indexOf(v); if (i >= 0) arr.splice(i, 1); };
 
 /* ---------- ورود / ثبت‌نام ---------- */
-function auth(ws, m) {
+async function auth(ws, m) {
   const err = (msg, resume) => send(ws, { t: 'autherr', msg, resume });
+  if (ws.authBusy) return;
+  ws.authBusy = true;
+  try { await auth2(ws, m, err); } finally { ws.authBusy = false; }
+}
+async function auth2(ws, m, err) {
   if (m.t === 'resume') {
-    const k = key(m.u);
-    if (db.sessions[m.tok] === k && db.users[k]) return login(ws, k, m.tok);
+    const k = key(m.u), tok = String(m.tok || '');
+    const s = /^[0-9a-f]{48}$/.test(tok) ? db.sessions[tok] : null;
+    if (!rl('rs:' + ws.ip, 60, 600000)) return err('تلاش زیاد؛ کمی بعد دوباره امتحان کن');
+    if (s && s.u === k && db.users[k] && Date.now() - s.seen <= SESS_TTL) {
+      if (Date.now() - s.seen > 86400000) { s.seen = Date.now(); save(); }
+      return login(ws, k, tok);
+    }
     return err('نشست منقضی شده؛ دوباره وارد شو.', true);
   }
   const pw = String(m.p || '');
   if (++ws.tries > 12) return ws.close();
   if (!pw || pw.length > 64) return err('رمز عبور را درست وارد کن');
+  if (!rl('au:' + ws.ip, RL_AUTH_IP, 600000)) return err('تلاش‌های زیاد؛ ۱۰ دقیقه بعد دوباره امتحان کن');
   let k, reg = false;
-  if (m.mode === 'register') {
-    const name = String(m.u || '').trim(); k = key(name);
-    if (!/^[\p{L}\p{N}_]{3,16}$/u.test(name)) return err('نام کاربری باید ۳ تا ۱۶ حرف یا عدد باشد');
-    const pe = pwErr(pw); if (pe) return err(pe);
-    if (pw !== String(m.p2 || '')) return err('رمز عبور و تکرار آن یکسان نیست');
-    const id = normId(m.id);
-    if (!ID_RE.test(id)) return err(ID_MSG);
-    if (db.users[k]) return err('این نام قبلاً گرفته شده');
-    if (userIds.has(id)) return err('این آیدی قبلاً گرفته شده');
-    const salt = crypto.randomBytes(16).toString('hex');
-    const tag = randTag(12, userTags);
-    db.users[k] = { name, tag, id, salt, hash: hashPw(pw, salt), friends: [], inc: [], out: [], mail: [] };
-    userTags.set(tag, k); userIds.set(id, k); reg = true;
-    sendMail(k, { from: 'جنگ‌سالار', title: 'خوش آمدی!', text: 'به جنگ‌سالار خوش آمدی ' + name + '. دوستانت را اضافه کن و با آن‌ها نبرد دوستانه بزن.' });
-  } else {
-    // ورود با «تگ» (نه نام کاربری) + رمز؛ چون تگ یکتاست، دقیقاً مشخص است وارد کدام حساب می‌شوی
-    const tag = normTag(m.u);
-    if (!TAG_RE.test(tag)) return err('تگ حساب را درست وارد کن (۱۲ نویسه از حروف انگلیسی و عدد)');
-    k = userTags.get(tag);
-    const u = k && db.users[k];
-    if (!u || !crypto.timingSafeEqual(Buffer.from(u.hash, 'hex'), Buffer.from(hashPw(pw, u.salt), 'hex')))
-      return err('تگ یا رمز اشتباه است');
-  }
-  const tok = crypto.randomBytes(24).toString('hex');
-  db.sessions[tok] = k; save();
+  try {
+    if (m.mode === 'register') {
+      const name = String(m.u || '').trim(); k = key(name);
+      if (name.length < 3 || name.length > 16 || !nameOk(name)) return err('نام کاربری باید ۳ تا ۱۶ حرف فارسی یا انگلیسی (جدا از هم، نه مخلوط) یا عدد باشد');
+      const pe = pwErr(pw); if (pe) return err(pe);
+      if (pw !== String(m.p2 || '')) return err('رمز عبور و تکرار آن یکسان نیست');
+      const id = normId(m.id);
+      if (!ID_RE.test(id)) return err(ID_MSG);
+      if (db.users[k]) return err('این نام قبلاً گرفته شده');
+      if (userIds.has(id)) return err('این آیدی قبلاً گرفته شده');
+      if (Object.keys(db.users).length >= MAX_USERS) return err('ظرفیت ثبت‌نام پر است');
+      if (!rl('rg:' + ws.ip, RL_REG_IP, 3600000) || !rl('rg:all', RL_REG_ALL, 3600000)) return err('ثبت‌نام‌های زیاد؛ بعداً امتحان کن');
+      const salt = crypto.randomBytes(16).toString('hex');
+      const hash = await hashPw(pw, salt);
+      if (db.users[k] || userIds.has(id)) return err('این نام یا آیدی قبلاً گرفته شده');   // همزمانی در طول await
+      const tag = randTag(12, userTags);
+      db.users[k] = { name, tag, id, salt, hash, friends: [], inc: [], out: [], mail: [] };
+      userTags.set(tag, k); userIds.set(id, k); reg = true;
+      sendMail(k, { from: 'جنگ‌سالار', title: 'خوش آمدی!', text: 'به جنگ‌سالار خوش آمدی ' + name + '. دوستانت را اضافه کن و با آن‌ها نبرد دوستانه بزن.' });
+    } else {
+      // ورود با «تگ» (نه نام کاربری) + رمز؛ چون تگ یکتاست، دقیقاً مشخص است وارد کدام حساب می‌شوی
+      const tag = normTag(m.u);
+      if (!TAG_RE.test(tag)) return err('تگ حساب را درست وارد کن (۱۲ نویسه از حروف انگلیسی و عدد)');
+      if (!rlPeek('tf:' + tag, RL_TAG_FAIL)) return err('این حساب موقتاً قفل شده؛ ۱۵ دقیقه بعد امتحان کن');
+      k = userTags.get(tag);
+      const u = k && db.users[k];
+      if (!u) { rl('tf:' + tag, RL_TAG_FAIL, 900000); return err('تگ یا رمز اشتباه است'); }
+      if (!hashEq(u.hash, await hashPw(pw, u.salt))) { rl('tf:' + tag, RL_TAG_FAIL, 900000); return err('تگ یا رمز اشتباه است'); }
+    }
+  } catch (e) { return err('سرور شلوغ است؛ کمی بعد دوباره امتحان کن'); }
+  if (ws.readyState !== 1) return;
+  const tok = crypto.randomBytes(24).toString('hex'), n = Date.now();
+  db.sessions[tok] = { u: k, ts: n, seen: n };
+  pruneSessions(); save();
   login(ws, k, tok, reg);
 }
 function login(ws, k, tok, reg) {
@@ -263,9 +356,13 @@ function friends(ws, m) {
     if (U.friends.includes(t)) return toast(ws, 'از قبل دوست هستید');
     if (U.out.includes(t)) return toast(ws, 'درخواست قبلاً فرستاده شده');
     if (U.inc.includes(t)) { drop(U.inc, t); drop(T.out, me); U.friends.push(t); T.friends.push(me); sendMail(t, { from: U.name, title: 'دوستی قبول شد', text: U.name + ' حالا دوست توست.' }); }
-    else { U.out.push(t); T.inc.push(me); sendU(t, { t: 'toast', msg: U.name + ' درخواست دوستی فرستاد' }); sendMail(t, { type: 'freq', from: U.name, title: 'درخواست دوستی', text: U.name + ' برایت درخواست دوستی فرستاده است.' }); toast(ws, 'درخواست فرستاده شد'); }
+    else {
+      if (!rl('fr:' + me, 20, 3600000)) return toast(ws, 'درخواست‌های زیاد؛ کمی بعد امتحان کن');
+      if (!rl('fp:' + me + '>' + t, 2, 86400000)) return toast(ws, 'به این کاربر زیاد درخواست فرستاده‌ای؛ فردا دوباره امتحان کن');
+      if (T.mail) T.mail = T.mail.filter(x => !(x.type === 'freq' && x.from === U.name));   // نامهٔ تکراری از همین فرستنده
+      U.out.push(t); T.inc.push(me); sendU(t, { t: 'toast', msg: U.name + ' درخواست دوستی فرستاد' }); sendMail(t, { type: 'freq', from: U.name, title: 'درخواست دوستی', text: U.name + ' برایت درخواست دوستی فرستاده است.' }); toast(ws, 'درخواست فرستاده شد'); }
   } else if (m.t === 'facc') {
-    if (!U.inc.includes(t)) return;
+    if (!T || !U.inc.includes(t)) return;
     drop(U.inc, t); drop(T.out, me); U.friends.push(t); T.friends.push(me);
     sendMail(t, { from: U.name, title: 'دوستی قبول شد', text: U.name + ' درخواست دوستی تو را قبول کرد.' });
   } else if (m.t === 'fdec') {
@@ -273,7 +370,7 @@ function friends(ws, m) {
   } else if (m.t === 'frem') {
     drop(U.friends, t); if (T) drop(T.friends, me);
   }
-  save(); pushFL(me); pushFL(t);
+  save(); pushFL(me); if (T) pushFL(t);
 }
 
 /* ---------- جستجو و پروفایل ----------
@@ -311,17 +408,20 @@ function findClan(q) {
   return (ck && db.clans[ck]) || null;
 }
 const clanCard = c => ({ name: c.name, tag: c.tag, n: c.members.length, mode: c.mode, owner: nameOf(c.owner) });
-function chPw(ws, m) {                        // تعویض رمز: رمز فعلی + رمز جدید (با همان قانون ثبت‌نام) + تکرار
+async function chPw(ws, m) {                  // تعویض رمز: رمز فعلی + رمز جدید (با همان قانون ثبت‌نام) + تکرار
   const me = ws.u, U = db.users[me];
   if (++ws.tries > 12) return ws.close();
+  if (!rl('cp:' + me, 10, 900000)) return toast(ws, 'تلاش زیاد؛ کمی بعد امتحان کن');
   const o = String(m.o || ''), n = String(m.n || '');
-  if (!o || o.length > 64 || !crypto.timingSafeEqual(Buffer.from(U.hash, 'hex'), Buffer.from(hashPw(o, U.salt), 'hex')))
-    return toast(ws, 'رمز فعلی اشتباه است');
-  const pe = pwErr(n); if (pe) return toast(ws, pe);
-  if (n !== String(m.n2 || '')) return toast(ws, 'رمز جدید و تکرار آن یکسان نیست');
-  if (n === o) return toast(ws, 'رمز جدید باید با رمز فعلی فرق داشته باشد');
-  U.salt = crypto.randomBytes(16).toString('hex'); U.hash = hashPw(n, U.salt);
-  for (const [t, v] of Object.entries(db.sessions)) if (v === me && t !== ws.tok) delete db.sessions[t];   // نشست‌های دستگاه‌های دیگر باطل می‌شود
+  try {
+    if (!o || o.length > 64 || !hashEq(U.hash, await hashPw(o, U.salt))) return toast(ws, 'رمز فعلی اشتباه است');
+    const pe = pwErr(n); if (pe) return toast(ws, pe);
+    if (n !== String(m.n2 || '')) return toast(ws, 'رمز جدید و تکرار آن یکسان نیست');
+    if (n === o) return toast(ws, 'رمز جدید باید با رمز فعلی فرق داشته باشد');
+    const salt = crypto.randomBytes(16).toString('hex'), hash = await hashPw(n, salt);
+    U.salt = salt; U.hash = hash;
+  } catch (e) { return toast(ws, 'سرور شلوغ است؛ بعداً امتحان کن'); }
+  for (const t of Object.keys(db.sessions)) if (db.sessions[t].u === me && t !== ws.tok) delete db.sessions[t];   // نشست‌های دستگاه‌های دیگر باطل می‌شود
   save(); send(ws, { t: 'pwok' });
 }
 const NCOL = 12, CC_DEF = 6;                   // تعداد رنگ‌ها (پروفایل و کادر چت) و رنگ پیش‌فرض کادر چت (مشکی)
@@ -344,7 +444,7 @@ function setCc(ws, m) {
   U.cc = c; save(); pushFL(me);
   const cl = myClan(U); if (!cl) return;
   const a = clanChat.get(U.clan) || [];
-  a.forEach(x => { if (x.u === U.name) x.c = c; });
+  a.forEach(x => { if (!x.sys && x.u === U.name) x.c = c; });
   saveChat(U.clan);
   cl.members.forEach(k => sendU(k, { t: 'clchat', msgs: a, keep: true }));
 }
@@ -376,18 +476,27 @@ function pushClan(k) {
   if (myClan(u)) sendU(k, { t: 'clchat', msgs: clanChat.get(u.clan) || [] });
 }
 const pushClanLive = k => { const c = myClan(db.users[k]); if (c) c.members.forEach(pushClanInfo); };   // ورود/خروج یک عضو
+const CLAN_MAX = +process.env.CLAN_MAX || 50;
+function sysSay(ck, kind, name, except) {          // اعلام ورود/خروج در چت قبیله (کادر طلایی/سیاه)؛ برای سازنده نامه‌ای نمی‌رود
+  const c = db.clans[ck]; if (!c) return;
+  const a = clanChat.get(ck) || [], msg = { sys: kind, u: name, tx: '', ts: Date.now() };
+  a.push(msg); if (a.length > CHATMAX) a.shift();
+  clanChat.set(ck, a); saveChat(ck);
+  c.members.forEach(k => { if (k !== except) sendU(k, { t: 'clmsg', m: msg }); });
+}
 function joinClan(k, ck) {
   const c = db.clans[ck], u = db.users[k]; if (!c || !u) return;
+  if (c.members.length >= CLAN_MAX) { toast(conns.get(k), 'این قبیله پر است'); return; }
   c.members.push(k); u.clan = ck; save();
+  sysSay(ck, 'join', u.name, k);
   c.members.forEach(m => m === k ? pushClan(m) : pushClanInfo(m));
-  if (c.owner !== k) sendMail(c.owner, { from: 'جنگ‌سالار', title: 'عضو جدید قبیله', text: u.name + ' به قبیلهٔ «' + c.name + '» پیوست.' });
 }
 function clans(ws, m) {
   const me = ws.u, U = db.users[me];
   if (m.t === 'clcreate') {
     if (myClan(U)) return toast(ws, 'تو الان عضو یک قبیله هستی');
     const name = String(m.name || '').trim().replace(/\s+/g, ' '), ck = key(name);
-    if (!/^[\p{L}\p{N}_ ]{3,20}$/u.test(name)) return toast(ws, 'نام قبیله باید ۳ تا ۲۰ حرف یا عدد باشد');
+    if (name.length < 3 || name.length > 20 || !nameOk(name, true)) return toast(ws, 'نام قبیله باید ۳ تا ۲۰ حرف فارسی یا انگلیسی (نه مخلوط) یا عدد باشد');
     if (!CMODES.has(m.mode)) return;
     if (db.clans[ck]) return toast(ws, 'این نام قبلاً گرفته شده');
     const ctag = randTag(10, clanTags);
@@ -412,6 +521,7 @@ function clans(ws, m) {
     if (!T) return toast(ws, 'کاربری با این نام پیدا نشد');
     if (t === me) return toast(ws, 'نمی‌توانی خودت را دعوت کنی');
     if (myClan(T)) return toast(ws, nameOf(t) + ' عضو یک قبیله است');
+    if (c.members.length >= CLAN_MAX) return toast(ws, 'قبیله پر است');
     if ((T.mail || []).some(x => x.type === 'cinv' && key(x.clan) === key(c.name))) return toast(ws, 'قبلاً دعوت شده');
     sendMail(t, { type: 'cinv', from: U.name, clan: c.name, title: 'دعوت به قبیله', text: U.name + ' تو را به قبیلهٔ «' + c.name + '» دعوت کرده است.' });
     toast(ws, 'دعوت برای ' + nameOf(t) + ' فرستاده شد');
@@ -425,6 +535,7 @@ function clans(ws, m) {
         c.owner = c.members[0];
         sendMail(c.owner, { from: 'جنگ‌سالار', title: 'سازندهٔ قبیله', text: 'سازندهٔ قبیله رفت و تو حالا سازندهٔ قبیلهٔ «' + c.name + '» هستی.' });
       }
+      sysSay(ck, 'leave', U.name);
       c.members.forEach(pushClanInfo);
     }
     save(); pushClan(me); toast(ws, 'قبیله را ترک کردی');
@@ -433,7 +544,7 @@ function clans(ws, m) {
     const tx = String(m.tx || '').replace(/\s+/g, ' ').trim().slice(0, 500);
     if (!tx) return;
     const now = Date.now();
-    if (now - (ws.lastSay || 0) < 800) return toast(ws, 'کمی آهسته‌تر پیام بده');
+    if (now - (ws.lastSay || 0) < 800 || !rl('sy:' + me, 30, 60000)) return toast(ws, 'کمی آهسته‌تر پیام بده');
     ws.lastSay = now;
     const a = clanChat.get(U.clan) || [], msg = { u: U.name, tx, ts: now, c: ccOf(U) };
     a.push(msg); if (a.length > CHATMAX) a.shift();
@@ -640,6 +751,7 @@ function inGame(ws, m) {
   const i = mt.p.indexOf(me);
   if (m.t === 'cmd') {
     if (mt.ended || !m.c || typeof m.c !== 'object' || !CMDS.has(m.c.a) || !mt.log.length) return;
+    if (JSON.stringify(m.c).length > 4000) return;   // سقف حجم هر دستور (جلوگیری از پر شدن حافظه)
     if (m.c.o != null && m.c.o !== i) return;   // انتخاب هم‌زمان: هر بازیکن فقط برای خودش دستور می‌دهد
     const now = Date.now(), r = mt.rl[i];       // محدودیت سرعت و سقف دستور هر بازیکن (جلوگیری از پر کردن لاگ بازی)
     if (now - r.t >= 1000) { r.t = now; r.n = 0; }
@@ -650,6 +762,7 @@ function inGame(ws, m) {
     r.n++; mt.cnt[i]++;
     push(mt, { ...m.c, s: i });                 // مُهر فرستنده را فقط سرور می‌زند؛ مرورگرها در فاز بازی دستور غیرِ بازیکنِ نوبتی را رد می‌کنند
   } else if (m.t === 'h') {
+    if (!Number.isInteger(m.g) || !Number.isInteger(m.n) || !Number.isInteger(m.h)) return;
     sendU(mt.p[1 - i], { t: 'h', g: m.g, n: m.n, h: m.h });
     checkHash(mt, i, m);
   } else if (m.t === 'result') {
@@ -664,14 +777,27 @@ function inGame(ws, m) {
 }
 
 /* ---------- WebSocket ---------- */
+process.on('uncaughtException', e => console.error('uncaughtException', e && e.stack || e));
+process.on('unhandledRejection', e => console.error('unhandledRejection', e && e.stack || e));
 const wss = new WebSocketServer({ server, path: '/ws', maxPayload: 16 * 1024 });
-wss.on('connection', ws => {
-  ws.u = null; ws.tries = 0; ws.searches = 0; ws.isAlive = true;
+wss.on('connection', (ws, req) => {
+  req.ip = clientIp(req);
+  ws.u = null; ws.tries = 0; ws.searches = 0; ws.isAlive = true; ws.ip = req.ip; ws.msgs = 0;
+  if (!ipConnOk(ws.ip)) return ws.close(1013);
+  ws.on('close', () => ipConnDone(ws.ip));
+  ws.on('error', () => {});
   ws.on('pong', () => (ws.isAlive = true));
   ws.on('message', raw => {
+    try {
+      if (++ws.msgs > 600) return ws.close(1008);           // سیل پیام (در هر دقیقه)
+      handleMsg(ws, raw);
+    } catch (e) { console.error('msg error', e && e.stack || e); }
+  });
+});
+function handleMsg(ws, raw) {
     let m; try { m = JSON.parse(raw); } catch { return; }
-    if (!m || typeof m.t !== 'string') return;
-    if (m.t === 'auth' || m.t === 'resume') return auth(ws, m);
+    if (!m || typeof m !== 'object' || typeof m.t !== 'string') return;
+    if (m.t === 'auth' || m.t === 'resume') { auth(ws, m).catch(e => console.error('auth error', e && e.stack || e)); return; }
     if (!ws.u) return;
     const me = ws.u;
     switch (m.t) {
@@ -698,10 +824,10 @@ wss.on('connection', ws => {
       case 'logout': delete db.sessions[ws.tok]; save(); return leaveSession(ws);
       case 'cmd': case 'h': case 'result': case 'forfeit': case 'leave': return inGame(ws, m);
     }
-  });
-  ws.on('close', () => leaveSession(ws));
-});
-setInterval(() => wss.clients.forEach(w => { w.searches = 0; }), 60000);
+}
+wss.on('connection', ws => ws.on('close', () => leaveSession(ws)));
+setInterval(() => wss.clients.forEach(w => { w.searches = 0; w.msgs = 0; }), 60000);
+setInterval(() => { pruneSessions(); rlSweep(); }, 3600000);
 setInterval(() => wss.clients.forEach(w => { if (!w.isAlive) return w.terminate(); w.isAlive = false; w.ping(); }), 25000);
 
 loadDb().then(() => server.listen(PORT, () => console.log('http://localhost:' + PORT)));

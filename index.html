@@ -621,7 +621,7 @@ function autoCheck(){if(phase!=='play'||over||autoT||LOCK||canAct()||!mine())ret
 /* ===== رابط کاربری ===== */
 const PX=n=>String(n).replace(/\d/g,d=>'۰۱۲۳۴۵۶۷۸۹'[d]);
 let LOG=[],lastMsg='';
-const esc=t=>String(t).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const esc=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const chip=(t,c)=>'<span class="chip'+(c?' '+c:'')+'">'+t+'</span>';
 let PK=[[],[]],cbOpen=false;
 const TH={'کاپیتان':[2,4,6],'نفرینی':[4],'اهریمن':[2],'اشرافی':[2,4,6],'تانک':[2],'شوالیه':[2,4],'سرخ':[2,4],'مبارز':[2,4],'ساپورتر':[2],'سامورایی':[2,4],'شکارچی':[2,4],'مشکی':[2,4],'کریسدور':[2,4],'انجماد':[2],'ربات':[2],'راهب':[3],'پادشاه':[2,3],'اژدها':[2],'کهکشان':[2],'ساچمه':[2]};
@@ -3213,7 +3213,7 @@ $('clLeave').onclick=()=>{const b=$('clLeave');
 function renderChat(force){
   const box=$('clLog');if(!box)return;
   const near=box.scrollHeight-box.scrollTop-box.clientHeight<80;
-  box.innerHTML=CLCHAT.length?CLCHAT.map(x=>'<div class="cmsg'+(x.u===myName?' me':'')+'" style="background:'+ccCol(x.c)+'"><small>'+esc(x.u)+'</small>'+esc(x.tx)+'</div>').join(''):'<div class="sec">هنوز پیامی نیست؛ اولین نفر باش!</div>';
+  box.innerHTML=CLCHAT.length?CLCHAT.map(x=>x.sys?'<div class="cmsg" style="background:'+(x.sys==='join'?'#b8860b':'#000')+';text-align:center">'+esc(x.u)+(x.sys==='join'?' وارد قبیله شد':' از قبیله خارج شد')+'</div>':'<div class="cmsg'+(x.u===myName?' me':'')+'" style="background:'+ccCol(x.c)+'"><small>'+esc(x.u)+'</small>'+esc(x.tx)+'</div>').join(''):'<div class="sec">هنوز پیامی نیست؛ اولین نفر باش!</div>';
   if(force||near)box.scrollTop=box.scrollHeight}
 function sendChat(){const tx=$('clText').value.trim();if(!tx)return;sendW({t:'clsay',tx});$('clText').value=''}
 $('clSend').onclick=sendChat;
