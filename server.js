@@ -144,6 +144,11 @@ const server = http.createServer((req, res) => {
     const f = path.join(__dirname, 'entry.mp3');
     if (fs.existsSync(f)) { res.writeHead(200, { 'content-type': 'audio/mpeg', 'cache-control': 'public, max-age=300' }); return fs.createReadStream(f).pipe(res); }
   }
+  if (ADMIN_KEY && (p === '/admin/flags' || p === '/admin/flag')) {
+    const u = new URL(req.url, 'http://x');
+    if (!adminOk(req.headers['x-admin-key'] || u.searchParams.get('k'))) { res.writeHead(403).end('forbidden'); return; }
+    return adminView(p, u.searchParams, res);
+  }
   if (p === '/health') return res.end('ok');
   res.writeHead(404).end('not found');
 });
@@ -468,14 +473,15 @@ function invite(ws, m) {
 
 /* ---------- نبرد ---------- */
 function newMatch(a, b, official = false) {   // official فقط برای مسابقات رسمی true می‌شود؛ نبردهای دوستانه (دعوت از دوستان) همیشه false
-  const mt = { official, p: [a, b], log: [], g: 0, ended: false, abort: null, tmr: [null, null], res: [null, null], counted: false, resT: null };
+  const mt = { official, p: [a, b], log: [], g: 0, ended: false, abort: null, tmr: [null, null], res: [null, null], counted: false, resT: null, hs: new Map(), desync: null, noRec: false, rl: [{ t: 0, n: 0 }, { t: 0, n: 0 }], cnt: [0, 0], flagged: new Set(), rlen: 0 };
+  if (official) [a, b].forEach(k => { const u = db.users[k]; if (u) u.mg = (u.mg | 0) + 1; });
   inMatch.set(a, mt); inMatch.set(b, mt);
   [a, b].forEach((k, i) => sendU(k, { t: 'match', me: i, opp: nameOf(i ? a : b) }));
   push(mt, { a: 'init', seed: seed() });
   [a, b].forEach(k => { pushFL(k); pushFriendsOf(k); });
 }
 function push(mt, c) {
-  if (c.a === 'init') { mt.g++; mt.log = []; mt.res = [null, null]; mt.counted = false; clearTimeout(mt.resT); mt.resT = null; mt.t0 = Date.now();
+  if (c.a === 'init') { mt.g++; mt.log = []; mt.res = [null, null]; mt.counted = false; clearTimeout(mt.resT); mt.resT = null; mt.t0 = Date.now(); mt.hs = new Map(); mt.desync = null; mt.noRec = false; mt.rl = [{ t: 0, n: 0 }, { t: 0, n: 0 }]; mt.cnt = [0, 0]; mt.flagged = new Set();
     // پایان زمان انتخاب/چیدن را خود سرور هم اعلام می‌کند (۱۶۰ ثانیه + ۳ ثانیه لودینگ + کمی مهلت)؛ اگر مرورگر بازیکنی بسته باشد هم بازی گیر نمی‌کند
     clearTimeout(mt.draftT); const g0 = mt.g;
     mt.draftT = setTimeout(() => { if (mt.ended || mt.g !== g0) return; push(mt, { a: 'to', o: 0 }); push(mt, { a: 'to', o: 1 }); }, 165500); }
@@ -498,7 +504,7 @@ function abort(mt, winner, by, reason) {
   clearTimeout(mt.draftT);
   clearTimeout(mt.resT);
   mt.p.forEach(k => sendU(k, mt.abort));
-  if (!mt.counted) record(mt, winner);          // تسلیم یا قطع اتصال را خود سرور می‌بیند
+  if (!mt.counted) record(mt, winner, true);          // تسلیم یا قطع اتصال را خود سرور می‌بیند
 }
 
 /* ---------- ثبت نتیجه ----------
@@ -506,10 +512,15 @@ function abort(mt, winner, by, reason) {
    (یکی «برد» و دیگری «باخت»، یا هر دو «مساوی»). اگر ناهمخوان باشند ثبت نمی‌شود.
    اگر فقط یکی گزارش بدهد، بعد از ۳۰ ثانیه همان گزارش پذیرفته می‌شود. */
 const RES = new Set(['win', 'loss', 'draw']);
-function record(mt, w) {                         // w: ۰ یا ۱ = برنده، -۱ = مساوی
+function record(mt, w, trusted) {                // w: ۰ یا ۱ = برنده، -۱ = مساوی ؛ trusted: نتیجه را خود سرور دیده (تسلیم/قطع اتصال)
   if (mt.counted) return;
   mt.counted = true; clearTimeout(mt.resT);
+  if (mt.noRec && !trusted) { console.log('بازی ناهمگام بود؛ نتیجه ثبت نشد:', nameOf(mt.p[0]), 'و', nameOf(mt.p[1]), '(دستور ' + (mt.desync && mt.desync.n) + ')'); return; }
   if (!mt.official) return;                      // نبرد دوستانه: هیچ اثری روی برد و جام ندارد
+  if (pairCapHit(mt)) {                          // سقف روزانه بین دو حساب (جلوگیری از جام‌سازی با هماهنگی)
+    mt.p.forEach(k => sendU(k, { t: 'toast', msg: 'سقف روزانهٔ نبرد رسمی با این حریف پر شده؛ این بازی ثبت نشد' }));
+    return;
+  }
   mt.p.forEach((k, i) => {
     const u = db.users[k]; if (!u) return;
     if (w === i) u.ow = (u.ow | 0) + 1;          // فقط بردِ مسابقهٔ رسمی
@@ -531,15 +542,96 @@ function report(mt, i, m) {
     if (a === 'loss' && b === 'win') return record(mt, 1);
     if (a === 'draw' && b === 'draw') return record(mt, -1);
     mt.counted = true; clearTimeout(mt.resT);    // ناهمخوان: ثبت نمی‌شود
-    console.log('نتیجهٔ ناهمخوان؛ ثبت نشد');
+    console.log('نتیجهٔ ناهمخوان؛ ثبت نشد:', nameOf(mt.p[0]), a, '|', nameOf(mt.p[1]), b);
+    flagMatch(mt, 'mismatch', { res: [a, b] });
   } else if (!mt.resT) {
+    mt.rlen = mt.log.length;
     mt.resT = setTimeout(() => {
+      mt.resT = null;
       if (mt.counted || mt.ended) return;
-      const r = mt.res[0] || mt.res[1], j = mt.res[0] ? 0 : 1;
+      const a2 = mt.res[0], b2 = mt.res[1];
+      if (a2 && b2) return;
+      const j = a2 ? 0 : 1, r = mt.res[j];
       if (!r) return;
-      record(mt, r === 'draw' ? -1 : (r === 'win' ? j : 1 - j));
+      // گزارش تک‌طرفهٔ «باخت» امن است (کسی به ضرر خودش دروغ نمی‌گوید)؛ «برد» و «مساوی» تک‌طرفه هرگز پذیرفته نمی‌شود
+      if (r === 'loss') return record(mt, 1 - j);
+      // ادعای برد/مساوی بدون تأیید حریف، در حالی که بازی بعد از ادعا ادامه داشته → مشکوک
+      if (mt.log.length > mt.rlen) flagMatch(mt, 'lone', { claim: r }, [j]);
     }, 30000);
   }
+}
+// مقایسهٔ هش وضعیت دو مرورگر (فقط فاز بازی)؛ ناهمخوانی = دستکاری یا باگ → بازی ثبت نمی‌شود (HASH_STRICT=0: فقط لاگ)
+const HASH_STRICT = process.env.HASH_STRICT !== '0';
+function checkHash(mt, i, m) {
+  if (m.p !== 1 || m.g !== mt.g || !Number.isInteger(m.n) || m.n < 0 || m.n > 6000 || !Number.isInteger(m.h)) return;
+  const e = mt.hs.get(m.n) || [undefined, undefined];
+  e[i] = m.h; mt.hs.set(m.n, e);
+  if (!mt.desync && e[0] !== undefined && e[1] !== undefined && e[0] !== e[1]) {
+    mt.desync = { n: m.n };
+    console.log('ناهمگامی در بازی', nameOf(mt.p[0]), 'و', nameOf(mt.p[1]), '- دستور', m.n);
+    if (HASH_STRICT) mt.noRec = true;
+    flagMatch(mt, 'desync', { n: m.n });
+  }
+}
+
+/* ---------- پرچم‌گذاری بازی‌های مشکوک ----------
+   هر بازیِ مشکوک (ناهمگامی، نتیجهٔ ناهمخوان، ادعای برد بدون تأیید، سیل دستور) با لاگ کاملش ذخیره می‌شود
+   (Upstash: ۳۰ روز، وگرنه پوشهٔ flags کنار data.json) و برای هر حساب شمارنده‌اش (فقط مسابقات رسمی) بالا می‌رود.
+   مشاهده: GET /admin/flags?k=ADMIN_KEY (یا هدر x-admin-key) ؛ جزئیات یک بازی: /admin/flag?id=...&k=ADMIN_KEY
+   اگر ADMIN_KEY تنظیم نشده باشد، این آدرس‌ها غیرفعال‌اند. */
+const RATE_MAX = 15, CMD_MAX = 2500;                       // دستور در ثانیه و دستور در هر بازی برای هر بازیکن
+const PAIR_CAP = Math.max(1, parseInt(process.env.PAIR_DAILY_CAP, 10) || 5);   // بازی رسمی ثبت‌شده بین هر دو حساب در روز
+const ADMIN_KEY = String(process.env.ADMIN_KEY || '');
+const FLAG_DIR = path.join(path.dirname(DATA), 'flags');
+function persistFlag(rec) {
+  const s = JSON.stringify(rec);
+  if (USE_REDIS) return redis(['SET', 'jangsalar:flag:' + rec.id, s, 'EX', 2592000]).catch(e => console.error('ذخیرهٔ پرچم ناموفق:', e.message));
+  fs.mkdir(FLAG_DIR, { recursive: true }, () => fs.writeFile(path.join(FLAG_DIR, rec.id + '.json'), s, () => {}));
+}
+function flagMatch(mt, kind, extra = {}, blame = [0, 1]) {
+  const tag = kind + (extra.who != null ? extra.who : '');
+  if (mt.flagged.has(tag)) return;
+  mt.flagged.add(tag);
+  const id = Date.now().toString(36) + crypto.randomBytes(3).toString('hex');
+  const names = mt.p.map(nameOf);
+  const head = { id, ts: Date.now(), kind, official: !!mt.official, p: names, g: mt.g, ...extra };
+  db.flags = db.flags || [];
+  db.flags.unshift(head); if (db.flags.length > 300) db.flags.length = 300;
+  if (mt.official) blame.forEach(i => {
+    const u = db.users[mt.p[i]]; if (!u) return;
+    u.fl = u.fl || {}; u.fl[kind] = (u.fl[kind] | 0) + 1;
+  });
+  save();
+  persistFlag({ ...head, log: mt.log.slice(0, 4000) });
+  console.log('بازی مشکوک (' + kind + '):', names.join(' / '), 'id=' + id);
+}
+function pairCapHit(mt) {
+  const day = new Date().toISOString().slice(0, 10);
+  if (!db.pc || db.pc.d !== day) db.pc = { d: day, m: {} };
+  const k = [...mt.p].sort().join('|');
+  if ((db.pc.m[k] | 0) >= PAIR_CAP) return true;
+  db.pc.m[k] = (db.pc.m[k] | 0) + 1;
+  return false;
+}
+const adminOk = v => crypto.timingSafeEqual(crypto.createHash('sha256').update(String(v || '')).digest(), crypto.createHash('sha256').update(ADMIN_KEY).digest());
+async function adminView(p, q, res) {
+  const out = o => { res.writeHead(200, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' }); res.end(JSON.stringify(o, null, 1)); };
+  if (p === '/admin/flags') {
+    const users = Object.values(db.users).filter(u => u.fl).map(u => {
+      const n = Object.values(u.fl).reduce((a, b) => a + b, 0);
+      return { name: u.name, id: u.id || '', official_matches: u.mg | 0, flags: u.fl, ratio: +(n / Math.max(1, u.mg | 0)).toFixed(2) };
+    }).sort((a, b) => b.ratio - a.ratio);
+    return out({ users, recent: (db.flags || []).slice(0, 100) });
+  }
+  const id = String(q.get('id') || '');
+  if (!/^[a-z0-9]{6,30}$/.test(id)) { res.writeHead(400).end('bad id'); return; }
+  try {
+    let s;
+    if (USE_REDIS) s = await redis(['GET', 'jangsalar:flag:' + id]);
+    else s = await new Promise(r => fs.readFile(path.join(FLAG_DIR, id + '.json'), 'utf8', (e, d) => r(e ? null : d)));
+    if (!s) { res.writeHead(404).end('not found'); return; }
+    res.writeHead(200, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' }); res.end(s);
+  } catch (e) { res.writeHead(500).end('error'); }
 }
 const CMDS = new Set(['cell', 'ab', 'shop', 'spc', 'cast', 'dr', 'to', 'end']);
 
@@ -547,11 +639,19 @@ function inGame(ws, m) {
   const me = ws.u, mt = inMatch.get(me); if (!mt) return;
   const i = mt.p.indexOf(me);
   if (m.t === 'cmd') {
-    if (mt.ended || !m.c || !CMDS.has(m.c.a) || !mt.log.length) return;
+    if (mt.ended || !m.c || typeof m.c !== 'object' || !CMDS.has(m.c.a) || !mt.log.length) return;
     if (m.c.o != null && m.c.o !== i) return;   // انتخاب هم‌زمان: هر بازیکن فقط برای خودش دستور می‌دهد
-    push(mt, m.c);
+    const now = Date.now(), r = mt.rl[i];       // محدودیت سرعت و سقف دستور هر بازیکن (جلوگیری از پر کردن لاگ بازی)
+    if (now - r.t >= 1000) { r.t = now; r.n = 0; }
+    if (r.n >= RATE_MAX || mt.cnt[i] >= CMD_MAX) {
+      if (!mt.flagged.has('flood' + i)) flagMatch(mt, 'flood', { who: i }, [i]);
+      return;
+    }
+    r.n++; mt.cnt[i]++;
+    push(mt, { ...m.c, s: i });                 // مُهر فرستنده را فقط سرور می‌زند؛ مرورگرها در فاز بازی دستور غیرِ بازیکنِ نوبتی را رد می‌کنند
   } else if (m.t === 'h') {
     sendU(mt.p[1 - i], { t: 'h', g: m.g, n: m.n, h: m.h });
+    checkHash(mt, i, m);
   } else if (m.t === 'result') {
     report(mt, i, m);
   } else if (m.t === 'forfeit') {

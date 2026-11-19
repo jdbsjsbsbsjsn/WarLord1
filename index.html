@@ -2927,11 +2927,15 @@ function net(c){
   if(phase!=='play'&&(c.a==='cell'||c.a==='shop'||c.a==='dr'||c.a==='to'))c.o=ME;
   sendW({t:'cmd',c})}
 function apply(c){
+  if(ONLINE&&phase==='play'&&PLAYC.has(c.a)&&c.s!==P)return;   /* فاز بازی: فقط دستورِ بازیکنِ نوبتی (مُهر سرور) پذیرفته می‌شود */
   if(ONLINE&&DSV&&c.o!=null&&phase!=='play'&&(c.a==='cell'||c.a==='shop'||c.a==='dr'||c.a==='to')){
     if(c.o===ME){apply0(c)}
     else if(c.o===0||c.o===1){DSV[ME]=dsSnap();DSW=true;dsLoad(DSV[c.o]);try{apply0(c)}finally{DSV[c.o]=dsSnap();dsLoad(DSV[ME]);DSW=false}}
     if(BEGINQ){BEGINQ=false;DSV=null;beginPlay()}else draw();return}
   apply0(c)}
+const PLAYC=new Set(['cell','ab','shop','spc','cast','end']);
+function castOk(c){const S=SPELLS[c.k];if(!S||!S.t||!Number.isInteger(c.x)||!Number.isInteger(c.y)||!inb(c.x,c.y)||!Array.isArray(c.pt)||c.pt.length!==3||!c.pt.every(Number.isFinite)||!Array.isArray(c.cells)||c.cells.length>COLS*ROWS)return false;
+  try{return JSON.stringify(cellsFor(S.t,c.x,c.y,new THREE.Vector3(c.pt[0],c.pt[1],c.pt[2])))===JSON.stringify(c.cells)}catch(_){return false}}
 function apply0(c){
   switch(c.a){
    case 'init':RPT=false;RS=c.seed|0;tmSent=0;LOBBY=false;cfClose();init();break;
@@ -2939,7 +2943,7 @@ function apply0(c){
    case 'ab':abClick();break;
    case 'shop':shopSel(c.k);break;
    case 'spc':spCancel();break;
-   case 'cast':if(phase==='play'&&SP[P].includes(c.k)){spl=c.k;castAt({c:c.x,r:c.y,cells:c.cells,pt:new THREE.Vector3(c.pt[0],c.pt[1],c.pt[2])})}break;
+   case 'cast':if(phase==='play'&&SP[P].includes(c.k)&&(!ONLINE||castOk(c))){spl=c.k;castAt({c:c.x,r:c.y,cells:c.cells,pt:new THREE.Vector3(c.pt[0],c.pt[1],c.pt[2])})}break;
    case 'dr':drApply(c);break;
    case 'to':if(phase==='pick'||phase==='place')drTimeout();break;
    case 'end':if(phase==='play'&&!over&&!canAct()){clearTimeout(autoT);autoT=0;endTurn(true)}break;
@@ -2948,7 +2952,7 @@ function stHash(){const a=JSON.stringify([phase==='play'?'p':'d',phase==='play'?
 setInterval(()=>{
   while(Q.length&&!LOCK){const m=Q.shift();CURG=m.g;
     try{apply(m.c)}catch(e){console.error('apply',m,e)}
-    if(MATCH&&U){const h=stHash(),k=m.g+':'+m.n;HM[k]=h;if(OH[k]!==undefined&&OH[k]!==h)desync=true;sendW({t:'h',g:m.g,n:m.n,h})}}
+    if(MATCH&&U){const h=stHash(),k=m.g+':'+m.n;HM[k]=h;if(OH[k]!==undefined&&OH[k]!==h)desync=true;sendW({t:'h',g:m.g,n:m.n,h,p:phase==='play'?1:0})}}
   if(loadMode==='match'&&!LOBBY&&Date.now()-loadStart>=3000){ldSet(100);hideLoad();entryMusic()}
 },25);
 function netUI(){const el=$('net'),t=$('netT'),b=$('netMenu');
