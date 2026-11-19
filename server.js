@@ -41,12 +41,45 @@ async function loadDb() {
     try { db = JSON.parse(fs.readFileSync(DATA, 'utf8')); } catch {}
     console.log('هشدار: Upstash تنظیم نشده؛ حساب‌ها در data.json ذخیره می‌شوند (ممکن است پاک شوند)');
   }
-  db.users = db.users || {}; db.sessions = db.sessions || {}; db.clans = db.clans || {};
+  db.users = db.users || {}; db.sessions = db.sessions || {}; db.clans = db.clans || {}; db.chats = db.chats || {};
   buildIdx();
+  await loadChats();
+}
+/* ---------- چت قبیله‌ها ----------
+   با Upstash: هر قبیله یک کلید جدا (jangsalar:chat:<قبیله>) تا حجم دیتابیس اصلی زیاد نشود؛ بدون Upstash: داخل data.json.
+   همهٔ چت‌ها موقع روشن شدن سرور در حافظه بارگذاری می‌شوند و هر تغییر (با کمی تأخیر) ذخیره می‌شود. */
+const CHAT_KEY = ck => 'jangsalar:chat:' + ck;
+const chatT = new Map();
+const cleanChat = a => (Array.isArray(a) ? a : []).filter(x => x && typeof x.u === 'string' && typeof x.tx === 'string').slice(-CHATMAX);
+async function loadChats() {
+  const cks = Object.keys(db.clans);
+  if (!USE_REDIS) { for (const ck of cks) if (db.chats[ck]) clanChat.set(ck, cleanChat(db.chats[ck])); return; }
+  for (let i = 0; i < cks.length; i += 100) {
+    const part = cks.slice(i, i + 100);
+    for (let n = 0; ; n++) {                       // اگر دیتابیس در دسترس نباشد، بدون چت شروع نمی‌کنیم (تا چت‌های قبلی رونویسی نشوند)
+      try {
+        const res = await redis(['MGET', ...part.map(CHAT_KEY)]);
+        part.forEach((ck, j) => { if (res[j]) { try { clanChat.set(ck, cleanChat(JSON.parse(res[j]))); } catch {} } });
+        break;
+      } catch (e) { console.error('خواندن چت قبیله‌ها ناموفق:', e.message); if (n >= 4) process.exit(1); await new Promise(r => setTimeout(r, 2000)); }
+    }
+  }
+}
+const sendChatNow = ck => redis(['SET', CHAT_KEY(ck), JSON.stringify(clanChat.get(ck) || [])]).catch(e => console.error('ذخیرهٔ چت ناموفق:', e.message));
+function saveChat(ck) {
+  if (!USE_REDIS) { db.chats[ck] = clanChat.get(ck) || []; return save(); }
+  clearTimeout(chatT.get(ck));
+  chatT.set(ck, setTimeout(() => { chatT.delete(ck); sendChatNow(ck); }, 1000));
+}
+function dropChat(ck) {                            // قبیله حذف شد
+  clanChat.delete(ck); clearTimeout(chatT.get(ck)); chatT.delete(ck);
+  if (!USE_REDIS) { delete db.chats[ck]; return save(); }
+  redis(['DEL', CHAT_KEY(ck)]).catch(e => console.error('حذف چت ناموفق:', e.message));
 }
 /* ---------- تگ و آیدی ----------
    تگ بازیکن: ۱۲ نویسهٔ تصادفی (حرف بزرگ + عدد)، تگ قبیله: ۱۰ نویسه. یکتا و ثابت (تغییر نمی‌کند).
-   آیدی: اختیاری، یکتا، انتخاب خود بازیکن (حروف انگلیسی کوچک، عدد و _ ؛ ۳ تا ۱۶ نویسه). */
+   تگ فقط برای ورود دوباره به حساب است: در پروفایل و لیست دوستان نمایش داده نمی‌شود و برای جستجوی دوست هم استفاده نمی‌شود.
+   آیدی: یکتا، انتخاب خود بازیکن (حروف انگلیسی بزرگ، عدد و _ ؛ ۴ تا ۲۰ نویسه) و همیشه با حروف بزرگ ذخیره می‌شود. */
 const TAG_CH = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 const userTags = new Map(), userIds = new Map(), clanTags = new Map();   // تگ/آیدی -> کلید کاربر ، تگ -> کلید قبیله
 function randTag(len, taken) {
@@ -62,7 +95,11 @@ function buildIdx() {
   for (const [k, u] of Object.entries(db.users)) {                 // حساب‌های قدیمی هم تگ می‌گیرند
     if (!u.tag || userTags.has(u.tag)) { u.tag = randTag(12, userTags); changed = true; }
     userTags.set(u.tag, k);
-    if (u.id) { if (userIds.has(u.id)) { delete u.id; changed = true; } else userIds.set(u.id, k); }
+    if (u.id) {
+      const up = String(u.id).toUpperCase();                       // آیدی‌های قدیمی (حروف کوچک) به حروف بزرگ تبدیل می‌شوند
+      if (up !== u.id) { u.id = up; changed = true; }
+      if (userIds.has(u.id)) { delete u.id; changed = true; } else userIds.set(u.id, k);
+    }
   }
   for (const [k, c] of Object.entries(db.clans)) {
     if (!c.tag || clanTags.has(c.tag)) { c.tag = randTag(10, clanTags); changed = true; }
@@ -70,8 +107,10 @@ function buildIdx() {
   }
   if (changed) save();
 }
-const ID_RE = /^[a-z0-9_]{4,20}$/;
+const ID_RE = /^[A-Z0-9_]{4,20}$/;
 const ID_MSG = 'آیدی باید ۴ تا ۲۰ نویسه از حروف انگلیسی، عدد یا _ باشد';
+const normId = v => String(v || '').trim().replace(/^@/, '').toUpperCase();   // آیدی همیشه با حروف بزرگ
+const TAG_RE = /^[A-Z0-9]{12}$/;
 // قانون رمز عبور (فقط برای ثبت‌نام و تعویض رمز): حداقل ۸ نویسه، هم حرف انگلیسی و هم عدد، و حداقل یک حرف بزرگ
 function pwErr(p) {
   if (p.length < 8) return 'رمز باید حداقل ۸ کاراکتر باشد';
@@ -80,7 +119,12 @@ function pwErr(p) {
   if (!/[A-Z]/.test(p)) return 'رمز باید حداقل یک حرف انگلیسی بزرگ داشته باشد';
   return '';
 }
-const flushAndExit = () => { clearTimeout(saveT); persist().then(() => process.exit(0)); };
+const flushAndExit = async () => {
+  clearTimeout(saveT);
+  const pend = [...chatT.keys()]; chatT.forEach(t => clearTimeout(t)); chatT.clear();
+  for (const ck of pend) await sendChatNow(ck);     // چت‌هایی که هنوز ذخیره نشده‌اند
+  persist().then(() => process.exit(0));
+};
 process.on('SIGTERM', flushAndExit); process.on('SIGINT', flushAndExit);
 
 /* ---------- HTTP: صفحهٔ بازی و عکس لودینگ ---------- */
@@ -121,8 +165,8 @@ const hashPw = (p, salt) => crypto.scryptSync(p, salt, 32).toString('hex');
 function pushFL(k) {
   const u = db.users[k]; if (!u || !conns.has(k)) return;
   sendU(k, { t: 'fl',
-    me: { w: u.ow | 0, tr: u.tr | 0, tag: u.tag, id: u.id || '', pc: u.pc | 0 },
-    friends: u.friends.map(f => ({ u: nameOf(f), on: conns.has(f), busy: inMatch.has(f), w: db.users[f] ? db.users[f].ow | 0 : 0, tag: db.users[f] ? db.users[f].tag : '', id: db.users[f] ? db.users[f].id || '' : '' }))
+    me: { w: u.ow | 0, tr: u.tr | 0, tag: u.tag, id: u.id || '', pc: u.pc | 0, cc: ccOf(u) },
+    friends: u.friends.map(f => ({ u: nameOf(f), on: conns.has(f), busy: inMatch.has(f), w: db.users[f] ? db.users[f].ow | 0 : 0, id: db.users[f] ? db.users[f].id || '' : '' }))
       .sort((a, b) => b.w - a.w || b.on - a.on || a.u.localeCompare(b.u)),
     inc: u.inc.map(nameOf), out: u.out.map(nameOf) });
 }
@@ -150,36 +194,42 @@ function auth(ws, m) {
     if (db.sessions[m.tok] === k && db.users[k]) return login(ws, k, m.tok);
     return err('نشست منقضی شده؛ دوباره وارد شو.', true);
   }
-  const name = String(m.u || '').trim(), pw = String(m.p || ''), k = key(name);
+  const pw = String(m.p || '');
   if (++ws.tries > 12) return ws.close();
-  if (!/^[\p{L}\p{N}_]{3,16}$/u.test(name)) return err('نام کاربری باید ۳ تا ۱۶ حرف یا عدد باشد');
   if (!pw || pw.length > 64) return err('رمز عبور را درست وارد کن');
+  let k, reg = false;
   if (m.mode === 'register') {
+    const name = String(m.u || '').trim(); k = key(name);
+    if (!/^[\p{L}\p{N}_]{3,16}$/u.test(name)) return err('نام کاربری باید ۳ تا ۱۶ حرف یا عدد باشد');
     const pe = pwErr(pw); if (pe) return err(pe);
     if (pw !== String(m.p2 || '')) return err('رمز عبور و تکرار آن یکسان نیست');
-    const id = String(m.id || '').trim().replace(/^@/, '').toLowerCase();
+    const id = normId(m.id);
     if (!ID_RE.test(id)) return err(ID_MSG);
     if (db.users[k]) return err('این نام قبلاً گرفته شده');
     if (userIds.has(id)) return err('این آیدی قبلاً گرفته شده');
     const salt = crypto.randomBytes(16).toString('hex');
     const tag = randTag(12, userTags);
     db.users[k] = { name, tag, id, salt, hash: hashPw(pw, salt), friends: [], inc: [], out: [], mail: [] };
-    userTags.set(tag, k); userIds.set(id, k);
+    userTags.set(tag, k); userIds.set(id, k); reg = true;
     sendMail(k, { from: 'جنگ‌سالار', title: 'خوش آمدی!', text: 'به جنگ‌سالار خوش آمدی ' + name + '. دوستانت را اضافه کن و با آن‌ها نبرد دوستانه بزن.' });
   } else {
-    const u = db.users[k];
+    // ورود با «تگ» (نه نام کاربری) + رمز؛ چون تگ یکتاست، دقیقاً مشخص است وارد کدام حساب می‌شوی
+    const tag = normTag(m.u);
+    if (!TAG_RE.test(tag)) return err('تگ حساب را درست وارد کن (۱۲ نویسه از حروف انگلیسی و عدد)');
+    k = userTags.get(tag);
+    const u = k && db.users[k];
     if (!u || !crypto.timingSafeEqual(Buffer.from(u.hash, 'hex'), Buffer.from(hashPw(pw, u.salt), 'hex')))
-      return err('نام کاربری یا رمز اشتباه است');
+      return err('تگ یا رمز اشتباه است');
   }
   const tok = crypto.randomBytes(24).toString('hex');
   db.sessions[tok] = k; save();
-  login(ws, k, tok);
+  login(ws, k, tok, reg);
 }
-function login(ws, k, tok) {
+function login(ws, k, tok, reg) {
   const old = conns.get(k);
   if (old && old !== ws) { old.u = null; send(old, { t: 'kicked' }); old.close(4001); }
   ws.u = k; ws.tok = tok; conns.set(k, ws);
-  send(ws, { t: 'authok', u: nameOf(k), tok, tag: db.users[k].tag, id: db.users[k].id || '' });
+  send(ws, { t: 'authok', u: nameOf(k), tok, tag: db.users[k].tag, id: db.users[k].id || '', reg: !!reg });
   pushFL(k); pushFriendsOf(k); pushMail(k); pushClan(k); pushClanLive(k);
   const mt = inMatch.get(k); if (mt) resumeMatch(mt, k, ws);
 }
@@ -222,21 +272,21 @@ function friends(ws, m) {
 }
 
 /* ---------- جستجو و پروفایل ----------
-   ورودی می‌تواند تگ (#ABC...)، آیدی (@id) یا نام کاربری باشد؛ فرمت‌های بدون علامت هم تشخیص داده می‌شوند. */
+   ورودی می‌تواند آیدی (@ID) یا نام کاربری باشد. تگ بازیکن برای جستجو/افزودن دوست کار نمی‌کند (فقط برای ورود است). */
 const normTag = q => String(q || '').trim().replace(/^#/, '').toUpperCase();
 function resolveUser(q) {
   q = String(q || '').trim(); if (!q) return null;
-  if (q[0] === '#') return userTags.get(normTag(q)) || null;
-  if (q[0] === '@') return userIds.get(q.slice(1).toLowerCase()) || null;
+  if (q[0] === '#') return null;
+  if (q[0] === '@') return userIds.get(normId(q)) || null;
   const k = key(q);
   if (db.users[k]) return k;
-  return userIds.get(k) || userTags.get(normTag(q)) || null;
+  return userIds.get(normId(q)) || null;
 }
 function profileOf(viewer, k) {
   const u = db.users[k], me = db.users[viewer]; if (!u) return null;
   const c = myClan(u);
   const rel = k === viewer ? 'self' : me.friends.includes(k) ? 'friend' : me.out.includes(k) ? 'out' : me.inc.includes(k) ? 'inc' : 'none';
-  return { name: u.name, tag: u.tag, id: u.id || '', w: u.ow | 0, tr: u.tr | 0, pc: u.pc | 0,
+  return { name: u.name, id: u.id || '', w: u.ow | 0, tr: u.tr | 0, pc: u.pc | 0,
     on: conns.has(k), busy: inMatch.has(k), rel, clan: c ? { name: c.name, tag: c.tag } : null };
 }
 function search(ws, m) {
@@ -245,10 +295,17 @@ function search(ws, m) {
   if (++ws.searches > 60) return toast(ws, 'جستجوی زیاد؛ کمی صبر کن');
   const k = resolveUser(q);
   if (k) return send(ws, { t: 'sres', q, p: profileOf(me, k) });
-  const ck = clanTags.get(normTag(q)) || (db.clans[key(q.replace(/^#/, ''))] ? key(q.replace(/^#/, '')) : null);
-  const c = ck && db.clans[ck];
-  send(ws, { t: 'sres', q, p: null, clan: c ? { name: c.name, tag: c.tag, n: c.members.length, mode: c.mode, owner: nameOf(c.owner) } : null });
+  const c = findClan(q);
+  send(ws, { t: 'sres', q, p: null, clan: c ? clanCard(c) : null });
 }
+// پیدا کردن قبیله: فقط با تگ قبیله (#...) یا با نام دقیقش؛ فهرست قبیله‌ها هرگز به کسی داده نمی‌شود
+function findClan(q) {
+  q = String(q || '').trim(); if (!q) return null;
+  let ck = clanTags.get(normTag(q));
+  if (!ck && q[0] !== '#') ck = key(q.replace(/\s+/g, ' '));
+  return (ck && db.clans[ck]) || null;
+}
+const clanCard = c => ({ name: c.name, tag: c.tag, n: c.members.length, mode: c.mode, owner: nameOf(c.owner) });
 function chPw(ws, m) {                        // تعویض رمز: رمز فعلی + رمز جدید (با همان قانون ثبت‌نام) + تکرار
   const me = ws.u, U = db.users[me];
   if (++ws.tries > 12) return ws.close();
@@ -262,13 +319,26 @@ function chPw(ws, m) {                        // تعویض رمز: رمز فع�
   for (const [t, v] of Object.entries(db.sessions)) if (v === me && t !== ws.tok) delete db.sessions[t];   // نشست‌های دستگاه‌های دیگر باطل می‌شود
   save(); send(ws, { t: 'pwok' });
 }
-function setCol(ws, m) {                      // رنگ پروفایل: عدد ۰ تا ۵
+const NCOL = 12, CC_DEF = 6;                   // تعداد رنگ‌ها (پروفایل و کادر چت) و رنگ پیش‌فرض کادر چت (مشکی)
+const ccOf = u => (u.cc == null ? CC_DEF : u.cc);
+function setCol(ws, m) {                      // رنگ پروفایل: عدد ۰ تا ۱۱
   const me = ws.u, c = m.c | 0;
-  if (c < 0 || c > 5) return;
+  if (c < 0 || c >= NCOL) return;
   db.users[me].pc = c; save(); pushFL(me);
 }
+// رنگ کادر چت قبیله: فقط یکی از رنگ‌های از پیش تعیین‌شده؛ پیام‌های قبلیِ خودش هم برای همهٔ اعضا همان رنگ می‌شود
+function setCc(ws, m) {
+  const me = ws.u, U = db.users[me], c = m.c | 0;
+  if (c < 0 || c >= NCOL) return;
+  U.cc = c; save(); pushFL(me);
+  const cl = myClan(U); if (!cl) return;
+  const a = clanChat.get(U.clan) || [];
+  a.forEach(x => { if (x.u === U.name) x.c = c; });
+  saveChat(U.clan);
+  cl.members.forEach(k => sendU(k, { t: 'clchat', msgs: a, keep: true }));
+}
 function setId(ws, m) {
-  const me = ws.u, U = db.users[me], v = String(m.id || '').trim().replace(/^@/, '').toLowerCase();
+  const me = ws.u, U = db.users[me], v = normId(m.id);
   if (!ID_RE.test(v)) return toast(ws, v ? ID_MSG : 'آیدی نمی‌تواند خالی باشد');
   if (v === U.id) return;
   if (userIds.has(v)) return toast(ws, 'این آیدی قبلاً گرفته شده');
@@ -280,7 +350,7 @@ function setId(ws, m) {
 /* ---------- قبیله ----------
    وضعیت: open = همه می‌توانند عضو شوند، closed = کسی نمی‌تواند عضو شود، invite = فقط با دعوتِ سازنده (از پروفایل بازیکن) */
 const CMODES = new Set(['open', 'closed', 'invite']);
-const clanChat = new Map();   // کلید قبیله -> آخرین پیام‌های چت (در حافظه؛ با ری‌استارت سرور پاک می‌شود)
+const clanChat = new Map();   // کلید قبیله -> آخرین پیام‌های چت (در حافظه؛ ذخیرهٔ دائمی با saveChat)
 const CHATMAX = 50;
 const myClan = u => (u && u.clan && db.clans[u.clan]) || null;
 const clanInfo = (c, k) => ({ name: c.name, tag: c.tag, mode: c.mode, owner: nameOf(c.owner), mine: c.owner === k,
@@ -313,11 +383,11 @@ function clans(ws, m) {
     db.clans[ck] = { name, tag: ctag, owner: me, mode: m.mode, members: [me], ts: Date.now() };
     clanTags.set(ctag, ck);
     U.clan = ck; save(); pushClan(me); send(ws, { t: 'clmade' });
-  } else if (m.t === 'cllist') {
-    const list = Object.values(db.clans).filter(c => c.mode === 'open')
-      .sort((a, b) => b.members.length - a.members.length || a.name.localeCompare(b.name)).slice(0, 40)
-      .map(c => ({ name: c.name, tag: c.tag, n: c.members.length, owner: nameOf(c.owner) }));
-    send(ws, { t: 'cls', list });
+  } else if (m.t === 'clfind') {                 // جستجوی قبیله برای پیوستن: فقط با نام یا تگ
+    const q = String(m.q || '').trim().slice(0, 40); if (!q) return;
+    if (++ws.searches > 60) return toast(ws, 'جستجوی زیاد؛ کمی صبر کن');
+    const c = findClan(q);
+    send(ws, { t: 'clres', q, clan: c ? clanCard(c) : null });
   } else if (m.t === 'cljoin') {
     if (myClan(U)) return toast(ws, 'تو الان عضو یک قبیله هستی');
     const ck = key(m.name), c = db.clans[ck];
@@ -338,7 +408,7 @@ function clans(ws, m) {
     const c = myClan(U); if (!c) return;
     const ck = U.clan;
     drop(c.members, me); delete U.clan;
-    if (!c.members.length) { delete db.clans[ck]; clanTags.delete(c.tag); clanChat.delete(ck); }   // قبیلهٔ خالی حذف می‌شود
+    if (!c.members.length) { delete db.clans[ck]; clanTags.delete(c.tag); dropChat(ck); }   // قبیلهٔ خالی حذف می‌شود
     else {
       if (c.owner === me) {                       // اگر سازنده برود، قدیمی‌ترین عضو سازنده می‌شود
         c.owner = c.members[0];
@@ -354,9 +424,9 @@ function clans(ws, m) {
     const now = Date.now();
     if (now - (ws.lastSay || 0) < 800) return toast(ws, 'کمی آهسته‌تر پیام بده');
     ws.lastSay = now;
-    const a = clanChat.get(U.clan) || [], msg = { u: U.name, tx, ts: now };
+    const a = clanChat.get(U.clan) || [], msg = { u: U.name, tx, ts: now, c: ccOf(U) };
     a.push(msg); if (a.length > CHATMAX) a.shift();
-    clanChat.set(U.clan, a);
+    clanChat.set(U.clan, a); saveChat(U.clan);
     c.members.forEach(k => sendU(k, { t: 'clmsg', m: msg }));
   } else if (m.t === 'clacc' || m.t === 'cldec') {
     const a = U.mail || [], i = a.findIndex(e => e.id === m.u && e.type === 'cinv'); if (i < 0) return;
@@ -500,9 +570,10 @@ wss.on('connection', ws => {
       case 'search': return search(ws, m);
       case 'setid': return setId(ws, m);
       case 'setcol': return setCol(ws, m);
+      case 'setcc': return setCc(ws, m);
       case 'chpw': return chPw(ws, m);
       case 'pfget': { const k = resolveUser(m.u); if (k) send(ws, { t: 'pf', p: profileOf(me, k) }); return; }
-      case 'clcreate': case 'cllist': case 'cljoin': case 'clinv': case 'clacc': case 'cldec': case 'clsay': case 'clleave': return clans(ws, m);
+      case 'clcreate': case 'clfind': case 'cljoin': case 'clinv': case 'clacc': case 'cldec': case 'clsay': case 'clleave': return clans(ws, m);
       case 'inv': return invite(ws, m);
       case 'invcancel': { const v = invOut.get(me); if (v) endInv(v, 'cancel'); return; }
       case 'invdec': { const v = invIn.get(me); if (v && v.from === key(m.u)) endInv(v, 'declined'); return; }

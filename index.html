@@ -194,6 +194,7 @@ button em{font-style:normal;font-size:11px;font-weight:500;opacity:.8}
 .tbn b{font-size:16px;max-width:100%;overflow:hidden;text-overflow:ellipsis}.tbn small{font-size:11px;font-weight:400;color:var(--mut);direction:ltr;max-width:100%;overflow:hidden;text-overflow:ellipsis}
 .idl{direction:ltr;unicode-bidi:isolate;font-size:12px;color:var(--mut);display:flex;gap:10px;justify-content:center;flex-wrap:wrap}.idl .cp{cursor:pointer;color:var(--gold)}
 .fr .nm{display:flex;flex-direction:column;line-height:1.3;min-width:0}.fr .nm small{direction:ltr;text-align:start;font-size:11px}
+.setp{display:flex;flex-direction:column;gap:12px}.setp[hidden]{display:none}.setgo{min-height:58px;flex-direction:column;gap:2px}.setgo small{font-size:11px;font-weight:400;color:var(--mut)}
 .tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px}.ovl .tabs button.on{background:var(--gold);color:var(--ink);border-color:var(--gold);font-weight:700}
 .pfbox{padding:0;gap:0;overflow-x:hidden;background:var(--panel);background:color-mix(in srgb,var(--pc,#1f3a5f) 32%,var(--panel));border-color:var(--pc,#1f3a5f);box-shadow:0 0 0 2px var(--pc,#1f3a5f),0 0 40px var(--pc,#1f3a5f)}
 #scrPf{background:radial-gradient(ellipse at 50% 20%,var(--pc,#1f3a5f),#13151a 78%)}
@@ -207,8 +208,6 @@ button em{font-style:normal;font-size:11px;font-weight:500;opacity:.8}
 .pfinfo .pft{direction:rtl;flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:4px;text-align:start}
 .pfinfo h2{font-size:20px;color:var(--gold);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #pfId{direction:ltr;unicode-bidi:isolate;font-size:13px;color:var(--mut);text-align:right}
-.pfbox button#pfTagBtn{flex:none;width:60px;height:60px;min-height:60px;align-self:center;padding:0;font-size:24px;font-weight:700;border-radius:14px;color:var(--gold);border-color:var(--gold)}
-.pfbox button#pfTagBtn.on{background:var(--gold);color:var(--ink)}
 .pftag{direction:ltr;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 8px 8px 14px;background:var(--panel2);border:1px solid var(--gold);border-radius:12px}
 .pftag b{font-size:16px;letter-spacing:1px;color:var(--gold);user-select:all;overflow:hidden;text-overflow:ellipsis}
 .pfstat{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -254,10 +253,10 @@ button em{font-style:normal;font-size:11px;font-weight:500;opacity:.8}
 @keyframes ld{to{width:100%}}
 </style>
 <div class="scr" id="scrAuth"><div class="box"><h1>جنگ‌سالار</h1>
-<input id="auU" placeholder="نام کاربری" maxlength="16" autocapitalize="off" autocomplete="username" spellcheck="false">
+<input id="auU" placeholder="تگ حساب (مثل #AB12CD34EF56)" maxlength="14" autocapitalize="characters" autocomplete="username" spellcheck="false" style="direction:ltr">
 <input id="auP" type="password" placeholder="رمز عبور" maxlength="64" autocomplete="current-password">
 <input id="auP2" type="password" placeholder="تکرار رمز عبور" maxlength="64" autocomplete="new-password" hidden>
-<input id="auId" placeholder="آیدی (۴ تا ۲۰ حرف انگلیسی، عدد یا _)" maxlength="20" autocapitalize="off" autocomplete="off" spellcheck="false" style="direction:ltr" hidden>
+<input id="auId" placeholder="آیدی (۴ تا ۲۰ حرف انگلیسی، عدد یا _)" maxlength="20" autocapitalize="characters" autocomplete="off" spellcheck="false" style="direction:ltr;text-transform:uppercase" hidden>
 <div id="auHint" class="sec" hidden>رمز: حداقل ۸ کاراکتر، شامل حرف انگلیسی و عدد، و حداقل یک حرف بزرگ (A-Z)</div>
 <div class="row"><button id="auLogin" class="pr" type="button">ورود</button><button id="auReg" type="button">ثبت‌نام</button></div>
 <div id="auMsg"></div><button id="auOff" class="ghost" type="button">بازی حضوری (یک دستگاه)</button></div></div>
@@ -281,7 +280,9 @@ button em{font-style:normal;font-size:11px;font-weight:500;opacity:.8}
 <button class="cm" data-m="closed" type="button">🔒 بسته<small>هیچ‌کس نمی‌تواند عضو شود</small></button>
 <button class="cm" data-m="invite" type="button">✉️ با دعوت<small>فقط با دعوت تو؛ از پروفایل بازیکن‌ها دعوت می‌کنی</small></button>
 <div id="clMsg"></div><div class="row"><button id="clMake" class="pr" type="button">ساخت</button><button id="clNewBack" type="button">بازگشت</button></div></div></div>
-<div class="scr" id="scrClanJoin" hidden><div class="box"><h2>قبیله‌های باز</h2><div id="clJoinList"></div><button id="clJoinBack" type="button">بازگشت</button></div></div>
+<div class="scr" id="scrClanJoin" hidden><div class="box"><h2>پیوستن به قبیله</h2><div class="sec">نام قبیله یا تگ آن را بنویس تا پیدایش کنیم.</div>
+<div class="row"><input id="clQ" placeholder="نام قبیله یا تگ (مثل #AB12CD34EF)" maxlength="30" autocapitalize="off" spellcheck="false"><button id="clFind" class="pr" type="button" style="flex:none">جستجو</button></div>
+<div id="clJoinList"></div><button id="clJoinBack" type="button">بازگشت</button></div></div>
 <div class="scr" id="scrBt" hidden><div class="box"><h2 id="btT">با کی نبرد می‌زنی؟</h2>
 <div id="btList"></div><div id="btMsg"></div><button id="btBack" type="button">بازگشت</button></div></div>
 <div id="tb" hidden>
@@ -293,27 +294,37 @@ button em{font-style:normal;font-size:11px;font-weight:500;opacity:.8}
 <div class="ovl" id="ovFr" hidden><div class="box"><h2>دوستان</h2>
 <div class="tabs"><button id="frTabL" class="on" type="button">👥 دوستان من</button><button id="frTabS" type="button">🔍 جستجو</button></div>
 <div id="frPaneL" style="display:flex;flex-direction:column;gap:12px">
-<div class="row"><input id="ovFrU" placeholder="افزودن دوست (نام کاربری، آیدی یا تگ)" maxlength="20" autocapitalize="off" spellcheck="false"><button id="ovFrAdd" class="pr" type="button" style="flex:none">افزودن</button></div>
+<div class="row"><input id="ovFrU" placeholder="افزودن دوست (نام کاربری یا آیدی)" maxlength="20" autocapitalize="off" spellcheck="false"><button id="ovFrAdd" class="pr" type="button" style="flex:none">افزودن</button></div>
 <div id="ovFrList"></div></div>
 <div id="frPaneS" style="display:none;flex-direction:column;gap:12px">
-<div class="row"><input id="srQ" placeholder="آیدی یا تگ؛ مثل @ali یا #HSO8GOH25K3H" maxlength="20" autocapitalize="off" spellcheck="false"><button id="srGo" class="pr" type="button" style="flex:none">جستجو</button></div>
-<div id="srRes"><div class="sec">آیدی یا تگ بازیکن (یا تگ قبیله) را بنویس تا پیدایش کنیم.</div></div></div>
+<div class="row"><input id="srQ" placeholder="آیدی بازیکن یا تگ قبیله؛ مثل @ALI_WAR" maxlength="20" autocapitalize="off" spellcheck="false"><button id="srGo" class="pr" type="button" style="flex:none">جستجو</button></div>
+<div id="srRes"><div class="sec">آیدی بازیکن (یا تگ قبیله) را بنویس تا پیدایش کنیم.</div></div></div>
 <button id="ovFrClose" type="button">بستن</button></div></div>
 <div class="ovl" id="ovMail" hidden><div class="box"><h2>نامه‌ها</h2>
 <div id="ovMailList"></div><button id="ovMailClose" type="button">بستن</button></div></div>
-<div class="ovl" id="ovSet" hidden><div class="box"><h2>تنظیمات</h2>
+<div class="ovl" id="ovSet" hidden><div class="box">
+<div class="setp" id="setM"><h2>تنظیمات</h2>
+<button id="setGoS" class="setgo" type="button">🔒 امنیت<small>تگ، آیدی، رمز عبور و خروج از حساب</small></button>
+<button id="setGoP" class="setgo" type="button">🎨 شخصی‌سازی<small>رنگ پروفایل و رنگ کادر چت</small></button>
+<button id="ovSetClose" type="button">بستن</button></div>
+<div class="setp" id="setS" hidden><h2>🔒 امنیت</h2>
 <div class="sec">🆔 تعویض آیدی</div><div class="sec">هر آیدی فقط برای یک نفر است و تکراری نمی‌شود (۴ تا ۲۰ حرف انگلیسی، عدد یا _)</div>
-<div class="row"><input id="pfIdIn" placeholder="مثلاً ali_war" maxlength="20" autocapitalize="off" spellcheck="false" style="direction:ltr"><button id="pfIdSave" class="pr" type="button" style="flex:none">ثبت آیدی</button></div>
-<div class="sec">🎨 رنگ پروفایل</div><div class="pcsw" id="pcSw"></div>
-<div class="sec">🔒 امنیت</div><div class="sec">تعویض رمز حساب (رمز جدید: حداقل ۸ کاراکتر، حرف انگلیسی و عدد، و حداقل یک حرف بزرگ)</div>
+<div class="row"><input id="pfIdIn" placeholder="مثلاً ALI_WAR" maxlength="20" autocapitalize="characters" spellcheck="false" style="direction:ltr;text-transform:uppercase"><button id="pfIdSave" class="pr" type="button" style="flex:none">ثبت آیدی</button></div>
+<div class="sec">🔑 تگ ورود تو (برای ورود دوباره لازم است؛ به کسی نده)</div><div class="pftag"><button id="setTagCp" type="button">کپی</button><b id="setTag"></b></div>
+<div class="sec">🔒 تعویض رمز حساب (رمز جدید: حداقل ۸ کاراکتر، حرف انگلیسی و عدد، و حداقل یک حرف بزرگ)</div>
 <input id="pwOld" type="password" placeholder="رمز فعلی" maxlength="64" autocomplete="current-password">
 <input id="pwNew" type="password" placeholder="رمز جدید" maxlength="64" autocomplete="new-password">
 <input id="pwNew2" type="password" placeholder="تکرار رمز جدید" maxlength="64" autocomplete="new-password">
 <button id="pwSave" class="pr" type="button">تعویض رمز</button>
-<button id="setOut" class="dg" type="button">خروج از حساب</button><button id="ovSetClose" type="button">بستن</button></div></div>
+<button id="setOut" class="dg" type="button">خروج از حساب</button><button class="setBack" type="button">بازگشت</button></div>
+<div class="setp" id="setP" hidden><h2>🎨 شخصی‌سازی</h2>
+<div class="sec">🎨 رنگ پروفایل</div><div class="pcsw" id="pcSw"></div>
+<div class="sec">💬 رنگ کادر چت قبیله (بقیه هم کادر پیام تو را با همین رنگ می‌بینند)</div><div class="pcsw" id="ccSw"></div>
+<div class="cmsg me" id="ccPrev" style="align-self:center;max-width:100%"><small id="ccPrevN"></small>این پیش‌نمایش کادر چت توست</div>
+<button class="setBack" type="button">بازگشت</button></div>
+</div></div>
 <div class="scr" id="scrPf" hidden><div class="box pfbox"><div class="pfbn"><span id="pfCvT"></span></div><div class="pfin">
-<div class="pfinfo"><button id="pfTagBtn" type="button" aria-label="نمایش تگ بازیکن" aria-expanded="false">#</button><div class="pft"><h2 id="pfName"></h2><div id="pfId"></div><div id="pfSub" style="color:var(--mut);font-size:12px"></div></div></div>
-<div class="pftag" id="pfTagRow" hidden><button id="pfCopy" type="button">کپی</button><b id="pfTag"></b></div>
+<div class="pfinfo"><div class="pft"><h2 id="pfName"></h2><div id="pfId"></div><div id="pfSub" style="color:var(--mut);font-size:12px"></div></div></div>
 <div class="pfstat"><div><span>⚔️</span><b id="pfW">-</b>بردهای رسمی</div><div><span>🏆</span><b id="pfT">-</b>جام‌ها</div></div>
 <button id="pfAdd" class="pr" type="button" hidden>➕ افزودن دوست</button>
 <button id="pfInv" class="pr" type="button" hidden>🛡 دعوت به قبیله</button><button id="pfBack" type="button">بازگشت</button></div></div></div>
@@ -2947,16 +2958,16 @@ function connect(){
   ws.onmessage=ev=>{let m;try{m=JSON.parse(ev.data)}catch(_){return}onMsg(m)}}
 function onMsg(m){
   switch(m.t){
-   case 'authok':AUTHED=true;myName=m.u;myTag=m.tag||'';myId=m.id||'';ls('jt_u',m.u);ls('jt_tok',m.tok);$('auP').value='';$('auP2').value='';$('auId').value='';regUI(false);if(!MATCH&&!OFFG&&!(loadMode))showScr('scrMenu');break;
+   case 'authok':AUTHED=true;myName=m.u;myTag=m.tag||'';myId=m.id||'';ls('jt_u',m.u);ls('jt_tok',m.tok);$('auP').value='';$('auP2').value='';$('auId').value='';$('auU').value='';regUI(false);if(!MATCH&&!OFFG&&!(loadMode))showScr('scrMenu');if(m.reg&&m.tag)setTimeout(()=>alert('حساب ساخته شد ✅\n\nتگ ورود تو: #'+m.tag+'\n\nدفعهٔ بعد که خواستی وارد حسابت شوی، به‌جای نام کاربری باید این تگ را بنویسی. آن را جایی یادداشت کن (بعداً هم در تنظیمات می‌بینی‌اش).'),300);break;
    case 'autherr':$('auMsg').textContent=m.msg;if(m.resume){ls('jt_tok',null)}if(!MATCH)showScr('scrAuth');break;
    case 'kicked':AUTHED=false;barUI();toast('با دستگاه دیگری وارد شدی');if(!MATCH)showScr('scrAuth');break;
    case 'toast':toast(m.msg);break;
    case 'pwok':['pwOld','pwNew','pwNew2'].forEach(i=>$(i).value='');toast('رمز حساب تغییر کرد');break;
    case 'clan':CLAN=m.clan||null;if(!CLAN)CLCHAT=[];if(curScr==='scrClan')renderClan();if(curScr==='scrClanJoin'&&CLAN)showScr('scrClan');break;
    case 'clmade':showScr('scrClan');break;
-   case 'clchat':CLCHAT=m.msgs||[];renderChat(true);break;
+   case 'clchat':CLCHAT=m.msgs||[];renderChat(!m.keep);break;
    case 'clmsg':CLCHAT.push(m.m);if(CLCHAT.length>50)CLCHAT.shift();renderChat(m.m.u===myName);break;
-   case 'cls':renderClJoin(m.list||[]);break;
+   case 'clres':renderClJoin(m);break;
    case 'mail':MAIL=m.mail||[];barUI();if(!$('ovMail').hidden)renderMail();break;
    case 'pf':if(m.p&&curScr==='scrPf'&&PF&&PF.name===m.p.name)showPf(m.p);break;
    case 'sres':renderSearch(m);break;
@@ -2976,12 +2987,13 @@ function onMsg(m){
 /* --- صفحه‌های منو --- */
 const pwErr=p=>p.length<8?'رمز باید حداقل ۸ کاراکتر باشد':p.length>64?'رمز نباید بیشتر از ۶۴ کاراکتر باشد':(!/[A-Za-z]/.test(p)||!/[0-9]/.test(p))?'رمز باید همزمان شامل حرف انگلیسی و عدد باشد':!/[A-Z]/.test(p)?'رمز باید حداقل یک حرف انگلیسی بزرگ داشته باشد':'';
 let REG=false;
-function regUI(on){REG=on;['auP2','auId','auHint'].forEach(i=>$(i).hidden=!on);$('auP').autocomplete=on?'new-password':'current-password';
+function regUI(on){const was=REG;REG=on;['auP2','auId','auHint'].forEach(i=>$(i).hidden=!on);$('auP').autocomplete=on?'new-password':'current-password';
+  $('auU').placeholder=on?'نام کاربری':'تگ حساب (مثل #AB12CD34EF56)';$('auU').maxLength=on?16:14;$('auU').autocapitalize=on?'off':'characters';$('auU').style.direction=on?'':'ltr';if(was!==on)$('auU').value='';
   $('auLogin').textContent=on?'بازگشت':'ورود';$('auLogin').classList.toggle('pr',!on);$('auReg').classList.toggle('pr',on);$('auMsg').textContent=''}
-function auth(mode){const u=$('auU').value.trim(),p=$('auP').value;if(!u||!p){$('auMsg').textContent='نام کاربری و رمز را وارد کن';return}
+function auth(mode){let u=$('auU').value.trim();const p=$('auP').value;if(mode!=='register')u=u.replace(/^#/,'').toUpperCase();if(!u||!p){$('auMsg').textContent=mode==='register'?'نام کاربری و رمز را وارد کن':'تگ حساب و رمز را وارد کن';return}
   const o={t:'auth',mode,u,p};
-  if(mode==='register'){const p2=$('auP2').value,id=$('auId').value.trim().replace(/^@/,'').toLowerCase();
-    const e=pwErr(p)||(p!==p2?'رمز عبور و تکرار آن یکسان نیست':'')||(!/^[a-z0-9_]{4,20}$/.test(id)?'آیدی باید ۴ تا ۲۰ نویسه از حروف انگلیسی، عدد یا _ باشد':'');
+  if(mode==='register'){const p2=$('auP2').value,id=$('auId').value.trim().replace(/^@/,'').toUpperCase();
+    const e=pwErr(p)||(p!==p2?'رمز عبور و تکرار آن یکسان نیست':'')||(!/^[A-Z0-9_]{4,20}$/.test(id)?'آیدی باید ۴ تا ۲۰ نویسه از حروف انگلیسی، عدد یا _ باشد':'');
     if(e){$('auMsg').textContent=e;return}o.p2=p2;o.id=id}
   $('auMsg').textContent='';if(WS&&WS.readyState===1)sendW(o);else{wantAuth=o;$('auMsg').textContent='در حال اتصال به سرور…'}}
 $('auLogin').onclick=()=>REG?regUI(false):auth('login');$('auReg').onclick=()=>REG?auth('register'):regUI(true);
@@ -3026,32 +3038,41 @@ function barUI(){
   $('tbMnB').hidden=!un;$('tbMnB').textContent=un;$('tbMailB').hidden=!un;$('tbMailB').textContent=un}
 function showPf(p){
   const same=PF&&PF.name===p.name;PF=p;const self=p.rel==='self',st=v=>v!==undefined?v:'-';
-  if(!same){$('pfTagRow').hidden=true;$('pfTagBtn').classList.remove('on');$('pfTagBtn').setAttribute('aria-expanded','false')}
   $('pfName').textContent=p.name;
   $('pfId').textContent=p.id?'@'+p.id:'';$('pfId').hidden=!p.id;
-  $('pfTag').textContent=p.tag?'#'+p.tag:'';
   $('pfSub').textContent=self?'پروفایل من':(p.on===undefined?'':(p.busy?'در بازی':(p.on?'آنلاین':'آفلاین')));
-  $('pfCvT').textContent=p.clan?'🛡 '+p.clan.name:'بدون قبیله';$('scrPf').style.setProperty('--pc',PCOLS[(p.pc|0)%6]);
+  $('pfCvT').textContent=p.clan?'🛡 '+p.clan.name:'بدون قبیله';$('scrPf').style.setProperty('--pc',PCOLS[(p.pc|0)%12]);
   $('pfW').textContent=st(p.w);$('pfT').textContent=st(p.tr);
   const ad=!self&&(p.rel==='none'||p.rel==='inc');$('pfAdd').hidden=!ad;$('pfAdd').textContent=p.rel==='inc'?'✅ قبول درخواست دوستی':'➕ افزودن دوست';
   $('pfInv').hidden=!(CLAN&&CLAN.mine&&CLAN.mode==='invite'&&!self)}
 function openProfile(name,preset){
   closeOv();let p=preset;
   if(!p){
-    if(name===myName)p={name,tag:myTag,id:myId,rel:'self',...(FL.me||{}),on:true,busy:false};
-    else{const f=FL.friends.find(x=>x.u===name);p=f?{name,tag:f.tag,id:f.id,w:f.w,on:f.on,busy:f.busy,rel:'friend'}:{name,rel:'none'}}}
+    if(name===myName)p={name,id:myId,rel:'self',...(FL.me||{}),on:true,busy:false};
+    else{const f=FL.friends.find(x=>x.u===name);p=f?{name,id:f.id,w:f.w,on:f.on,busy:f.busy,rel:'friend'}:{name,rel:'none'}}}
   showPf(p);showScr('scrPf');sendW({t:'pfget',u:p.name})}
 function copyTxt(t,msg){try{navigator.clipboard.writeText(t).then(()=>toast(msg),()=>{})}catch(_){}}
-$('pfTagBtn').onclick=()=>{if(!PF||!PF.tag)return toast('تگ در دسترس نیست');const r=$('pfTagRow'),on=r.hidden;r.hidden=!on;$('pfTagBtn').classList.toggle('on',on);$('pfTagBtn').setAttribute('aria-expanded',on)};
-$('pfCopy').onclick=()=>{if(PF&&PF.tag)copyTxt('#'+PF.tag,'تگ کپی شد')};
-$('pfAdd').onclick=()=>{if(PF&&PF.tag)sendW({t:'fadd',u:'#'+PF.tag})};
-const PCOLS=['#1f3a5f','#1f4d3a','#5a2230','#3f2a5e','#5a3d22','#3a4350'],PCN=['آبی شبانه','سبز جنگلی','عنابی','بنفش','قهوه‌ای','فولادی'];
-function renderSw(){const cur=((FL.me&&FL.me.pc)|0)%6;$('pcSw').innerHTML=PCOLS.map((c,i)=>'<button type="button" class="sw'+(i===cur?' on':'')+'" data-c="'+i+'" style="background:'+c+'" aria-label="'+PCN[i]+'"></button>').join('')}
+$('pfAdd').onclick=()=>{if(PF&&PF.name)sendW({t:'fadd',u:PF.name})};
+$('setTagCp').onclick=()=>{if(myTag)copyTxt('#'+myTag,'تگ کپی شد')};
+const PCOLS=['#1f3a5f','#1f4d3a','#5a2230','#3f2a5e','#5a3d22','#3a4350','#17606b','#2e3380','#7a2a63','#55591f','#9a4d1a','#8c2323'],
+  PCN=['آبی شبانه','سبز جنگلی','عنابی','بنفش','قهوه‌ای','فولادی','فیروزه‌ای','نیلی','ارغوانی','زیتونی','نارنجی سوخته','قرمز'];
+// رنگ کادر چت: ۶ رنگ اول پروفایل + ۶ رنگ تیره و باوقار دیگر؛ پیش‌فرض = مشکی (شمارهٔ ۶)
+const CC_DEF=6,CCOLS=[...PCOLS.slice(0,6),'#1c1f26','#134e4a','#1e2559','#521a45','#3b3f17','#6b3a14'],
+  CCN=[...PCN.slice(0,6),'مشکی','سبز دریایی','سرمه‌ای','ارغوانی تیره','زیتونی تیره','مسی تیره'];
+const ccCol=c=>CCOLS[(c==null?CC_DEF:(c|0))%12]||CCOLS[CC_DEF];
+function renderCc(){const cur=FL.me&&FL.me.cc!=null?FL.me.cc|0:CC_DEF;$('ccSw').innerHTML=CCOLS.map((c,i)=>'<button type="button" class="sw'+(i===cur?' on':'')+'" data-c="'+i+'" style="background:'+c+'" aria-label="'+CCN[i]+'"></button>').join('');$('ccPrev').style.background=ccCol(cur);$('ccPrevN').textContent=myName||''}
+$('ccSw').onclick=e=>{const b=e.target.closest('button[data-c]');if(!b)return;if(FL.me)FL.me.cc=+b.dataset.c;renderCc();sendW({t:'setcc',c:+b.dataset.c})};
+function showSetPane(p){['setM','setS','setP'].forEach(i=>$(i).hidden=i!==p);if(p==='setP'){renderSw();renderCc()}}
+$('setGoS').onclick=()=>showSetPane('setS');$('setGoP').onclick=()=>showSetPane('setP');
+document.querySelectorAll('.setBack').forEach(b=>b.onclick=()=>showSetPane('setM'));
+function renderSw(){const cur=((FL.me&&FL.me.pc)|0)%12;$('pcSw').innerHTML=PCOLS.map((c,i)=>'<button type="button" class="sw'+(i===cur?' on':'')+'" data-c="'+i+'" style="background:'+c+'" aria-label="'+PCN[i]+'"></button>').join('')}
 $('pwSave').onclick=()=>{const o=$('pwOld').value,n=$('pwNew').value,n2=$('pwNew2').value;
   if(!o)return toast('رمز فعلی را وارد کن');const e=pwErr(n)||(n!==n2?'رمز جدید و تکرار آن یکسان نیست':'');if(e)return toast(e);
   sendW({t:'chpw',o,n,n2})};
 $('pcSw').onclick=e=>{const b=e.target.closest('button[data-c]');if(!b)return;if(FL.me)FL.me.pc=+b.dataset.c;renderSw();sendW({t:'setcol',c:+b.dataset.c})};
-$('pfIdSave').onclick=()=>sendW({t:'setid',id:$('pfIdIn').value.trim()});
+$('pfIdSave').onclick=()=>sendW({t:'setid',id:$('pfIdIn').value.trim().replace(/^@/,'').toUpperCase()});
+['auId','pfIdIn'].forEach(i=>$(i).addEventListener('input',e=>{const el=e.target,a=el.selectionStart,b=el.selectionEnd,v=el.value.toUpperCase();if(v!==el.value){el.value=v;try{el.setSelectionRange(a,b)}catch(_){}}}));
+$('auU').addEventListener('input',e=>{if(!REG){const el=e.target,v=el.value.toUpperCase();if(v!==el.value)el.value=v}});
 $('tbName').onclick=()=>openProfile(myName);
 $('bnL').onclick=()=>goPage('scrDev');$('bnM').onclick=()=>goPage('scrMenu');$('bnR').onclick=()=>goPage('scrClan');
 /* کشیدن انگشت: راست = صفحه چپ (در دست توسعه)، چپ = برگشت به منو؛ صفحه راست فعلاً خالی */
@@ -3071,7 +3092,7 @@ $('pfBack').onclick=()=>showScr('scrMenu');
 $('tbMn').onclick=e=>{e.stopPropagation();const o=$('tbDrop').hidden;closeOv();$('tbDrop').hidden=!o};
 document.addEventListener('click',e=>{if(!$('tbDrop').hidden&&!e.target.closest('#tbDrop'))$('tbDrop').hidden=true});
 $('tbFr').onclick=()=>{const o=$('ovFr').hidden;closeOv();if(o){$('ovFr').hidden=false;renderTbFr()}};
-$('tbSet').onclick=()=>{closeOv();$('pfIdIn').value=myId;['pwOld','pwNew','pwNew2'].forEach(i=>$(i).value='');renderSw();$('ovSet').hidden=false};
+$('tbSet').onclick=()=>{closeOv();$('pfIdIn').value=myId;$('setTag').textContent=myTag?'#'+myTag:'';['pwOld','pwNew','pwNew2'].forEach(i=>$(i).value='');showSetPane('setM');$('ovSet').hidden=false};
 $('tbMail').onclick=()=>{closeOv();$('ovMail').hidden=false;renderMail()};
 $('ovFrClose').onclick=closeOv;$('ovSetClose').onclick=closeOv;$('ovMailClose').onclick=closeOv;
 ['ovFr','ovMail','ovSet'].forEach(id=>$(id).addEventListener('click',e=>{if(e.target===$(id))closeOv()}));
@@ -3080,9 +3101,9 @@ function renderTbFr(){
   const L=FL.friends;
   $('ovFrList').innerHTML=L.length?L.map(f=>{
     const n=esc(f.u),sel=selFr===f.u;
-    return '<div class="fr tap'+(sel?' sel':'')+'" data-n="'+n+'"><span><i class="od'+(f.on?' on':'')+'"></i><span class="nm"><b>'+n+'</b><small>'+(f.id?'@'+esc(f.id)+' · ':'')+'#'+esc(f.tag||'')+'</small></span><small>⚔️ '+(f.w|0)+'</small>'+(f.busy?'<small>در بازی</small>':'')+'</span><small>'+(sel?'▲':'▼')+'</small></div>'
+    return '<div class="fr tap'+(sel?' sel':'')+'" data-n="'+n+'"><span><i class="od'+(f.on?' on':'')+'"></i><span class="nm"><b>'+n+'</b><small>'+(f.id?'@'+esc(f.id):'')+'</small></span><small>⚔️ '+(f.w|0)+'</small>'+(f.busy?'<small>در بازی</small>':'')+'</span><small>'+(sel?'▲':'▼')+'</small></div>'
     +(sel?'<div class="fopt"><button data-a="pf" data-u="'+n+'">👤 مشاهده پروفایل</button><button class="pr" data-a="inv" data-u="'+n+'">⚔️ درخواست نبرد دوستانه</button><button class="dg" data-a="frem" data-u="'+n+'">🗑 حذف دوست</button></div>':'')}).join('')
-   :'<div class="sec">هنوز دوستی نداری. نام کاربری، آیدی یا تگ یکی را بالا بنویس، یا از تب «جستجو» پیدایش کن.</div>'}
+   :'<div class="sec">هنوز دوستی نداری. نام کاربری یا آیدی یکی را بالا بنویس، یا از تب «جستجو» پیدایش کن.</div>'}
 $('ovFrList').onclick=e=>{
   const b=e.target.closest('button[data-a]');
   if(b){const a=b.dataset.a,u=b.dataset.u;
@@ -3101,15 +3122,15 @@ function renderSearch(m){
   if(m.q!==srQ)return;let h='';
   if(m.p){const p=m.p;SR=p;
     const act=p.rel==='self'?'<small>این خودتی</small>':p.rel==='friend'?'<small>دوست توست</small>':p.rel==='out'?'<small>درخواست فرستاده شد</small>':'<button class="pr" data-a="sadd">➕ افزودن</button>';
-    h='<div class="fr"><span><i class="od'+(p.on?' on':'')+'"></i><span class="nm"><b>'+esc(p.name)+'</b><small>'+(p.id?'@'+esc(p.id)+' · ':'')+'#'+esc(p.tag)+'</small></span><small>⚔️ '+(p.w|0)+'</small></span>'+act+'</div>'
+    h='<div class="fr"><span><i class="od'+(p.on?' on':'')+'"></i><span class="nm"><b>'+esc(p.name)+'</b><small>'+(p.id?'@'+esc(p.id):'')+'</small></span><small>⚔️ '+(p.w|0)+'</small></span>'+act+'</div>'
      +'<button data-a="spf" type="button">👤 مشاهده پروفایل</button>'}
   else if(m.clan){const c=m.clan;
     h='<div class="fr"><span class="nm"><b>🛡 '+esc(c.name)+'</b><small>#'+esc(c.tag)+' · 👥 '+c.n+' · 👑 '+esc(c.owner)+'</small></span>'+(c.mode==='open'&&!CLAN?'<button class="pr" data-a="sjoin" data-n="'+esc(c.name)+'">عضو شو</button>':'<small>'+(c.mode==='closed'?'🔒 بسته':c.mode==='invite'?'✉️ با دعوت':'')+'</small>')+'</div>'}
-  else h='<div class="sec">بازیکن یا قبیله‌ای با این آیدی/تگ پیدا نشد.</div>';
+  else h='<div class="sec">بازیکن یا قبیله‌ای با این آیدی پیدا نشد.</div>';
   $('srRes').innerHTML=h}
 $('srRes').onclick=e=>{const b=e.target.closest('button[data-a]');if(!b||!SR)return;
   if(b.dataset.a==='spf')openProfile(SR.name,SR);
-  else if(b.dataset.a==='sadd')sendW({t:'fadd',u:'#'+SR.tag});
+  else if(b.dataset.a==='sadd')sendW({t:'fadd',u:SR.name});
   else if(b.dataset.a==='sjoin')sendW({t:'cljoin',name:b.dataset.n})};
 function mailTime(t){try{return new Date(t).toLocaleString('fa-IR',{dateStyle:'short',timeStyle:'short'})}catch(_){return ''}}
 function renderMail(){
@@ -3150,23 +3171,26 @@ $('clLeave').onclick=()=>{const b=$('clLeave');
 function renderChat(force){
   const box=$('clLog');if(!box)return;
   const near=box.scrollHeight-box.scrollTop-box.clientHeight<80;
-  box.innerHTML=CLCHAT.length?CLCHAT.map(x=>'<div class="cmsg'+(x.u===myName?' me':'')+'"><small>'+esc(x.u)+'</small>'+esc(x.tx)+'</div>').join(''):'<div class="sec">هنوز پیامی نیست؛ اولین نفر باش!</div>';
+  box.innerHTML=CLCHAT.length?CLCHAT.map(x=>'<div class="cmsg'+(x.u===myName?' me':'')+'" style="background:'+ccCol(x.c)+'"><small>'+esc(x.u)+'</small>'+esc(x.tx)+'</div>').join(''):'<div class="sec">هنوز پیامی نیست؛ اولین نفر باش!</div>';
   if(force||near)box.scrollTop=box.scrollHeight}
 function sendChat(){const tx=$('clText').value.trim();if(!tx)return;sendW({t:'clsay',tx});$('clText').value=''}
 $('clSend').onclick=sendChat;
 $('clText').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();sendChat()}};
 $('clBody').onclick=e=>{const b=e.target.closest('button[data-a]');if(!b)return;
   if(b.dataset.a==='new'){$('clName').value='';$('clMsg').textContent='';clMode='open';clModeUI();showScr('scrClanNew')}
-  else{$('clJoinList').innerHTML='<div class="sec">در حال بارگذاری…</div>';showScr('scrClanJoin');sendW({t:'cllist'})}};
+  else{clQv='';$('clQ').value='';$('clJoinList').innerHTML='';showScr('scrClanJoin');setTimeout(()=>$('clQ').focus(),50)}};
 function clModeUI(){document.querySelectorAll('#scrClanNew .cm').forEach(b=>b.classList.toggle('on',b.dataset.m===clMode))}
 document.querySelectorAll('#scrClanNew .cm').forEach(b=>b.onclick=()=>{clMode=b.dataset.m;clModeUI()});
 $('clMake').onclick=()=>{const name=$('clName').value.trim().replace(/\s+/g,' ');
   if(name.length<3){$('clMsg').textContent='نام قبیله باید حداقل ۳ حرف باشد';return}
   $('clMsg').textContent='';sendW({t:'clcreate',name,mode:clMode})};
 $('clNewBack').onclick=()=>showScr('scrClan');$('clJoinBack').onclick=()=>showScr('scrClan');
-function renderClJoin(L){
-  if(curScr!=='scrClanJoin')return;
-  $('clJoinList').innerHTML=L.length?L.map(c=>'<div class="fr"><span class="nm"><b>'+esc(c.name)+'</b><small>#'+esc(c.tag||'')+' · 👥 '+c.n+'</small></span><button class="pr" data-n="'+esc(c.name)+'">عضو شو</button></div>').join(''):'<div class="sec">هنوز قبیلهٔ بازی وجود ندارد.</div>'}
+let clQv='';
+function doClFind(){const q=$('clQ').value.trim();if(!q)return;clQv=q;$('clJoinList').innerHTML='<div class="sec">در حال جستجو…</div>';sendW({t:'clfind',q})}
+$('clFind').onclick=doClFind;$('clQ').onkeydown=e=>{if(e.key==='Enter')doClFind()};
+function renderClJoin(m){
+  if(curScr!=='scrClanJoin'||m.q!==clQv)return;const c=m.clan;
+  $('clJoinList').innerHTML=c?'<div class="fr"><span class="nm"><b>🛡 '+esc(c.name)+'</b><small>#'+esc(c.tag||'')+' · 👥 '+c.n+' · 👑 '+esc(c.owner)+'</small></span>'+(c.mode==='open'?'<button class="pr" data-n="'+esc(c.name)+'">عضو شو</button>':'<small>'+(c.mode==='closed'?'🔒 بسته':'✉️ با دعوت')+'</small>')+'</div>':'<div class="sec">قبیله‌ای با این نام یا تگ پیدا نشد.</div>'}
 $('clJoinList').onclick=e=>{const b=e.target.closest('button[data-n]');if(b)sendW({t:'cljoin',name:b.dataset.n})};
 $('pfInv').onclick=()=>sendW({t:'clinv',u:$('pfName').textContent});
 
