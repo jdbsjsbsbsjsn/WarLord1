@@ -112,8 +112,8 @@ const hashPw = (p, salt) => crypto.scryptSync(p, salt, 32).toString('hex');
 function pushFL(k) {
   const u = db.users[k]; if (!u || !conns.has(k)) return;
   sendU(k, { t: 'fl',
-    me: { w: u.wins | 0, l: u.losses | 0, d: u.draws | 0, tag: u.tag, id: u.id || '' },
-    friends: u.friends.map(f => ({ u: nameOf(f), on: conns.has(f), busy: inMatch.has(f), w: db.users[f] ? db.users[f].wins | 0 : 0, tag: db.users[f] ? db.users[f].tag : '', id: db.users[f] ? db.users[f].id || '' : '' }))
+    me: { w: u.ow | 0, tr: u.tr | 0, tag: u.tag, id: u.id || '' },
+    friends: u.friends.map(f => ({ u: nameOf(f), on: conns.has(f), busy: inMatch.has(f), w: db.users[f] ? db.users[f].ow | 0 : 0, tag: db.users[f] ? db.users[f].tag : '', id: db.users[f] ? db.users[f].id || '' : '' }))
       .sort((a, b) => b.w - a.w || b.on - a.on || a.u.localeCompare(b.u)),
     inc: u.inc.map(nameOf), out: u.out.map(nameOf) });
 }
@@ -222,7 +222,7 @@ function profileOf(viewer, k) {
   const u = db.users[k], me = db.users[viewer]; if (!u) return null;
   const c = myClan(u);
   const rel = k === viewer ? 'self' : me.friends.includes(k) ? 'friend' : me.out.includes(k) ? 'out' : me.inc.includes(k) ? 'inc' : 'none';
-  return { name: u.name, tag: u.tag, id: u.id || '', w: u.wins | 0, l: u.losses | 0, d: u.draws | 0,
+  return { name: u.name, tag: u.tag, id: u.id || '', w: u.ow | 0, tr: u.tr | 0,
     on: conns.has(k), busy: inMatch.has(k), rel, clan: c ? { name: c.name, tag: c.tag } : null };
 }
 function search(ws, m) {
@@ -327,8 +327,8 @@ function invite(ws, m) {
 }
 
 /* ---------- نبرد ---------- */
-function newMatch(a, b) {
-  const mt = { p: [a, b], log: [], g: 0, ended: false, abort: null, tmr: [null, null], res: [null, null], counted: false, resT: null };
+function newMatch(a, b, official = false) {   // official فقط برای مسابقات رسمی true می‌شود؛ نبردهای دوستانه (دعوت از دوستان) همیشه false
+  const mt = { official, p: [a, b], log: [], g: 0, ended: false, abort: null, tmr: [null, null], res: [null, null], counted: false, resT: null };
   inMatch.set(a, mt); inMatch.set(b, mt);
   [a, b].forEach((k, i) => sendU(k, { t: 'match', me: i, opp: nameOf(i ? a : b) }));
   push(mt, { a: 'init', seed: seed() });
@@ -365,14 +365,18 @@ const RES = new Set(['win', 'loss', 'draw']);
 function record(mt, w) {                         // w: ۰ یا ۱ = برنده، -۱ = مساوی
   if (mt.counted) return;
   mt.counted = true; clearTimeout(mt.resT);
+  if (!mt.official) return;                      // نبرد دوستانه: هیچ اثری روی برد و جام ندارد
   mt.p.forEach((k, i) => {
     const u = db.users[k]; if (!u) return;
-    if (w < 0) u.draws = (u.draws | 0) + 1;
-    else if (w === i) u.wins = (u.wins | 0) + 1;
-    else u.losses = (u.losses | 0) + 1;
+    if (w === i) u.ow = (u.ow | 0) + 1;          // فقط بردِ مسابقهٔ رسمی
   });
   save();
   mt.p.forEach(k => { pushFL(k); pushFriendsOf(k); });
+}
+// جام: فقط با این تابع و فقط از مسابقات رسمی/تورنمنت اضافه می‌شود (نبرد دوستانه هرگز آن را صدا نمی‌زند)
+function awardTrophy(k, n = 1) {
+  const u = db.users[k]; if (!u) return;
+  u.tr = (u.tr | 0) + n; save(); pushFL(k); pushFriendsOf(k);
 }
 function report(mt, i, m) {
   if (mt.ended || mt.counted || !RES.has(m.r) || m.g !== mt.g) return;
