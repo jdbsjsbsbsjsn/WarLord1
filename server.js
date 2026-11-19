@@ -84,7 +84,9 @@ const hashPw = (p, salt) => crypto.scryptSync(p, salt, 32).toString('hex');
 function pushFL(k) {
   const u = db.users[k]; if (!u || !conns.has(k)) return;
   sendU(k, { t: 'fl',
-    friends: u.friends.map(f => ({ u: nameOf(f), on: conns.has(f), busy: inMatch.has(f) })),
+    me: { w: u.wins | 0, l: u.losses | 0, d: u.draws | 0 },
+    friends: u.friends.map(f => ({ u: nameOf(f), on: conns.has(f), busy: inMatch.has(f), w: db.users[f] ? db.users[f].wins | 0 : 0 }))
+      .sort((a, b) => b.w - a.w || b.on - a.on || a.u.localeCompare(b.u)),
     inc: u.inc.map(nameOf), out: u.out.map(nameOf) });
 }
 const pushFriendsOf = k => { const u = db.users[k]; if (u) u.friends.forEach(pushFL); };
@@ -183,14 +185,14 @@ function invite(ws, m) {
 
 /* ---------- نبرد ---------- */
 function newMatch(a, b) {
-  const mt = { p: [a, b], log: [], g: 0, ended: false, abort: null, tmr: [null, null] };
+  const mt = { p: [a, b], log: [], g: 0, ended: false, abort: null, tmr: [null, null], res: [null, null], counted: false, resT: null };
   inMatch.set(a, mt); inMatch.set(b, mt);
   [a, b].forEach((k, i) => sendU(k, { t: 'match', me: i, opp: nameOf(i ? a : b) }));
   push(mt, { a: 'init', seed: seed() });
   [a, b].forEach(k => { pushFL(k); pushFriendsOf(k); });
 }
 function push(mt, c) {
-  if (c.a === 'init') { mt.g++; mt.log = []; }
+  if (c.a === 'init') { mt.g++; mt.log = []; mt.res = [null, null]; mt.counted = false; clearTimeout(mt.resT); mt.resT = null; }
   if (mt.log.length > 6000) return;
   mt.log.push(c);
   const m = { t: 'cmd', g: mt.g, n: mt.log.length - 1, c };
@@ -207,7 +209,46 @@ function resumeMatch(mt, k, ws) {
 function abort(mt, winner, by, reason) {
   if (mt.ended) return;
   mt.ended = true; mt.abort = { t: 'abort', winner, by, reason };
+  clearTimeout(mt.resT);
   mt.p.forEach(k => sendU(k, mt.abort));
+  if (!mt.counted) record(mt, winner);          // تسلیم یا قطع اتصال را خود سرور می‌بیند
+}
+
+/* ---------- ثبت نتیجه ----------
+   مرورگر هر بازیکن در پایان بازی خودکار نتیجه را می‌فرستد؛ سرور فقط وقتی ثبت می‌کند که هر دو یکی بگویند
+   (یکی «برد» و دیگری «باخت»، یا هر دو «مساوی»). اگر ناهمخوان باشند ثبت نمی‌شود.
+   اگر فقط یکی گزارش بدهد، بعد از ۳۰ ثانیه همان گزارش پذیرفته می‌شود. */
+const RES = new Set(['win', 'loss', 'draw']);
+function record(mt, w) {                         // w: ۰ یا ۱ = برنده، -۱ = مساوی
+  if (mt.counted) return;
+  mt.counted = true; clearTimeout(mt.resT);
+  mt.p.forEach((k, i) => {
+    const u = db.users[k]; if (!u) return;
+    if (w < 0) u.draws = (u.draws | 0) + 1;
+    else if (w === i) u.wins = (u.wins | 0) + 1;
+    else u.losses = (u.losses | 0) + 1;
+  });
+  save();
+  mt.p.forEach(k => { pushFL(k); pushFriendsOf(k); });
+}
+function report(mt, i, m) {
+  if (mt.ended || mt.counted || !RES.has(m.r) || m.g !== mt.g) return;
+  mt.res[i] = m.r;
+  const a = mt.res[0], b = mt.res[1];
+  if (a && b) {
+    if (a === 'win' && b === 'loss') return record(mt, 0);
+    if (a === 'loss' && b === 'win') return record(mt, 1);
+    if (a === 'draw' && b === 'draw') return record(mt, -1);
+    mt.counted = true; clearTimeout(mt.resT);    // ناهمخوان: ثبت نمی‌شود
+    console.log('نتیجهٔ ناهمخوان؛ ثبت نشد');
+  } else if (!mt.resT) {
+    mt.resT = setTimeout(() => {
+      if (mt.counted || mt.ended) return;
+      const r = mt.res[0] || mt.res[1], j = mt.res[0] ? 0 : 1;
+      if (!r) return;
+      record(mt, r === 'draw' ? -1 : (r === 'win' ? j : 1 - j));
+    }, 30000);
+  }
 }
 const CMDS = new Set(['cell', 'ab', 'shop', 'spc', 'cast', 'dr', 'to', 'end']);
 
@@ -219,6 +260,8 @@ function inGame(ws, m) {
     push(mt, m.c);
   } else if (m.t === 'h') {
     sendU(mt.p[1 - i], { t: 'h', g: m.g, n: m.n, h: m.h });
+  } else if (m.t === 'result') {
+    report(mt, i, m);
   } else if (m.t === 'forfeit') {
     abort(mt, 1 - i, i, 'forfeit');
   } else if (m.t === 'leave') {
@@ -251,7 +294,7 @@ wss.on('connection', ws => {
         return newMatch(v.from, me);
       }
       case 'logout': delete db.sessions[ws.tok]; save(); return leaveSession(ws);
-      case 'cmd': case 'h': case 'forfeit': case 'leave': return inGame(ws, m);
+      case 'cmd': case 'h': case 'result': case 'forfeit': case 'leave': return inGame(ws, m);
     }
   });
   ws.on('close', () => leaveSession(ws));

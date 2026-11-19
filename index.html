@@ -2709,12 +2709,13 @@ function dkDie(u,g){const d=g.userData;d.dgDie=1;unitG.delete(u);d.pick.forEach(
 
 /* ===================== آنلاین =====================
    حساب کاربری/دوستی/دعوت: سرور. خود بازی: lockstep (سرور فقط دستورها را مرتب پخش می‌کند). */
-let WS=null,Q=[],HM={},OH={},desync=false,flashT=0,flashMsg='',retryT=0,AUTHED=false,myName='',FL={friends:[],inc:[],out:[]},invWait=null,invFrom=null,curScr='scrAuth',loadMode='',loadStart=0,wantAuth=null,toastT=0;
+let RPT=false,CURG=0,WS=null,Q=[],HM={},OH={},desync=false,flashT=0,flashMsg='',retryT=0,AUTHED=false,myName='',FL={friends:[],inc:[],out:[]},invWait=null,invFrom=null,curScr='scrAuth',loadMode='',loadStart=0,wantAuth=null,toastT=0;
 const ls=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k);v===null?localStorage.removeItem(k):localStorage.setItem(k,v)}catch(_){}return null};
 const sendW=o=>{if(WS&&WS.readyState===1)WS.send(JSON.stringify(o))};
 function toast(t){const e=$('toast');e.textContent=t;e.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>e.hidden=true,2600)}
 function flash(t){flashMsg=t;flashT=Date.now()+1500;netUI()}
-function showScr(id){curScr=id;['scrAuth','scrMenu','scrFr','scrBt'].forEach(s=>$(s).hidden=s!==id);if(id==='scrFr'||id==='scrBt')renderFL();if(id==='scrMenu')$('mnName').textContent='سلام '+myName}
+function showScr(id){curScr=id;['scrAuth','scrMenu','scrFr','scrBt'].forEach(s=>$(s).hidden=s!==id);if(id==='scrFr'||id==='scrBt')renderFL();if(id==='scrMenu')mnTitle()}
+function mnTitle(){$('mnName').textContent='سلام '+myName+(FL.me?' · 🏆 '+FL.me.w+' برد':'')}
 function hideScr(){['scrAuth','scrMenu','scrFr','scrBt'].forEach(s=>$(s).hidden=true);curScr=''}
 /* --- نوار لودینگ پرشی (۱ تا ۱۰۰) و موزیک ورود --- */
 const LD_STEPS=[[0,1],[450,46],[950,64],[1600,96],[1950,97],[2350,99],[2800,100]];
@@ -2750,7 +2751,7 @@ function persp(on){if(on===swapped)return;swapped=on;NM.reverse();CL.reverse();T
 /* --- شروع/پایان نبرد --- */
 function startMatch(m){
   hideScr();$('invPop').hidden=true;invWait=null;
-  MATCH=true;ONLINE=true;OFFG=false;ME=m.me;oppName=m.opp;oppOn=true;LOBBY=true;abortInfo=null;desync=false;Q=[];HM={};OH={};
+  RPT=false;MATCH=true;ONLINE=true;OFFG=false;ME=m.me;oppName=m.opp;oppOn=true;LOBBY=true;abortInfo=null;desync=false;Q=[];HM={};OH={};
   persp(ME===1);$('nw').textContent='🏳 تسلیم';
   loadMode='match';loadStart=Date.now();showLoad()}
 function endMatchLocal(){MATCH=false;ONLINE=false;ME=2;LOBBY=true;Q=[];abortInfo=null;persp(false);$('nw').textContent='بازی جدید';$('nw2').textContent='بازی جدید';
@@ -2758,12 +2759,16 @@ function endMatchLocal(){MATCH=false;ONLINE=false;ME=2;LOBBY=true;Q=[];abortInfo
 function finishMatch(){sendW({t:'leave'});loadMode='out';showLoad();
   setTimeout(()=>{endMatchLocal();hideLoad();showScr(AUTHED?'scrMenu':'scrAuth')},3000)}
 function forfeitAsk(){if(!MATCH||over)return;if(confirm('مطمئنی تسلیم می‌شوی؟'))sendW({t:'forfeit'})}
+function reportResult(w){      // پایان بازی: نتیجه خودکار و مستقیم به سرور می‌رود (دست بازیکن نیست)
+  if(!MATCH||!ONLINE||RPT||abortInfo)return;RPT=true;
+  sendW({t:'result',g:CURG,r:w===ME?'win':w<0?'draw':'loss'})}
 function endText(){
   if(!MATCH){$('endt').textContent=msg.replace('🏆','').trim();$('nw2').textContent='بازی جدید';return}
   $('nw2').textContent='تایید پایان';
   if(abortInfo){const a=abortInfo,w=a.winner===ME;
     $('endt').textContent=a.reason==='forfeit'?(a.by===ME?'🏳 تسلیم شدی — '+oppName+' برنده شد':'🏆 '+oppName+' تسلیم شد — تو برنده شدی!'):(w?'🏆 '+oppName+' از بازی خارج شد — تو برنده شدی!':'💀 اتصالت مدتی قطع بود — '+oppName+' برنده شد');return}
   const lo=[0,1].find(o=>!U.some(u=>u.o===o&&!(u.k in SMN))),w=lo===undefined?-1:1-lo;
+  reportResult(w);
   $('endt').textContent=w===ME?'🏆 تو برنده شدی!':w<0?'بازی مساوی شد':'💀 '+oppName+' برنده شد'}
 
 /* --- اجرای دستورهای بازی --- */
@@ -2772,7 +2777,7 @@ function net(c){
   sendW({t:'cmd',c})}
 function apply(c){
   switch(c.a){
-   case 'init':RS=c.seed|0;tmSent=0;LOBBY=false;cfClose();init();break;
+   case 'init':RPT=false;RS=c.seed|0;tmSent=0;LOBBY=false;cfClose();init();break;
    case 'cell':handleCell0(c.x,c.y);break;
    case 'ab':abClick();break;
    case 'shop':shopSel(c.k);break;
@@ -2784,7 +2789,7 @@ function apply(c){
   }}
 function stHash(){const a=JSON.stringify([phase,P,T,E,MV,over,RS,U.map(u=>[u.k,u.o,u.c,u.r,u.hp|0,u.mv,u.act?1:0])]);let h=5381;for(let i=0;i<a.length;i++)h=(h*33^a.charCodeAt(i))|0;return h}
 setInterval(()=>{
-  while(Q.length&&!LOCK){const m=Q.shift();
+  while(Q.length&&!LOCK){const m=Q.shift();CURG=m.g;
     try{apply(m.c)}catch(e){console.error('apply',m,e)}
     if(MATCH&&U){const h=stHash(),k=m.g+':'+m.n;HM[k]=h;if(OH[k]!==undefined&&OH[k]!==h)desync=true;sendW({t:'h',g:m.g,n:m.n,h})}}
   if(loadMode==='match'&&!LOBBY&&Date.now()-loadStart>=3000){ldSet(100);hideLoad();entryMusic()}
@@ -2816,7 +2821,7 @@ function onMsg(m){
    case 'autherr':$('auMsg').textContent=m.msg;if(m.resume){ls('jt_tok',null)}if(!MATCH)showScr('scrAuth');break;
    case 'kicked':AUTHED=false;toast('با دستگاه دیگری وارد شدی');if(!MATCH)showScr('scrAuth');break;
    case 'toast':toast(m.msg);break;
-   case 'fl':FL=m;$('mnBadge').hidden=!m.inc.length;$('mnBadge').textContent=m.inc.length;if(curScr==='scrFr'||curScr==='scrBt')renderFL();break;
+   case 'fl':FL=m;if(curScr==='scrMenu')mnTitle();$('mnBadge').hidden=!m.inc.length;$('mnBadge').textContent=m.inc.length;if(curScr==='scrFr'||curScr==='scrBt')renderFL();break;
    case 'invin':invFrom=m.from;$('ipT').textContent=m.from+' تو را به نبرد دعوت کرد ⚔️';$('invPop').hidden=false;break;
    case 'invgone':$('invPop').hidden=true;invFrom=null;break;
    case 'invwait':invWait=m.to;if(curScr==='scrBt')renderFL();break;
@@ -2849,12 +2854,12 @@ function renderFL(){
     let h='';
     if(FL.inc.length)h+='<div class="sec">درخواست‌های دریافتی</div>'+FL.inc.map(n=>'<div class="fr"><b>'+nm(n)+'</b><span><button class="pr" data-a="facc" data-u="'+nm(n)+'">قبول</button><button data-a="fdec" data-u="'+nm(n)+'">رد</button></span></div>').join('');
     if(FL.out.length)h+='<div class="sec">در انتظار تایید</div>'+FL.out.map(n=>'<div class="fr dim"><span>'+nm(n)+'</span></div>').join('');
-    h+='<div class="sec">دوستان من</div>'+(FL.friends.length?FL.friends.map(f=>'<div class="fr"><span><i class="od'+(f.on?' on':'')+'"></i><b>'+nm(f.u)+'</b>'+(f.busy?'<small>در بازی</small>':'')+'</span><button data-a="frem" data-u="'+nm(f.u)+'">حذف</button></div>').join(''):'<div class="sec">هنوز دوستی نداری. نام کاربری یکی را بالا بنویس.</div>');
+    h+='<div class="sec">دوستان من</div>'+(FL.friends.length?FL.friends.map(f=>'<div class="fr"><span><i class="od'+(f.on?' on':'')+'"></i><b>'+nm(f.u)+'</b><small>🏆 '+(f.w|0)+'</small>'+(f.busy?'<small>در بازی</small>':'')+'</span><button data-a="frem" data-u="'+nm(f.u)+'">حذف</button></div>').join(''):'<div class="sec">هنوز دوستی نداری. نام کاربری یکی را بالا بنویس.</div>');
     $('frList').innerHTML=h}
   if(curScr==='scrBt'){
     if(invWait){$('btT').textContent='منتظر پاسخ '+invWait+'…';$('btList').innerHTML='<div class="fr dim">دعوت فرستاده شد؛ اگر آنلاین باشد و قبول کند بازی شروع می‌شود.</div><button data-a="invcancel">لغو دعوت</button>'}
     else{$('btT').textContent='با کی نبرد می‌زنی؟';
-      $('btList').innerHTML=FL.friends.length?FL.friends.map(f=>'<div class="fr"><span><i class="od'+(f.on?' on':'')+'"></i><b>'+nm(f.u)+'</b></span>'+(f.on&&!f.busy?'<button class="pr" data-a="inv" data-u="'+nm(f.u)+'">⚔️ دعوت</button>':'<small>'+(f.busy?'در بازی':'آفلاین')+'</small>')+'</div>').join(''):'<div class="sec">اول از بخش «دوستان» یک دوست اضافه کن.</div>'}}}
+      $('btList').innerHTML=FL.friends.length?FL.friends.map(f=>'<div class="fr"><span><i class="od'+(f.on?' on':'')+'"></i><b>'+nm(f.u)+'</b><small>🏆 '+(f.w|0)+'</small></span>'+(f.on&&!f.busy?'<button class="pr" data-a="inv" data-u="'+nm(f.u)+'">⚔️ دعوت</button>':'<small>'+(f.busy?'در بازی':'آفلاین')+'</small>')+'</div>').join(''):'<div class="sec">اول از بخش «دوستان» یک دوست اضافه کن.</div>'}}}
 ['frList','btList'].forEach(id=>$(id).onclick=e=>{const b=e.target.closest('button[data-a]');if(!b)return;const a=b.dataset.a,u=b.dataset.u;
   if(a==='invcancel'){sendW({t:'invcancel'});invWait=null;renderFL()}
   else if(a==='frem'){if(confirm(u+' از دوستانت حذف شود؟'))sendW({t:a,u})}
