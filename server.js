@@ -475,16 +475,19 @@ function newMatch(a, b, official = false) {   // official فقط برای مسا
   [a, b].forEach(k => { pushFL(k); pushFriendsOf(k); });
 }
 function push(mt, c) {
-  if (c.a === 'init') { mt.g++; mt.log = []; mt.res = [null, null]; mt.counted = false; clearTimeout(mt.resT); mt.resT = null; }
+  if (c.a === 'init') { mt.g++; mt.log = []; mt.res = [null, null]; mt.counted = false; clearTimeout(mt.resT); mt.resT = null; mt.t0 = Date.now();
+    // پایان زمان انتخاب/چیدن را خود سرور هم اعلام می‌کند (۱۶۰ ثانیه + ۳ ثانیه لودینگ + کمی مهلت)؛ اگر مرورگر بازیکنی بسته باشد هم بازی گیر نمی‌کند
+    clearTimeout(mt.draftT); const g0 = mt.g;
+    mt.draftT = setTimeout(() => { if (mt.ended || mt.g !== g0) return; push(mt, { a: 'to', o: 0 }); push(mt, { a: 'to', o: 1 }); }, 165500); }
   if (mt.log.length > 6000) return;
   mt.log.push(c);
-  const m = { t: 'cmd', g: mt.g, n: mt.log.length - 1, c };
+  const m = { t: 'cmd', g: mt.g, n: mt.log.length - 1, c, now: Date.now(), t0: c.a === 'init' ? mt.t0 : undefined };
   mt.p.forEach(k => sendU(k, m));
 }
 function resumeMatch(mt, k, ws) {
   const i = mt.p.indexOf(k); clearTimeout(mt.tmr[i]);
   send(ws, { t: 'match', me: i, opp: nameOf(mt.p[1 - i]) });
-  send(ws, { t: 'hello', g: mt.g, log: mt.log });
+  send(ws, { t: 'hello', g: mt.g, log: mt.log, t0: mt.t0, now: Date.now() });
   if (mt.abort) send(ws, mt.abort);
   send(ws, { t: 'opp', on: conns.has(mt.p[1 - i]) });
   sendU(mt.p[1 - i], { t: 'opp', on: true });
@@ -492,6 +495,7 @@ function resumeMatch(mt, k, ws) {
 function abort(mt, winner, by, reason) {
   if (mt.ended) return;
   mt.ended = true; mt.abort = { t: 'abort', winner, by, reason };
+  clearTimeout(mt.draftT);
   clearTimeout(mt.resT);
   mt.p.forEach(k => sendU(k, mt.abort));
   if (!mt.counted) record(mt, winner);          // تسلیم یا قطع اتصال را خود سرور می‌بیند

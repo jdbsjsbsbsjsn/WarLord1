@@ -343,7 +343,7 @@ function RL(){RS=RS+0x6D2B79F5|0;let t=Math.imul(RS^RS>>>15,1|RS);t=t+Math.imul(
 let ONLINE=false,ME=2,LOBBY=true,CONN=false,tmSent=0,MATCH=false,OFFG=false,oppName='',oppOn=true,abortInfo=null,swapped=false;
 const mine=()=>!ONLINE||(CONN&&!LOBBY&&ME===P);
 /* انتخاب و چیدن هم‌زمان (فقط آنلاین): برای هر بازیکن یک وضعیت جدا نگه می‌داریم و دستور هر کس روی وضعیت خودش اجرا می‌شود */
-var FIN=[false,false],DSV=null,DSW=false,BEGINQ=false;
+var FIN=[false,false],DSV=null,DSW=false,BEGINQ=false,GT0=0,SOFF=0;   /* GT0 = لحظهٔ شروع انتخاب به ساعت سرور، SOFF = اختلاف ساعت این دستگاه با سرور */
 const H={
 acro:{n:'شوالیه آکروبات',i:'🤸',hp:1750,d:390,r:1,m:3,c:2,o1:1},
 aka:{n:'آکاناها',i:'🥷',hp:1600,d:500,r:1,m:3,c:2,o1:1},
@@ -416,7 +416,7 @@ let drClosed=false;
 /* اگر هیچ‌کدام از کارت‌های پیشنهادی را نتوانی بخری ولی هیروی ارزان‌تری در چرخه مانده، یکی‌شان جایگزین می‌شود تا گیر نکنی */
 function fixOff(o){if(o.some(afford))return o;const c=[...DR.pool].filter(afford);if(!c.length)return o;o=o.slice();o[o.length-1]=rnd(c);return o}
 function finishPick(){phase='place';drClosed=false;DR.offer=[];if(!unp.includes(tray))tray=unp[0]||null}
-function startDraft(o){shopOpen=false;drClosed=false;P=o;phase='pick';tray=null;sel=null;unp=[];dl=Date.now()+160000;
+function startDraft(o){shopOpen=false;drClosed=false;P=o;phase='pick';tray=null;sel=null;unp=[];dl=(ONLINE&&GT0?GT0+SOFF+3000:Date.now())+160000;
  DR={picks:[],pool:new Set(Object.keys(H).filter(k=>!(k in SMN))),offer:[]};PK[o]=DR.picks;DR.offer=mkOffer();draw()}
 const dsSnap=()=>({P,phase,DR,unp,tray,sel,dl}),dsLoad=d=>{P=d.P;phase=d.phase;DR=d.DR;unp=d.unp;tray=d.tray;sel=d.sel;dl=d.dl};
 function startDraftBoth(){FIN=[false,false];DSV=[null,null];DSW=true;BEGINQ=false;
@@ -2901,7 +2901,7 @@ function persp(on){if(on===swapped)return;swapped=on;NM.reverse();CL.reverse();T
 /* --- شروع/پایان نبرد --- */
 function startMatch(m){
   MATCH=true;hideScr();$('invPop').hidden=true;invWait=null;
-  RPT=false;MATCH=true;ONLINE=true;OFFG=false;ME=m.me;oppName=m.opp;oppOn=true;LOBBY=true;abortInfo=null;desync=false;Q=[];HM={};OH={};
+  RPT=false;MATCH=true;ONLINE=true;OFFG=false;GT0=0;ME=m.me;oppName=m.opp;oppOn=true;LOBBY=true;abortInfo=null;desync=false;Q=[];HM={};OH={};
   persp(ME===1);$('nw').textContent='🏳 تسلیم';
   loadMode='match';loadStart=Date.now();showLoad()}
 function endMatchLocal(){MATCH=false;ONLINE=false;ME=2;LOBBY=true;Q=[];abortInfo=null;persp(false);$('nw').textContent='بازی جدید';$('nw2').textContent='بازی جدید';
@@ -2993,8 +2993,8 @@ function onMsg(m){
    case 'invwait':invWait=m.to;closeOv();if(curScr!=='scrBt')showScr('scrBt');else renderFL();break;
    case 'invend':invWait=null;if(m.why==='declined')toast(m.who+' دعوت را رد کرد');else if(m.why==='timeout')toast(m.who+' پاسخ نداد');else if(m.why==='offline')toast(m.who+' آفلاین شد');if(curScr==='scrBt')renderFL();break;
    case 'match':startMatch(m);break;
-   case 'hello':Q=m.log.map((c,n)=>({g:m.g,n,c}));HM={};OH={};desync=false;break;
-   case 'cmd':if(MATCH)Q.push({g:m.g,n:m.n,c:m.c});break;
+   case 'hello':if(m.t0){GT0=m.t0;SOFF=Date.now()-m.now}Q=m.log.map((c,n)=>({g:m.g,n,c}));HM={};OH={};desync=false;break;
+   case 'cmd':if(m.c&&m.c.a==='init'&&m.t0){GT0=m.t0;SOFF=Date.now()-m.now}if(MATCH)Q.push({g:m.g,n:m.n,c:m.c});break;
    case 'opp':oppOn=m.on;break;
    case 'h':{const k=m.g+':'+m.n;if(HM[k]!==undefined&&HM[k]!==m.h)desync=true;else OH[k]=m.h;break}
    case 'abort':if(MATCH&&!over){abortInfo=m;over=true;shopOpen=false;try{cfClose()}catch(_){}clearTimeout(autoT);autoT=0;draw()}break;
