@@ -223,12 +223,18 @@ button em{font-style:normal;font-size:11px;font-weight:500;opacity:.8}
 #clMsg{font-size:13px;color:var(--bad);min-height:18px}
 .clcard{display:flex;flex-direction:column;gap:6px;text-align:start}.clcard h3{margin:0;font-size:20px;color:var(--gold);text-align:center}
 #scrDev .box{color:var(--mut);font-size:18px;font-weight:700}
-#clChat{display:flex;flex-direction:column;gap:8px;text-align:start}
-#clLog{height:240px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;padding:8px;background:var(--panel2);border:1px solid var(--line);border-radius:12px}
+#scrClan .box.chatm{width:min(96vw,520px);height:100%;max-height:none;padding:10px;gap:0;overflow:hidden;text-align:start}
+#clNone{display:flex;flex-direction:column}
+#clIn{display:flex;flex-direction:column;gap:10px;flex:1;min-height:0}
+#clBar{flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:64px;padding:8px 12px;border-radius:14px;background:var(--panel2);border:1px solid var(--gold);color:var(--fg);font:inherit;cursor:pointer}
+#clBar b{font-size:19px;color:var(--gold);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#clBar small{font-size:12px;color:var(--good)}
+.ovl button.gold{border:1px solid var(--gold);color:var(--gold);background:transparent;font-weight:700}.ovl button.gold.arm{background:var(--gold);color:var(--ink)}
+.dotm{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--mut);margin-inline-end:6px}.dotm.on{background:var(--good)}
+#clLog{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:6px;padding:8px;background:var(--panel2);border:1px solid var(--line);border-radius:12px}
 .cmsg{max-width:85%;padding:6px 10px;border-radius:12px;background:var(--panel);border:1px solid var(--line);align-self:flex-start;word-break:break-word}
 .cmsg.me{align-self:flex-end;border-color:var(--gold)}
 .cmsg small{display:block;font-size:11px;color:var(--gold)}
-#clChatRow{display:flex;gap:8px}
+#clChatRow{flex:none;display:flex;gap:8px}
 .box #clText{text-align:start;font-size:15px;padding:9px}
 #clSend{flex:none;min-width:64px}
 @keyframes slL{from{transform:translateX(-40px);opacity:0}to{transform:none;opacity:1}}
@@ -263,8 +269,12 @@ button em{font-style:normal;font-size:11px;font-weight:500;opacity:.8}
 <div id="frList"></div><button id="frBack" type="button">بازگشت</button></div></div>
 <div class="scr" id="scrDev" hidden><div class="box"><h2>🚧</h2>در دست توسعه است</div></div>
 <div id="bn" hidden><button id="bnL" type="button">🛠<small>به‌زودی</small></button><button id="bnM" class="on" type="button">⚔️<small>بازی</small></button><button id="bnR" type="button">🛡<small>قبیله</small></button></div>
-<div class="scr" id="scrClan" hidden><div class="box"><h2>🛡 قبیله</h2><div id="clBody" style="display:flex;flex-direction:column;gap:12px"></div>
-<div id="clChat" hidden><div class="sec">💬 چت قبیله</div><div id="clLog"></div><div id="clChatRow"><input id="clText" placeholder="پیام…" maxlength="500" autocomplete="off"><button id="clSend" class="pr" type="button">ارسال</button></div></div></div></div>
+<div class="scr" id="scrClan" hidden><div class="box" id="clBox">
+<div id="clNone"><h2>🛡 قبیله</h2><div id="clBody" style="display:flex;flex-direction:column;gap:12px;margin-top:12px"></div></div>
+<div id="clIn" hidden><button id="clBar" type="button"><b id="clBarN"></b><small id="clBarOn"></small></button><div id="clLog"></div><div id="clChatRow"><input id="clText" placeholder="پیام…" maxlength="500" autocomplete="off"><button id="clSend" class="pr" type="button">ارسال</button></div></div>
+</div></div>
+<div class="ovl" id="ovCl" hidden><div class="box"><h2 id="clDN"></h2><div class="idl"><span class="cp" id="clTag"></span></div><div class="sec" id="clDM"></div><div class="sec" id="clDO"></div><div class="sec" id="clDC"></div><div id="clDL" style="display:flex;flex-direction:column;gap:6px"></div>
+<button id="clLeave" class="gold" type="button">🚪 ترک قبیله</button><button id="ovClClose" type="button">بستن</button></div></div>
 <div class="scr" id="scrClanNew" hidden><div class="box"><h2>ساخت قبیله</h2>
 <input id="clName" placeholder="نام قبیله" maxlength="20" autocomplete="off" spellcheck="false">
 <button class="cm on" data-m="open" type="button">🌍 باز<small>همه می‌توانند عضو شوند</small></button>
@@ -2834,7 +2844,7 @@ const ls=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k);v===null?lo
 const sendW=o=>{if(WS&&WS.readyState===1)WS.send(JSON.stringify(o))};
 function toast(t){const e=$('toast');e.textContent=t;e.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>e.hidden=true,2600)}
 function flash(t){flashMsg=t;flashT=Date.now()+1500;netUI()}
-function showScr(id){curScr=id;['scrAuth','scrMenu','scrFr','scrBt','scrPf','scrDev','scrClan','scrClanNew','scrClanJoin'].forEach(s=>$(s).hidden=s!==id);if(id==='scrFr'||id==='scrBt')renderFL();if(id==='scrClan')renderClan();if(id==='scrMenu')mnTitle();barUI()}
+function showScr(id){curScr=id;['scrAuth','scrMenu','scrFr','scrBt','scrPf','scrDev','scrClan','scrClanNew','scrClanJoin'].forEach(s=>$(s).hidden=s!==id);if(id==='scrFr'||id==='scrBt')renderFL();if(id==='scrClan')renderClan(true);if(id==='scrMenu')mnTitle();barUI()}
 function mnTitle(){$('mnName').textContent='سلام '+myName+(FL.me?' · 🏆 '+FL.me.w+' برد':'')}
 function hideScr(){['scrAuth','scrMenu','scrFr','scrBt','scrPf','scrDev','scrClan','scrClanNew','scrClanJoin'].forEach(s=>$(s).hidden=true);curScr='';barUI()}
 /* --- نوار لودینگ پرشی (۱ تا ۱۰۰) و موزیک ورود --- */
@@ -2942,10 +2952,10 @@ function onMsg(m){
    case 'kicked':AUTHED=false;barUI();toast('با دستگاه دیگری وارد شدی');if(!MATCH)showScr('scrAuth');break;
    case 'toast':toast(m.msg);break;
    case 'pwok':['pwOld','pwNew','pwNew2'].forEach(i=>$(i).value='');toast('رمز حساب تغییر کرد');break;
-   case 'clan':CLAN=m.clan||null;if(curScr==='scrClan')renderClan();if(curScr==='scrClanJoin'&&CLAN)showScr('scrClan');break;
+   case 'clan':CLAN=m.clan||null;if(!CLAN)CLCHAT=[];if(curScr==='scrClan')renderClan();if(curScr==='scrClanJoin'&&CLAN)showScr('scrClan');break;
    case 'clmade':showScr('scrClan');break;
-   case 'clchat':CLCHAT=m.msgs||[];renderChat();break;
-   case 'clmsg':CLCHAT.push(m.m);if(CLCHAT.length>50)CLCHAT.shift();renderChat();break;
+   case 'clchat':CLCHAT=m.msgs||[];renderChat(true);break;
+   case 'clmsg':CLCHAT.push(m.m);if(CLCHAT.length>50)CLCHAT.shift();renderChat(m.m.u===myName);break;
    case 'cls':renderClJoin(m.list||[]);break;
    case 'mail':MAIL=m.mail||[];barUI();if(!$('ovMail').hidden)renderMail();break;
    case 'pf':if(m.p&&curScr==='scrPf'&&PF&&PF.name===m.p.name)showPf(m.p);break;
@@ -3005,7 +3015,7 @@ function renderFL(){
 /* --- نوار بالا: لیست دوستان، نام حساب، منوی کشویی (نامه‌ها) --- */
 let MAIL=[],selFr='',openMail='',CLAN=null,clMode='open',CLCHAT=[];
 const TB_SCR=['scrMenu','scrFr','scrBt','scrPf','scrDev','scrClan','scrClanNew','scrClanJoin'];
-function closeOv(){$('ovSet').hidden=true;$('ovFr').hidden=true;$('ovMail').hidden=true;$('tbDrop').hidden=true;selFr='';openMail=''}
+function closeOv(){$('ovCl').hidden=true;$('ovSet').hidden=true;$('ovFr').hidden=true;$('ovMail').hidden=true;$('tbDrop').hidden=true;selFr='';openMail=''}
 function barUI(){
   const show=AUTHED&&!MATCH&&!OFFG&&TB_SCR.includes(curScr);
   $('tb').hidden=!show;if(!show)closeOv();
@@ -3053,7 +3063,7 @@ document.addEventListener('touchstart',e=>{const t=e.touches[0];
   sw=(e.touches.length===1&&PAGES.includes(curScr)&&!e.target.closest('input,textarea,.ovl'))?{x:t.clientX,y:t.clientY}:null},{passive:true});
 document.addEventListener('touchend',e=>{if(!sw)return;const t=e.changedTouches[0],dx=t.clientX-sw.x,dy=t.clientY-sw.y;sw=null;
   if(Math.abs(dx)<60||Math.abs(dx)<Math.abs(dy)*1.5)return;
-  if(!$('ovFr').hidden||!$('ovMail').hidden||!$('ovSet').hidden)return;
+  if(!$('ovFr').hidden||!$('ovMail').hidden||!$('ovSet').hidden||!$('ovCl').hidden)return;
   const i=PAGES.indexOf(curScr),n=PAGES[dx>0?i-1:i+1];if(n)goPage(n)},{passive:true});
 document.addEventListener('touchcancel',()=>{sw=null},{passive:true});
 
@@ -3119,19 +3129,33 @@ $('ovMailList').onclick=e=>{
 
 /* --- قبیله --- */
 const CL_MODE={open:'🌍 باز · همه می‌توانند عضو شوند',closed:'🔒 بسته · کسی نمی‌تواند عضو شود',invite:'✉️ با دعوت · فقط با دعوت سازنده'};
-function renderClan(){
-  $('clBody').innerHTML=CLAN?'<div class="clcard"><h3>'+esc(CLAN.name)+'</h3><div class="idl"><span class="cp" id="clTag">#'+esc(CLAN.tag||'')+'</span></div><div class="sec">'+CL_MODE[CLAN.mode]+'</div><div class="sec">👑 سازنده: '+esc(CLAN.owner)+'</div>'
-    +'<div class="sec">اعضا ('+CLAN.members.length+')</div>'+CLAN.members.map(n=>'<div class="fr"><b>'+esc(n)+'</b></div>').join('')+'</div>'
-   :'<button class="big pr" data-a="new" type="button">🛡 ساخت قبیله</button><button class="big blk" data-a="join" type="button">عضو شدن در یک قبیله</button>';
-  $('clChat').hidden=!CLAN;if(CLAN)renderChat()}
-function renderChat(){
+function renderClan(force){
+  const has=!!CLAN;$('clNone').hidden=has;$('clIn').hidden=!has;$('clBox').classList.toggle('chatm',has);
+  if(!has){$('clBody').innerHTML='<button class="big pr" data-a="new" type="button">🛡 ساخت قبیله</button><button class="big blk" data-a="join" type="button">عضو شدن در یک قبیله</button>';$('ovCl').hidden=true;return}
+  $('clBarN').textContent='🛡 '+CLAN.name;$('clBarOn').textContent='🟢 '+(CLAN.on|0)+' نفر آنلاین';
+  renderChat(force);if(!$('ovCl').hidden)renderClDet()}
+function renderClDet(){
+  $('clDN').textContent=CLAN.name;$('clTag').textContent='#'+(CLAN.tag||'');$('clDM').textContent=CL_MODE[CLAN.mode]||'';$('clDO').textContent='👑 سازنده: '+CLAN.owner;
+  $('clDC').textContent='اعضا ('+CLAN.members.length+') · '+(CLAN.on|0)+' آنلاین';
+  $('clDL').innerHTML=CLAN.members.map(x=>'<div class="fr"><b><i class="dotm'+(x.on?' on':'')+'"></i>'+esc(x.u)+'</b></div>').join('')}
+let leaveT=0;
+function leaveReset(){clearTimeout(leaveT);$('clLeave').classList.remove('arm');$('clLeave').textContent='🚪 ترک قبیله'}
+$('clBar').onclick=()=>{if(!CLAN)return;closeOv();renderClDet();leaveReset();$('ovCl').hidden=false};
+$('ovClClose').onclick=()=>{$('ovCl').hidden=true;leaveReset()};
+$('ovCl').addEventListener('click',e=>{if(e.target===$('ovCl')){$('ovCl').hidden=true;leaveReset()}});
+$('clTag').onclick=e=>copyTxt(e.target.textContent,'تگ قبیله کپی شد');
+$('clLeave').onclick=()=>{const b=$('clLeave');
+  if(!b.classList.contains('arm')){b.classList.add('arm');b.textContent='⚠️ مطمئنی؟ دوباره بزن';leaveT=setTimeout(leaveReset,4000);return}
+  leaveReset();$('ovCl').hidden=true;sendW({t:'clleave'})};
+function renderChat(force){
   const box=$('clLog');if(!box)return;
+  const near=box.scrollHeight-box.scrollTop-box.clientHeight<80;
   box.innerHTML=CLCHAT.length?CLCHAT.map(x=>'<div class="cmsg'+(x.u===myName?' me':'')+'"><small>'+esc(x.u)+'</small>'+esc(x.tx)+'</div>').join(''):'<div class="sec">هنوز پیامی نیست؛ اولین نفر باش!</div>';
-  box.scrollTop=box.scrollHeight}
+  if(force||near)box.scrollTop=box.scrollHeight}
 function sendChat(){const tx=$('clText').value.trim();if(!tx)return;sendW({t:'clsay',tx});$('clText').value=''}
 $('clSend').onclick=sendChat;
 $('clText').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();sendChat()}};
-$('clBody').onclick=e=>{if(e.target.id==='clTag'){copyTxt(e.target.textContent,'تگ قبیله کپی شد');return}const b=e.target.closest('button[data-a]');if(!b)return;
+$('clBody').onclick=e=>{const b=e.target.closest('button[data-a]');if(!b)return;
   if(b.dataset.a==='new'){$('clName').value='';$('clMsg').textContent='';clMode='open';clModeUI();showScr('scrClanNew')}
   else{$('clJoinList').innerHTML='<div class="sec">در حال بارگذاری…</div>';showScr('scrClanJoin');sendW({t:'cllist'})}};
 function clModeUI(){document.querySelectorAll('#scrClanNew .cm').forEach(b=>b.classList.toggle('on',b.dataset.m===clMode))}

@@ -180,12 +180,12 @@ function login(ws, k, tok) {
   if (old && old !== ws) { old.u = null; send(old, { t: 'kicked' }); old.close(4001); }
   ws.u = k; ws.tok = tok; conns.set(k, ws);
   send(ws, { t: 'authok', u: nameOf(k), tok, tag: db.users[k].tag, id: db.users[k].id || '' });
-  pushFL(k); pushFriendsOf(k); pushMail(k); pushClan(k);
+  pushFL(k); pushFriendsOf(k); pushMail(k); pushClan(k); pushClanLive(k);
   const mt = inMatch.get(k); if (mt) resumeMatch(mt, k, ws);
 }
 function leaveSession(ws) {                  // خروج یا قطع اتصال
   const k = ws.u; if (!k || conns.get(k) !== ws) return;
-  conns.delete(k); ws.u = null;
+  conns.delete(k); ws.u = null; pushClanLive(k);
   if (invOut.has(k)) endInv(invOut.get(k), 'cancel');
   if (invIn.has(k)) endInv(invIn.get(k), 'offline');
   const mt = inMatch.get(k);
@@ -283,16 +283,22 @@ const CMODES = new Set(['open', 'closed', 'invite']);
 const clanChat = new Map();   // کلید قبیله -> آخرین پیام‌های چت (در حافظه؛ با ری‌استارت سرور پاک می‌شود)
 const CHATMAX = 50;
 const myClan = u => (u && u.clan && db.clans[u.clan]) || null;
-const clanInfo = (c, k) => ({ name: c.name, tag: c.tag, mode: c.mode, owner: nameOf(c.owner), mine: c.owner === k, members: c.members.map(nameOf) });
-function pushClan(k) {
+const clanInfo = (c, k) => ({ name: c.name, tag: c.tag, mode: c.mode, owner: nameOf(c.owner), mine: c.owner === k,
+  on: c.members.filter(m => conns.has(m)).length, members: c.members.map(m => ({ u: nameOf(m), on: conns.has(m) })) });
+function pushClanInfo(k) {                      // فقط مشخصات قبیله (برای به‌روز شدن تعداد آنلاین‌ها)
   const u = db.users[k]; if (!u || !conns.has(k)) return;
   const c = myClan(u); sendU(k, { t: 'clan', clan: c ? clanInfo(c, k) : null });
-  if (c) sendU(k, { t: 'clchat', msgs: clanChat.get(u.clan) || [] });
 }
+function pushClan(k) {
+  const u = db.users[k]; if (!u || !conns.has(k)) return;
+  pushClanInfo(k);
+  if (myClan(u)) sendU(k, { t: 'clchat', msgs: clanChat.get(u.clan) || [] });
+}
+const pushClanLive = k => { const c = myClan(db.users[k]); if (c) c.members.forEach(pushClanInfo); };   // ورود/خروج یک عضو
 function joinClan(k, ck) {
   const c = db.clans[ck], u = db.users[k]; if (!c || !u) return;
   c.members.push(k); u.clan = ck; save();
-  c.members.forEach(pushClan);
+  c.members.forEach(m => m === k ? pushClan(m) : pushClanInfo(m));
   if (c.owner !== k) sendMail(c.owner, { from: 'جنگ‌سالار', title: 'عضو جدید قبیله', text: u.name + ' به قبیلهٔ «' + c.name + '» پیوست.' });
 }
 function clans(ws, m) {
@@ -328,6 +334,19 @@ function clans(ws, m) {
     if ((T.mail || []).some(x => x.type === 'cinv' && key(x.clan) === key(c.name))) return toast(ws, 'قبلاً دعوت شده');
     sendMail(t, { type: 'cinv', from: U.name, clan: c.name, title: 'دعوت به قبیله', text: U.name + ' تو را به قبیلهٔ «' + c.name + '» دعوت کرده است.' });
     toast(ws, 'دعوت برای ' + nameOf(t) + ' فرستاده شد');
+  } else if (m.t === 'clleave') {
+    const c = myClan(U); if (!c) return;
+    const ck = U.clan;
+    drop(c.members, me); delete U.clan;
+    if (!c.members.length) { delete db.clans[ck]; clanTags.delete(c.tag); clanChat.delete(ck); }   // قبیلهٔ خالی حذف می‌شود
+    else {
+      if (c.owner === me) {                       // اگر سازنده برود، قدیمی‌ترین عضو سازنده می‌شود
+        c.owner = c.members[0];
+        sendMail(c.owner, { from: 'جنگ‌سالار', title: 'سازندهٔ قبیله', text: 'سازندهٔ قبیله رفت و تو حالا سازندهٔ قبیلهٔ «' + c.name + '» هستی.' });
+      }
+      c.members.forEach(pushClanInfo);
+    }
+    save(); pushClan(me); toast(ws, 'قبیله را ترک کردی');
   } else if (m.t === 'clsay') {
     const c = myClan(U); if (!c) return;
     const tx = String(m.tx || '').replace(/\s+/g, ' ').trim().slice(0, 500);
@@ -483,7 +502,7 @@ wss.on('connection', ws => {
       case 'setcol': return setCol(ws, m);
       case 'chpw': return chPw(ws, m);
       case 'pfget': { const k = resolveUser(m.u); if (k) send(ws, { t: 'pf', p: profileOf(me, k) }); return; }
-      case 'clcreate': case 'cllist': case 'cljoin': case 'clinv': case 'clacc': case 'cldec': case 'clsay': return clans(ws, m);
+      case 'clcreate': case 'cllist': case 'cljoin': case 'clinv': case 'clacc': case 'cldec': case 'clsay': case 'clleave': return clans(ws, m);
       case 'inv': return invite(ws, m);
       case 'invcancel': { const v = invOut.get(me); if (v) endInv(v, 'cancel'); return; }
       case 'invdec': { const v = invIn.get(me); if (v && v.from === key(m.u)) endInv(v, 'declined'); return; }
