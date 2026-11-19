@@ -2875,7 +2875,12 @@ function showScr(id){curScr=id;['scrAuth','scrMenu','scrFr','scrBt','scrPf','scr
 function mnTitle(){}
 function hideScr(){['scrAuth','scrMenu','scrFr','scrBt','scrPf','scrDev','scrClan','scrClanNew','scrClanJoin'].forEach(s=>$(s).hidden=true);curScr='';barUI()}
 /* --- نوار لودینگ پرشی (۱ تا ۱۰۰) و موزیک ورود --- */
-const LD_STEPS=[[0,1],[450,46],[950,64],[1600,96],[1950,97],[2350,99],[2800,100]];
+let LD_STEPS=[[0,1],[2000,97],[2300,98],[2550,99],[2800,100]];
+/* هر بار الگوی تصادفی: چند عدد شانسی، بعد همیشه ۹۷ و ۹۸ و ۹۹ و ۱۰۰ */
+function ldGen(){const k=4+(Math.random()*3|0),set=new Set();while(set.size<k)set.add(3+(Math.random()*92|0));
+  const v=[...set].sort((a,b)=>a-b),st=[[0,1]];
+  v.forEach((n,i)=>st.push([Math.round(200+(i+Math.random()*.6)*(1700/k)),n]));
+  st.push([2000,97],[2300,98],[2550,99],[2800,100]);LD_STEPS=st}
 function ldSet(p){$('ldBar').firstElementChild.style.width=p+'%';$('ldPct').textContent=p+'%'}
 setInterval(()=>{if($('scrLoad').hidden)return;const t=Date.now()-loadStart;let p=1;
   for(const s of LD_STEPS)if(t>=s[0])p=s[1];
@@ -2895,7 +2900,7 @@ function synthEntry(){try{
   nz(1.6,'highpass',6000,3000,1,.45,2.85);
 }catch(e){}}
 function showLoad(){const im=$('ldImg');im.style.display='';im.src='loading.jpg';im.onerror=()=>{const n=im.dataset.n|0;if(n===0){im.dataset.n=1;im.src='loading.png'}else if(n===1){im.dataset.n=2;im.src='loading.webp'}else{im.style.display='none'}};
-  loadStart=Date.now();ldSet(1);$('scrLoad').hidden=false}
+  ldGen();loadStart=Date.now();ldSet(1);$('scrLoad').hidden=false}
 function hideLoad(){$('scrLoad').hidden=true;loadMode=''}
 
 /* --- نمای بازیکن: خودم همیشه قرمز و پایین صفحه، حریف آبی --- */
@@ -3188,9 +3193,13 @@ function botPlay(){
   if(BOTLV==='easy'){try{botPlayEasy()}catch(e){console.error(e);try{endTurn(false)}catch(_){}}return}
   if(BOTLV==='mid'){try{botPlayLite()}catch(e){console.error(e);try{endTurn(false)}catch(_){}}return}
   try{botPlayV2()}catch(e){console.error('bot v2',e);botErr++;spl=null;if(botErr>2||true)botPlayLite()}}
+let botNext=0;
 setInterval(()=>{
-  if(!BOTG||!OFFG||NOGAME||!U||over||LOCK||P!==1)return;
-  try{if(phase==='pick'){botDraft();draw()}else if(phase==='place'){botPlace()}else if(phase==='play')botPlay()}catch(e){console.error('bot',e);if(phase==='play'&&P===1&&!over)try{endTurn(false)}catch(_){}}
+  if(!BOTG||!OFFG||NOGAME||!U||over)return;
+  if(P!==1){botNext=Date.now()+1500;return}
+  if(phase==='play'){if(LOCK){botNext=Date.now()+2000;return}if(Date.now()<botNext)return}
+  else if(LOCK)return;
+  try{if(phase==='pick'){botDraft();draw()}else if(phase==='place'){botPlace()}else if(phase==='play'){botPlay();botNext=Date.now()+2000}}catch(e){console.error('bot',e);if(phase==='play'&&P===1&&!over)try{endTurn(false)}catch(_){}}
 },500);
 function offline(){if(!$('scrLoad').hidden)return;loadMode='in';showLoad();setTimeout(()=>{hideLoad();OFFG=true;hideScr();ONLINE=false;MATCH=false;LOBBY=false;net({a:'init'})},3000)}
 $('auOff').onclick=()=>{BOTG=false;offline()};
