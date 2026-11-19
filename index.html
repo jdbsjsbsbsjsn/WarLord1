@@ -165,6 +165,35 @@ button em{font-style:normal;font-size:11px;font-weight:500;opacity:.8}
 #invPop[hidden]{display:none}
 #toast{position:fixed;z-index:90;bottom:max(24px,env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:#000c;color:#fff;border:1px solid var(--line);border-radius:12px;padding:8px 14px;font-size:13px;max-width:90vw;text-align:center;pointer-events:none}
 #toast[hidden]{display:none}
+#tb{position:fixed;z-index:65;top:calc(env(safe-area-inset-top,0px) + 8px);left:8px;right:8px;display:flex;align-items:center;gap:8px;direction:ltr;max-width:544px;margin:0 auto}
+#tb[hidden]{display:none}
+#tb .tbq{position:relative;flex:none;width:48px;min-height:48px;height:48px;padding:0;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--fg);font-size:22px;line-height:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;cursor:pointer}
+#tb .tbq small{font-size:9px;font-weight:700;direction:rtl}
+#tb .tbq .badge{position:absolute;top:-6px;right:-6px;margin:0;padding:0 6px;font-size:11px}
+#tbName{flex:1;min-width:0;height:48px;min-height:48px;padding:0 14px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--gold);font:inherit;font-size:16px;font-weight:700;direction:rtl;text-align:start;display:flex;align-items:center;cursor:pointer;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+#tbDrop{position:absolute;top:54px;right:0;min-width:170px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:6px;box-shadow:0 8px 24px rgba(0,0,0,.55);direction:rtl}
+#tbDrop[hidden]{display:none}
+#tbDrop button{width:100%;min-height:44px;flex-direction:row;justify-content:flex-start;gap:8px;font-size:15px;background:transparent;border:0;color:var(--fg)}
+.ovl{position:fixed;inset:0;z-index:68;background:rgba(0,0,0,.55);display:flex;align-items:flex-start;justify-content:center;padding:calc(env(safe-area-inset-top,0px) + 70px) 12px 16px;overflow-y:auto}
+.ovl[hidden]{display:none}
+.ovl .box{width:min(94vw,400px);max-height:calc(100vh - 100px);text-align:center}
+.ovl button,.pfbox button{font:inherit;font-size:14px;min-height:40px;padding:0 12px;border-radius:12px;border:1px solid var(--line);background:var(--panel2);color:var(--fg);cursor:pointer}
+.ovl button.pr{background:var(--gold);color:var(--ink);border-color:var(--gold);font-weight:700}
+.ovl .row input{font:inherit;font-size:15px;padding:9px;border-radius:10px;border:1px solid var(--line);background:var(--panel2);color:var(--fg);text-align:center;min-width:0;width:100%}
+.fr.tap{cursor:pointer}.fr.sel{border-color:var(--gold)}
+.fopt{display:flex;flex-direction:column;gap:6px;margin:-2px 0 4px;padding:8px;background:var(--panel2);border:1px solid var(--gold);border-radius:12px}
+.fopt button.dg{color:var(--bad)}
+.ml{display:flex;flex-direction:column;gap:6px;background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:8px 10px;text-align:start}
+.ml.un{border-color:var(--gold)}
+.ml .mh{display:flex;justify-content:space-between;align-items:center;gap:8px;cursor:pointer}
+.ml .mh b{font-size:14px}.ml.un .mh b::before{content:'● ';color:var(--gold)}
+.ml small{color:var(--mut);font-size:11px}
+.ml .mb{display:flex;flex-direction:column;gap:8px;font-size:13px;line-height:1.7}
+.ml .mb .row button{min-height:36px}
+.pfstat{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.pfstat div{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:8px 4px;font-size:12px;color:var(--mut)}
+.pfstat b{display:block;font-size:20px;color:var(--fg)}
+#scrMenu,#scrFr,#scrBt,#scrPf{padding-top:calc(env(safe-area-inset-top,0px) + 72px)}
 #scrLoad{z-index:75;padding:0;background:#000}
 #ldImg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 #ldBox{position:relative;margin-top:auto;margin-bottom:max(40px,env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;align-items:center;gap:10px;color:#fff;text-shadow:0 1px 6px #000}
@@ -187,6 +216,21 @@ button em{font-style:normal;font-size:11px;font-weight:500;opacity:.8}
 <div id="frList"></div><button id="frBack" type="button">بازگشت</button></div></div>
 <div class="scr" id="scrBt" hidden><div class="box"><h2 id="btT">با کی نبرد می‌زنی؟</h2>
 <div id="btList"></div><div id="btMsg"></div><button id="btBack" type="button">بازگشت</button></div></div>
+<div id="tb" hidden>
+<button id="tbFr" class="tbq" type="button" aria-label="لیست دوستان">👥<small>دوستان</small></button>
+<button id="tbName" type="button"></button>
+<button id="tbMn" class="tbq" type="button" aria-label="منو">☰<span id="tbMnB" class="badge" hidden></span></button>
+<div id="tbDrop" hidden><button id="tbMail" type="button">✉️ نامه‌ها<span id="tbMailB" class="badge" hidden></span></button></div>
+</div>
+<div class="ovl" id="ovFr" hidden><div class="box"><h2>لیست دوستان</h2>
+<div class="row"><input id="ovFrU" placeholder="افزودن دوست (نام کاربری)" maxlength="16" autocapitalize="off" spellcheck="false"><button id="ovFrAdd" class="pr" type="button" style="flex:none">افزودن</button></div>
+<div id="ovFrList"></div><button id="ovFrClose" type="button">بستن</button></div></div>
+<div class="ovl" id="ovMail" hidden><div class="box"><h2>نامه‌ها</h2>
+<div id="ovMailList"></div><button id="ovMailClose" type="button">بستن</button></div></div>
+<div class="scr" id="scrPf" hidden><div class="box pfbox"><h2 id="pfName"></h2><div id="pfSub" style="color:var(--mut);font-size:13px"></div>
+<div class="pfstat"><div><b id="pfW">-</b>برد</div><div><b id="pfL">-</b>باخت</div><div><b id="pfD">-</b>مساوی</div></div>
+<div style="color:var(--mut);font-size:13px">اطلاعات بیشتر پروفایل به‌زودی اضافه می‌شود.</div>
+<button id="pfBack" type="button">بازگشت</button></div></div>
 <div id="invPop" hidden><b id="ipT"></b><div class="row"><button id="ipYes" class="pr" type="button">قبول</button><button id="ipNo" type="button">رد</button></div></div>
 <div class="scr" id="scrLoad" hidden><img id="ldImg" alt="" src="loading.jpg"><div id="ldBox"><b>در حال بارگذاری…</b><div id="ldBar"><i></i></div><b id="ldPct">1%</b></div></div>
 <div id="toast" hidden></div>
@@ -2714,9 +2758,9 @@ const ls=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k);v===null?lo
 const sendW=o=>{if(WS&&WS.readyState===1)WS.send(JSON.stringify(o))};
 function toast(t){const e=$('toast');e.textContent=t;e.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>e.hidden=true,2600)}
 function flash(t){flashMsg=t;flashT=Date.now()+1500;netUI()}
-function showScr(id){curScr=id;['scrAuth','scrMenu','scrFr','scrBt'].forEach(s=>$(s).hidden=s!==id);if(id==='scrFr'||id==='scrBt')renderFL();if(id==='scrMenu')mnTitle()}
+function showScr(id){curScr=id;['scrAuth','scrMenu','scrFr','scrBt','scrPf'].forEach(s=>$(s).hidden=s!==id);if(id==='scrFr'||id==='scrBt')renderFL();if(id==='scrMenu')mnTitle();barUI()}
 function mnTitle(){$('mnName').textContent='سلام '+myName+(FL.me?' · 🏆 '+FL.me.w+' برد':'')}
-function hideScr(){['scrAuth','scrMenu','scrFr','scrBt'].forEach(s=>$(s).hidden=true);curScr=''}
+function hideScr(){['scrAuth','scrMenu','scrFr','scrBt','scrPf'].forEach(s=>$(s).hidden=true);curScr='';barUI()}
 /* --- نوار لودینگ پرشی (۱ تا ۱۰۰) و موزیک ورود --- */
 const LD_STEPS=[[0,1],[450,46],[950,64],[1600,96],[1950,97],[2350,99],[2800,100]];
 function ldSet(p){$('ldBar').firstElementChild.style.width=p+'%';$('ldPct').textContent=p+'%'}
@@ -2750,7 +2794,7 @@ function persp(on){if(on===swapped)return;swapped=on;NM.reverse();CL.reverse();T
 
 /* --- شروع/پایان نبرد --- */
 function startMatch(m){
-  hideScr();$('invPop').hidden=true;invWait=null;
+  MATCH=true;hideScr();$('invPop').hidden=true;invWait=null;
   RPT=false;MATCH=true;ONLINE=true;OFFG=false;ME=m.me;oppName=m.opp;oppOn=true;LOBBY=true;abortInfo=null;desync=false;Q=[];HM={};OH={};
   persp(ME===1);$('nw').textContent='🏳 تسلیم';
   loadMode='match';loadStart=Date.now();showLoad()}
@@ -2819,12 +2863,13 @@ function onMsg(m){
   switch(m.t){
    case 'authok':AUTHED=true;myName=m.u;ls('jt_u',m.u);ls('jt_tok',m.tok);$('auP').value='';$('auMsg').textContent='';if(!MATCH&&!OFFG&&!(loadMode))showScr('scrMenu');break;
    case 'autherr':$('auMsg').textContent=m.msg;if(m.resume){ls('jt_tok',null)}if(!MATCH)showScr('scrAuth');break;
-   case 'kicked':AUTHED=false;toast('با دستگاه دیگری وارد شدی');if(!MATCH)showScr('scrAuth');break;
+   case 'kicked':AUTHED=false;barUI();toast('با دستگاه دیگری وارد شدی');if(!MATCH)showScr('scrAuth');break;
    case 'toast':toast(m.msg);break;
-   case 'fl':FL=m;if(curScr==='scrMenu')mnTitle();$('mnBadge').hidden=!m.inc.length;$('mnBadge').textContent=m.inc.length;if(curScr==='scrFr'||curScr==='scrBt')renderFL();break;
+   case 'mail':MAIL=m.mail||[];barUI();if(!$('ovMail').hidden)renderMail();break;
+   case 'fl':FL=m;barUI();if(!$('ovFr').hidden)renderTbFr();if(curScr==='scrMenu')mnTitle();$('mnBadge').hidden=!m.inc.length;$('mnBadge').textContent=m.inc.length;if(curScr==='scrFr'||curScr==='scrBt')renderFL();break;
    case 'invin':invFrom=m.from;$('ipT').textContent=m.from+' تو را به نبرد دعوت کرد ⚔️';$('invPop').hidden=false;break;
    case 'invgone':$('invPop').hidden=true;invFrom=null;break;
-   case 'invwait':invWait=m.to;if(curScr==='scrBt')renderFL();break;
+   case 'invwait':invWait=m.to;closeOv();if(curScr!=='scrBt')showScr('scrBt');else renderFL();break;
    case 'invend':invWait=null;if(m.why==='declined')toast(m.who+' دعوت را رد کرد');else if(m.why==='timeout')toast(m.who+' پاسخ نداد');else if(m.why==='offline')toast(m.who+' آفلاین شد');if(curScr==='scrBt')renderFL();break;
    case 'match':startMatch(m);break;
    case 'hello':Q=m.log.map((c,n)=>({g:m.g,n,c}));HM={};OH={};desync=false;break;
@@ -2839,12 +2884,12 @@ function auth(mode){const u=$('auU').value.trim(),p=$('auP').value;if(!u||!p){$(
   $('auMsg').textContent='';const o={t:'auth',mode,u,p};if(WS&&WS.readyState===1)sendW(o);else{wantAuth=o;$('auMsg').textContent='در حال اتصال به سرور…'}}
 $('auLogin').onclick=()=>auth('login');$('auReg').onclick=()=>auth('register');
 $('auP').onkeydown=e=>{if(e.key==='Enter')auth('login')};
-function offline(){hideScr();ONLINE=false;MATCH=false;OFFG=true;LOBBY=false;net({a:'init'})}
+function offline(){OFFG=true;hideScr();ONLINE=false;MATCH=false;LOBBY=false;net({a:'init'})}
 $('auOff').onclick=offline;$('mnOff').onclick=offline;
 $('mnBattle').onclick=()=>showScr('scrBt');$('mnFriends').onclick=()=>showScr('scrFr');
 $('frBack').onclick=()=>showScr('scrMenu');
 $('btBack').onclick=()=>{if(invWait)sendW({t:'invcancel'});showScr('scrMenu')};
-$('mnOut').onclick=()=>{sendW({t:'logout'});ls('jt_tok',null);AUTHED=false;myName='';FL={friends:[],inc:[],out:[]};showScr('scrAuth')};
+$('mnOut').onclick=()=>{sendW({t:'logout'});ls('jt_tok',null);AUTHED=false;myName='';MAIL=[];FL={friends:[],inc:[],out:[]};showScr('scrAuth')};
 $('frAdd').onclick=()=>{const u=$('frU').value.trim();if(!u)return;sendW({t:'fadd',u});$('frU').value=''};
 $('ipYes').onclick=()=>{if(invFrom)sendW({t:'invacc',u:invFrom});$('invPop').hidden=true};
 $('ipNo').onclick=()=>{if(invFrom)sendW({t:'invdec',u:invFrom});$('invPop').hidden=true;invFrom=null};
@@ -2864,6 +2909,61 @@ function renderFL(){
   if(a==='invcancel'){sendW({t:'invcancel'});invWait=null;renderFL()}
   else if(a==='frem'){if(confirm(u+' از دوستانت حذف شود؟'))sendW({t:a,u})}
   else sendW({t:a,u})});
+
+/* --- نوار بالا: لیست دوستان، نام حساب، منوی کشویی (نامه‌ها) --- */
+let MAIL=[],selFr='',openMail='';
+const TB_SCR=['scrMenu','scrFr','scrBt','scrPf'];
+function closeOv(){$('ovFr').hidden=true;$('ovMail').hidden=true;$('tbDrop').hidden=true;selFr='';openMail=''}
+function barUI(){
+  const show=AUTHED&&!MATCH&&!OFFG&&TB_SCR.includes(curScr);
+  $('tb').hidden=!show;if(!show)closeOv();
+  $('tbName').textContent=myName||'';
+  const un=MAIL.filter(x=>!x.read).length;
+  $('tbMnB').hidden=!un;$('tbMnB').textContent=un;$('tbMailB').hidden=!un;$('tbMailB').textContent=un}
+function openProfile(name){
+  closeOv();const self=name===myName,f=FL.friends.find(x=>x.u===name),st=self?(FL.me||{}):(f?{w:f.w}:{});
+  $('pfName').textContent=name;$('pfSub').textContent=self?'پروفایل من':(f?(f.busy?'در بازی':(f.on?'آنلاین':'آفلاین')):'');
+  $('pfW').textContent=st.w!==undefined?st.w:'-';$('pfL').textContent=st.l!==undefined?st.l:'-';$('pfD').textContent=st.d!==undefined?st.d:'-';
+  showScr('scrPf')}
+$('tbName').onclick=()=>openProfile(myName);
+$('pfBack').onclick=()=>showScr('scrMenu');
+$('tbMn').onclick=e=>{e.stopPropagation();const o=$('tbDrop').hidden;closeOv();$('tbDrop').hidden=!o};
+document.addEventListener('click',e=>{if(!$('tbDrop').hidden&&!e.target.closest('#tbDrop'))$('tbDrop').hidden=true});
+$('tbFr').onclick=()=>{const o=$('ovFr').hidden;closeOv();if(o){$('ovFr').hidden=false;renderTbFr()}};
+$('tbMail').onclick=()=>{closeOv();$('ovMail').hidden=false;renderMail()};
+$('ovFrClose').onclick=closeOv;$('ovMailClose').onclick=closeOv;
+['ovFr','ovMail'].forEach(id=>$(id).addEventListener('click',e=>{if(e.target===$(id))closeOv()}));
+$('ovFrAdd').onclick=()=>{const u=$('ovFrU').value.trim();if(!u)return;sendW({t:'fadd',u});$('ovFrU').value=''};
+function renderTbFr(){
+  const L=FL.friends;
+  $('ovFrList').innerHTML=L.length?L.map(f=>{
+    const n=esc(f.u),sel=selFr===f.u;
+    return '<div class="fr tap'+(sel?' sel':'')+'" data-n="'+n+'"><span><i class="od'+(f.on?' on':'')+'"></i><b>'+n+'</b><small>🏆 '+(f.w|0)+'</small>'+(f.busy?'<small>در بازی</small>':'')+'</span><small>'+(sel?'▲':'▼')+'</small></div>'
+    +(sel?'<div class="fopt"><button data-a="pf" data-u="'+n+'">👤 مشاهده پروفایل</button><button class="pr" data-a="inv" data-u="'+n+'">⚔️ درخواست نبرد دوستانه</button><button class="dg" data-a="frem" data-u="'+n+'">🗑 حذف دوست</button></div>':'')}).join('')
+   :'<div class="sec">هنوز دوستی نداری. نام کاربری یکی را بالا بنویس.</div>'}
+$('ovFrList').onclick=e=>{
+  const b=e.target.closest('button[data-a]');
+  if(b){const a=b.dataset.a,u=b.dataset.u;
+    if(a==='pf')openProfile(u);
+    else if(a==='inv')sendW({t:'inv',u});
+    else if(a==='frem'){if(confirm(u+' از دوستانت حذف شود؟')){sendW({t:'frem',u});selFr=''}}
+    return}
+  const r=e.target.closest('.fr[data-n]');if(!r)return;
+  selFr=selFr===r.dataset.n?'':r.dataset.n;renderTbFr()};
+function mailTime(t){try{return new Date(t).toLocaleString('fa-IR',{dateStyle:'short',timeStyle:'short'})}catch(_){return ''}}
+function renderMail(){
+  $('ovMailList').innerHTML=MAIL.length?MAIL.map(x=>{
+    const op=openMail===x.id,pend=x.type==='freq'&&FL.inc.some(n=>n.toLowerCase()===String(x.from).toLowerCase());
+    return '<div class="ml'+(x.read?'':' un')+'" data-id="'+x.id+'"><div class="mh"><b>'+esc(x.title||'نامه')+'</b><small>'+mailTime(x.ts)+'</small></div>'
+    +(op?'<div class="mb"><small>از: '+esc(x.from||'')+'</small><div>'+esc(x.text||'')+'</div><div class="row">'
+      +(pend?'<button class="pr" data-a="facc" data-u="'+esc(x.from)+'">قبول</button><button data-a="fdec" data-u="'+esc(x.from)+'">رد</button>':'')
+      +'<button data-a="mdel">حذف نامه</button></div></div>':'')+'</div>'}).join('')
+   :'<div class="sec">نامه‌ای نداری.</div>'}
+$('ovMailList').onclick=e=>{
+  const w=e.target.closest('.ml[data-id]');if(!w)return;const id=w.dataset.id,b=e.target.closest('button[data-a]');
+  if(b){const a=b.dataset.a;if(a==='mdel'){sendW({t:'mdel',id});if(openMail===id)openMail=''}else sendW({t:a,u:b.dataset.u});return}
+  if(e.target.closest('.mh')){openMail=openMail===id?'':id;const x=MAIL.find(m=>m.id===id);if(openMail&&x&&!x.read)sendW({t:'mrd',id});renderMail()}};
+
 
 showScr('scrAuth');
 if(ls('jt_tok'))$('auMsg').textContent='';

@@ -90,6 +90,19 @@ function pushFL(k) {
     inc: u.inc.map(nameOf), out: u.out.map(nameOf) });
 }
 const pushFriendsOf = k => { const u = db.users[k]; if (u) u.friends.forEach(pushFL); };
+/* ---------- نامه‌ها ---------- */
+const MAILMAX = 50;
+function pushMail(k) {
+  const u = db.users[k]; if (!u || !conns.has(k)) return;
+  sendU(k, { t: 'mail', mail: u.mail || [] });
+}
+function sendMail(k, m) {
+  const u = db.users[k]; if (!u) return;
+  u.mail = u.mail || [];
+  u.mail.unshift({ id: crypto.randomBytes(6).toString('hex'), ts: Date.now(), read: false, type: 'info', ...m });
+  if (u.mail.length > MAILMAX) u.mail.length = MAILMAX;
+  save(); pushMail(k);
+}
 const drop = (arr, v) => { const i = arr.indexOf(v); if (i >= 0) arr.splice(i, 1); };
 
 /* ---------- ورود / ثبت‌نام ---------- */
@@ -107,7 +120,8 @@ function auth(ws, m) {
   if (m.mode === 'register') {
     if (db.users[k]) return err('این نام قبلاً گرفته شده');
     const salt = crypto.randomBytes(16).toString('hex');
-    db.users[k] = { name, salt, hash: hashPw(pw, salt), friends: [], inc: [], out: [] };
+    db.users[k] = { name, salt, hash: hashPw(pw, salt), friends: [], inc: [], out: [], mail: [] };
+    sendMail(k, { from: 'جنگ‌سالار', title: 'خوش آمدی!', text: 'به جنگ‌سالار خوش آمدی ' + name + '. دوستانت را اضافه کن و با آن‌ها نبرد دوستانه بزن.' });
   } else {
     const u = db.users[k];
     if (!u || !crypto.timingSafeEqual(Buffer.from(u.hash, 'hex'), Buffer.from(hashPw(pw, u.salt), 'hex')))
@@ -122,7 +136,7 @@ function login(ws, k, tok) {
   if (old && old !== ws) { old.u = null; send(old, { t: 'kicked' }); old.close(4001); }
   ws.u = k; ws.tok = tok; conns.set(k, ws);
   send(ws, { t: 'authok', u: nameOf(k), tok });
-  pushFL(k); pushFriendsOf(k);
+  pushFL(k); pushFriendsOf(k); pushMail(k);
   const mt = inMatch.get(k); if (mt) resumeMatch(mt, k, ws);
 }
 function leaveSession(ws) {                  // خروج یا قطع اتصال
@@ -149,11 +163,12 @@ function friends(ws, m) {
     if (t === me) return toast(ws, 'نمی‌توانی خودت را اضافه کنی');
     if (U.friends.includes(t)) return toast(ws, 'از قبل دوست هستید');
     if (U.out.includes(t)) return toast(ws, 'درخواست قبلاً فرستاده شده');
-    if (U.inc.includes(t)) { drop(U.inc, t); drop(T.out, me); U.friends.push(t); T.friends.push(me); }
-    else { U.out.push(t); T.inc.push(me); sendU(t, { t: 'toast', msg: U.name + ' درخواست دوستی فرستاد' }); toast(ws, 'درخواست فرستاده شد'); }
+    if (U.inc.includes(t)) { drop(U.inc, t); drop(T.out, me); U.friends.push(t); T.friends.push(me); sendMail(t, { from: U.name, title: 'دوستی قبول شد', text: U.name + ' حالا دوست توست.' }); }
+    else { U.out.push(t); T.inc.push(me); sendU(t, { t: 'toast', msg: U.name + ' درخواست دوستی فرستاد' }); sendMail(t, { type: 'freq', from: U.name, title: 'درخواست دوستی', text: U.name + ' برایت درخواست دوستی فرستاده است.' }); toast(ws, 'درخواست فرستاده شد'); }
   } else if (m.t === 'facc') {
     if (!U.inc.includes(t)) return;
     drop(U.inc, t); drop(T.out, me); U.friends.push(t); T.friends.push(me);
+    sendMail(t, { from: U.name, title: 'دوستی قبول شد', text: U.name + ' درخواست دوستی تو را قبول کرد.' });
   } else if (m.t === 'fdec') {
     drop(U.inc, t); if (T) drop(T.out, me);
   } else if (m.t === 'frem') {
@@ -284,6 +299,8 @@ wss.on('connection', ws => {
     const me = ws.u;
     switch (m.t) {
       case 'fadd': case 'facc': case 'fdec': case 'frem': return friends(ws, m);
+      case 'mrd': { const x = (db.users[me].mail || []).find(e => e.id === m.id); if (x && !x.read) { x.read = true; save(); pushMail(me); } return; }
+      case 'mdel': { const a = db.users[me].mail || []; const i = a.findIndex(e => e.id === m.id); if (i >= 0) { a.splice(i, 1); save(); pushMail(me); } return; }
       case 'inv': return invite(ws, m);
       case 'invcancel': { const v = invOut.get(me); if (v) endInv(v, 'cancel'); return; }
       case 'invdec': { const v = invIn.get(me); if (v && v.from === key(m.u)) endInv(v, 'declined'); return; }
