@@ -42,7 +42,35 @@ async function loadDb() {
     console.log('هشدار: Upstash تنظیم نشده؛ حساب‌ها در data.json ذخیره می‌شوند (ممکن است پاک شوند)');
   }
   db.users = db.users || {}; db.sessions = db.sessions || {}; db.clans = db.clans || {};
+  buildIdx();
 }
+/* ---------- تگ و آیدی ----------
+   تگ بازیکن: ۱۲ نویسهٔ تصادفی (حرف بزرگ + عدد)، تگ قبیله: ۱۰ نویسه. یکتا و ثابت (تغییر نمی‌کند).
+   آیدی: اختیاری، یکتا، انتخاب خود بازیکن (حروف انگلیسی کوچک، عدد و _ ؛ ۳ تا ۱۶ نویسه). */
+const TAG_CH = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+const userTags = new Map(), userIds = new Map(), clanTags = new Map();   // تگ/آیدی -> کلید کاربر ، تگ -> کلید قبیله
+function randTag(len, taken) {
+  for (;;) {
+    let t = ''; const b = crypto.randomBytes(len);
+    for (let i = 0; i < len; i++) t += TAG_CH[b[i] % TAG_CH.length];
+    if (!taken.has(t)) return t;
+  }
+}
+function buildIdx() {
+  userTags.clear(); userIds.clear(); clanTags.clear();
+  let changed = false;
+  for (const [k, u] of Object.entries(db.users)) {                 // حساب‌های قدیمی هم تگ می‌گیرند
+    if (!u.tag || userTags.has(u.tag)) { u.tag = randTag(12, userTags); changed = true; }
+    userTags.set(u.tag, k);
+    if (u.id) { if (userIds.has(u.id)) { delete u.id; changed = true; } else userIds.set(u.id, k); }
+  }
+  for (const [k, c] of Object.entries(db.clans)) {
+    if (!c.tag || clanTags.has(c.tag)) { c.tag = randTag(10, clanTags); changed = true; }
+    clanTags.set(c.tag, k);
+  }
+  if (changed) save();
+}
+const ID_RE = /^[a-z0-9_]{3,16}$/;
 const flushAndExit = () => { clearTimeout(saveT); persist().then(() => process.exit(0)); };
 process.on('SIGTERM', flushAndExit); process.on('SIGINT', flushAndExit);
 
@@ -84,8 +112,8 @@ const hashPw = (p, salt) => crypto.scryptSync(p, salt, 32).toString('hex');
 function pushFL(k) {
   const u = db.users[k]; if (!u || !conns.has(k)) return;
   sendU(k, { t: 'fl',
-    me: { w: u.wins | 0, l: u.losses | 0, d: u.draws | 0 },
-    friends: u.friends.map(f => ({ u: nameOf(f), on: conns.has(f), busy: inMatch.has(f), w: db.users[f] ? db.users[f].wins | 0 : 0 }))
+    me: { w: u.wins | 0, l: u.losses | 0, d: u.draws | 0, tag: u.tag, id: u.id || '' },
+    friends: u.friends.map(f => ({ u: nameOf(f), on: conns.has(f), busy: inMatch.has(f), w: db.users[f] ? db.users[f].wins | 0 : 0, tag: db.users[f] ? db.users[f].tag : '', id: db.users[f] ? db.users[f].id || '' : '' }))
       .sort((a, b) => b.w - a.w || b.on - a.on || a.u.localeCompare(b.u)),
     inc: u.inc.map(nameOf), out: u.out.map(nameOf) });
 }
@@ -120,7 +148,9 @@ function auth(ws, m) {
   if (m.mode === 'register') {
     if (db.users[k]) return err('این نام قبلاً گرفته شده');
     const salt = crypto.randomBytes(16).toString('hex');
-    db.users[k] = { name, salt, hash: hashPw(pw, salt), friends: [], inc: [], out: [], mail: [] };
+    const tag = randTag(12, userTags);
+    db.users[k] = { name, tag, salt, hash: hashPw(pw, salt), friends: [], inc: [], out: [], mail: [] };
+    userTags.set(tag, k);
     sendMail(k, { from: 'جنگ‌سالار', title: 'خوش آمدی!', text: 'به جنگ‌سالار خوش آمدی ' + name + '. دوستانت را اضافه کن و با آن‌ها نبرد دوستانه بزن.' });
   } else {
     const u = db.users[k];
@@ -135,7 +165,7 @@ function login(ws, k, tok) {
   const old = conns.get(k);
   if (old && old !== ws) { old.u = null; send(old, { t: 'kicked' }); old.close(4001); }
   ws.u = k; ws.tok = tok; conns.set(k, ws);
-  send(ws, { t: 'authok', u: nameOf(k), tok });
+  send(ws, { t: 'authok', u: nameOf(k), tok, tag: db.users[k].tag, id: db.users[k].id || '' });
   pushFL(k); pushFriendsOf(k); pushMail(k); pushClan(k);
   const mt = inMatch.get(k); if (mt) resumeMatch(mt, k, ws);
 }
@@ -157,7 +187,7 @@ function leaveSession(ws) {                  // خروج یا قطع اتصال
 
 /* ---------- دوستی ---------- */
 function friends(ws, m) {
-  const me = ws.u, U = db.users[me], t = key(m.u), T = db.users[t];
+  const me = ws.u, U = db.users[me], t = m.t === 'fadd' ? (resolveUser(m.u) || key(m.u)) : key(m.u), T = db.users[t];
   if (m.t === 'fadd') {
     if (!T) return toast(ws, 'کاربری با این نام پیدا نشد');
     if (t === me) return toast(ws, 'نمی‌توانی خودت را اضافه کنی');
@@ -177,11 +207,50 @@ function friends(ws, m) {
   save(); pushFL(me); pushFL(t);
 }
 
+/* ---------- جستجو و پروفایل ----------
+   ورودی می‌تواند تگ (#ABC...)، آیدی (@id) یا نام کاربری باشد؛ فرمت‌های بدون علامت هم تشخیص داده می‌شوند. */
+const normTag = q => String(q || '').trim().replace(/^#/, '').toUpperCase();
+function resolveUser(q) {
+  q = String(q || '').trim(); if (!q) return null;
+  if (q[0] === '#') return userTags.get(normTag(q)) || null;
+  if (q[0] === '@') return userIds.get(q.slice(1).toLowerCase()) || null;
+  const k = key(q);
+  if (db.users[k]) return k;
+  return userIds.get(k) || userTags.get(normTag(q)) || null;
+}
+function profileOf(viewer, k) {
+  const u = db.users[k], me = db.users[viewer]; if (!u) return null;
+  const c = myClan(u);
+  const rel = k === viewer ? 'self' : me.friends.includes(k) ? 'friend' : me.out.includes(k) ? 'out' : me.inc.includes(k) ? 'inc' : 'none';
+  return { name: u.name, tag: u.tag, id: u.id || '', w: u.wins | 0, l: u.losses | 0, d: u.draws | 0,
+    on: conns.has(k), busy: inMatch.has(k), rel, clan: c ? { name: c.name, tag: c.tag } : null };
+}
+function search(ws, m) {
+  const me = ws.u, q = String(m.q || '').trim().slice(0, 40);
+  if (!q) return;
+  if (++ws.searches > 60) return toast(ws, 'جستجوی زیاد؛ کمی صبر کن');
+  const k = resolveUser(q);
+  if (k) return send(ws, { t: 'sres', q, p: profileOf(me, k) });
+  const ck = clanTags.get(normTag(q)) || (db.clans[key(q.replace(/^#/, ''))] ? key(q.replace(/^#/, '')) : null);
+  const c = ck && db.clans[ck];
+  send(ws, { t: 'sres', q, p: null, clan: c ? { name: c.name, tag: c.tag, n: c.members.length, mode: c.mode, owner: nameOf(c.owner) } : null });
+}
+function setId(ws, m) {
+  const me = ws.u, U = db.users[me], v = String(m.id || '').trim().replace(/^@/, '').toLowerCase();
+  if (!v) { if (U.id) { userIds.delete(U.id); delete U.id; save(); pushFL(me); pushFriendsOf(me); } return toast(ws, 'آیدی حذف شد'); }
+  if (!ID_RE.test(v)) return toast(ws, 'آیدی باید ۳ تا ۱۶ نویسه از حروف انگلیسی، عدد یا _ باشد');
+  if (v === U.id) return;
+  if (userIds.has(v)) return toast(ws, 'این آیدی قبلاً گرفته شده');
+  if (U.id) userIds.delete(U.id);
+  U.id = v; userIds.set(v, me); save();
+  toast(ws, 'آیدی ثبت شد: @' + v); pushFL(me); pushFriendsOf(me);
+}
+
 /* ---------- قبیله ----------
    وضعیت: open = همه می‌توانند عضو شوند، closed = کسی نمی‌تواند عضو شود، invite = فقط با دعوتِ سازنده (از پروفایل بازیکن) */
 const CMODES = new Set(['open', 'closed', 'invite']);
 const myClan = u => (u && u.clan && db.clans[u.clan]) || null;
-const clanInfo = (c, k) => ({ name: c.name, mode: c.mode, owner: nameOf(c.owner), mine: c.owner === k, members: c.members.map(nameOf) });
+const clanInfo = (c, k) => ({ name: c.name, tag: c.tag, mode: c.mode, owner: nameOf(c.owner), mine: c.owner === k, members: c.members.map(nameOf) });
 function pushClan(k) {
   const u = db.users[k]; if (!u || !conns.has(k)) return;
   const c = myClan(u); sendU(k, { t: 'clan', clan: c ? clanInfo(c, k) : null });
@@ -200,12 +269,14 @@ function clans(ws, m) {
     if (!/^[\p{L}\p{N}_ ]{3,20}$/u.test(name)) return toast(ws, 'نام قبیله باید ۳ تا ۲۰ حرف یا عدد باشد');
     if (!CMODES.has(m.mode)) return;
     if (db.clans[ck]) return toast(ws, 'این نام قبلاً گرفته شده');
-    db.clans[ck] = { name, owner: me, mode: m.mode, members: [me], ts: Date.now() };
+    const ctag = randTag(10, clanTags);
+    db.clans[ck] = { name, tag: ctag, owner: me, mode: m.mode, members: [me], ts: Date.now() };
+    clanTags.set(ctag, ck);
     U.clan = ck; save(); pushClan(me); send(ws, { t: 'clmade' });
   } else if (m.t === 'cllist') {
     const list = Object.values(db.clans).filter(c => c.mode === 'open')
       .sort((a, b) => b.members.length - a.members.length || a.name.localeCompare(b.name)).slice(0, 40)
-      .map(c => ({ name: c.name, n: c.members.length, owner: nameOf(c.owner) }));
+      .map(c => ({ name: c.name, tag: c.tag, n: c.members.length, owner: nameOf(c.owner) }));
     send(ws, { t: 'cls', list });
   } else if (m.t === 'cljoin') {
     if (myClan(U)) return toast(ws, 'تو الان عضو یک قبیله هستی');
@@ -346,7 +417,7 @@ function inGame(ws, m) {
 /* ---------- WebSocket ---------- */
 const wss = new WebSocketServer({ server, path: '/ws', maxPayload: 16 * 1024 });
 wss.on('connection', ws => {
-  ws.u = null; ws.tries = 0; ws.isAlive = true;
+  ws.u = null; ws.tries = 0; ws.searches = 0; ws.isAlive = true;
   ws.on('pong', () => (ws.isAlive = true));
   ws.on('message', raw => {
     let m; try { m = JSON.parse(raw); } catch { return; }
@@ -358,6 +429,9 @@ wss.on('connection', ws => {
       case 'fadd': case 'facc': case 'fdec': case 'frem': return friends(ws, m);
       case 'mrd': { const x = (db.users[me].mail || []).find(e => e.id === m.id); if (x && !x.read) { x.read = true; save(); pushMail(me); } return; }
       case 'mdel': { const a = db.users[me].mail || []; const i = a.findIndex(e => e.id === m.id); if (i >= 0) { a.splice(i, 1); save(); pushMail(me); } return; }
+      case 'search': return search(ws, m);
+      case 'setid': return setId(ws, m);
+      case 'pfget': { const k = resolveUser(m.u); if (k) send(ws, { t: 'pf', p: profileOf(me, k) }); return; }
       case 'clcreate': case 'cllist': case 'cljoin': case 'clinv': case 'clacc': case 'cldec': return clans(ws, m);
       case 'inv': return invite(ws, m);
       case 'invcancel': { const v = invOut.get(me); if (v) endInv(v, 'cancel'); return; }
@@ -374,6 +448,7 @@ wss.on('connection', ws => {
   });
   ws.on('close', () => leaveSession(ws));
 });
+setInterval(() => wss.clients.forEach(w => { w.searches = 0; }), 60000);
 setInterval(() => wss.clients.forEach(w => { if (!w.isAlive) return w.terminate(); w.isAlive = false; w.ping(); }), 25000);
 
 loadDb().then(() => server.listen(PORT, () => console.log('http://localhost:' + PORT)));

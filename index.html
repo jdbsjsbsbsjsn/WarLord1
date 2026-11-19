@@ -190,6 +190,11 @@ button em{font-style:normal;font-size:11px;font-weight:500;opacity:.8}
 .ml small{color:var(--mut);font-size:11px}
 .ml .mb{display:flex;flex-direction:column;gap:8px;font-size:13px;line-height:1.7}
 .ml .mb .row button{min-height:36px}
+.tbn{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;line-height:1.25;min-width:0;overflow:hidden}
+.tbn b{font-size:16px;max-width:100%;overflow:hidden;text-overflow:ellipsis}.tbn small{font-size:11px;font-weight:400;color:var(--mut);direction:ltr;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.idl{direction:ltr;unicode-bidi:isolate;font-size:12px;color:var(--mut);display:flex;gap:10px;justify-content:center;flex-wrap:wrap}.idl .cp{cursor:pointer;color:var(--gold)}
+.fr .nm{display:flex;flex-direction:column;line-height:1.3;min-width:0}.fr .nm small{direction:ltr;text-align:start;font-size:11px}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px}.ovl .tabs button.on{background:var(--gold);color:var(--ink);border-color:var(--gold);font-weight:700}
 .pfstat{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .pfstat div{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:8px 4px;font-size:12px;color:var(--mut)}
 .pfstat b{display:block;font-size:20px;color:var(--fg)}
@@ -243,20 +248,27 @@ button em{font-style:normal;font-size:11px;font-weight:500;opacity:.8}
 <div id="btList"></div><div id="btMsg"></div><button id="btBack" type="button">بازگشت</button></div></div>
 <div id="tb" hidden>
 <button id="tbFr" class="tbq" type="button" aria-label="لیست دوستان">👥<small>دوستان</small></button>
-<button id="tbName" type="button"></button>
+<button id="tbName" type="button"><span class="tbn"><b id="tbN"></b><small id="tbT"></small></span></button>
 <button id="tbMn" class="tbq" type="button" aria-label="منو">☰<span id="tbMnB" class="badge" hidden></span></button>
 <div id="tbDrop" hidden><button id="tbMail" type="button">✉️ نامه‌ها<span id="tbMailB" class="badge" hidden></span></button><button id="tbOff" type="button">🎮 بازی حضوری</button><button id="tbSet" type="button">⚙️ تنظیمات</button></div>
 </div>
-<div class="ovl" id="ovFr" hidden><div class="box"><h2>لیست دوستان</h2>
-<div class="row"><input id="ovFrU" placeholder="افزودن دوست (نام کاربری)" maxlength="16" autocapitalize="off" spellcheck="false"><button id="ovFrAdd" class="pr" type="button" style="flex:none">افزودن</button></div>
-<div id="ovFrList"></div><button id="ovFrClose" type="button">بستن</button></div></div>
+<div class="ovl" id="ovFr" hidden><div class="box"><h2>دوستان</h2>
+<div class="tabs"><button id="frTabL" class="on" type="button">👥 دوستان من</button><button id="frTabS" type="button">🔍 جستجو</button></div>
+<div id="frPaneL" style="display:flex;flex-direction:column;gap:12px">
+<div class="row"><input id="ovFrU" placeholder="افزودن دوست (نام کاربری، آیدی یا تگ)" maxlength="20" autocapitalize="off" spellcheck="false"><button id="ovFrAdd" class="pr" type="button" style="flex:none">افزودن</button></div>
+<div id="ovFrList"></div></div>
+<div id="frPaneS" style="display:none;flex-direction:column;gap:12px">
+<div class="row"><input id="srQ" placeholder="آیدی یا تگ؛ مثل @ali یا #HSO8GOH25K3H" maxlength="20" autocapitalize="off" spellcheck="false"><button id="srGo" class="pr" type="button" style="flex:none">جستجو</button></div>
+<div id="srRes"><div class="sec">آیدی یا تگ بازیکن (یا تگ قبیله) را بنویس تا پیدایش کنیم.</div></div></div>
+<button id="ovFrClose" type="button">بستن</button></div></div>
 <div class="ovl" id="ovMail" hidden><div class="box"><h2>نامه‌ها</h2>
 <div id="ovMailList"></div><button id="ovMailClose" type="button">بستن</button></div></div>
 <div class="ovl" id="ovSet" hidden><div class="box"><h2>تنظیمات</h2>
 <button id="setOut" class="dg" type="button">خروج از حساب</button><button id="ovSetClose" type="button">بستن</button></div></div>
-<div class="scr" id="scrPf" hidden><div class="box pfbox"><h2 id="pfName"></h2><div id="pfSub" style="color:var(--mut);font-size:13px"></div>
+<div class="scr" id="scrPf" hidden><div class="box pfbox"><h2 id="pfName"></h2><div class="idl"><span id="pfId"></span><span id="pfTag" class="cp"></span></div><div id="pfSub" style="color:var(--mut);font-size:13px"></div><div id="pfClan" style="font-size:13px"></div>
 <div class="pfstat"><div><b id="pfW">-</b>برد</div><div><b id="pfL">-</b>باخت</div><div><b id="pfD">-</b>مساوی</div></div>
-<div style="color:var(--mut);font-size:13px">اطلاعات بیشتر پروفایل به‌زودی اضافه می‌شود.</div>
+<div id="pfIdRow" hidden><div class="sec">آیدی (اختیاری؛ ۳ تا ۱۶ حرف انگلیسی، عدد یا _)</div><div class="row"><input id="pfIdIn" placeholder="مثلاً ali_war" maxlength="16" autocapitalize="off" spellcheck="false" style="direction:ltr"><button id="pfIdSave" class="pr" type="button" style="flex:none">ثبت آیدی</button></div></div>
+<button id="pfAdd" class="pr" type="button" hidden>➕ افزودن دوست</button>
 <button id="pfInv" class="pr" type="button" hidden>🛡 دعوت به قبیله</button><button id="pfBack" type="button">بازگشت</button></div></div>
 <div id="invPop" hidden><b id="ipT"></b><div class="row"><button id="ipYes" class="pr" type="button">قبول</button><button id="ipNo" type="button">رد</button></div></div>
 <div class="scr" id="scrLoad" hidden><img id="ldImg" alt="" src="loading.jpg"><div id="ldBox"><b>در حال بارگذاری…</b><div id="ldBar"><i></i></div><b id="ldPct">1%</b></div></div>
@@ -2780,7 +2792,7 @@ function dkDie(u,g){const d=g.userData;d.dgDie=1;unitG.delete(u);d.pick.forEach(
 
 /* ===================== آنلاین =====================
    حساب کاربری/دوستی/دعوت: سرور. خود بازی: lockstep (سرور فقط دستورها را مرتب پخش می‌کند). */
-let RPT=false,CURG=0,WS=null,Q=[],HM={},OH={},desync=false,flashT=0,flashMsg='',retryT=0,AUTHED=false,myName='',FL={friends:[],inc:[],out:[]},invWait=null,invFrom=null,curScr='scrAuth',loadMode='',loadStart=0,wantAuth=null,toastT=0;
+let RPT=false,CURG=0,WS=null,Q=[],HM={},OH={},desync=false,flashT=0,flashMsg='',retryT=0,AUTHED=false,myName='',myTag='',myId='',PF=null,SR=null,srQ='',FL={friends:[],inc:[],out:[]},invWait=null,invFrom=null,curScr='scrAuth',loadMode='',loadStart=0,wantAuth=null,toastT=0;
 const ls=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k);v===null?localStorage.removeItem(k):localStorage.setItem(k,v)}catch(_){}return null};
 const sendW=o=>{if(WS&&WS.readyState===1)WS.send(JSON.stringify(o))};
 function toast(t){const e=$('toast');e.textContent=t;e.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>e.hidden=true,2600)}
@@ -2888,7 +2900,7 @@ function connect(){
   ws.onmessage=ev=>{let m;try{m=JSON.parse(ev.data)}catch(_){return}onMsg(m)}}
 function onMsg(m){
   switch(m.t){
-   case 'authok':AUTHED=true;myName=m.u;ls('jt_u',m.u);ls('jt_tok',m.tok);$('auP').value='';$('auMsg').textContent='';if(!MATCH&&!OFFG&&!(loadMode))showScr('scrMenu');break;
+   case 'authok':AUTHED=true;myName=m.u;myTag=m.tag||'';myId=m.id||'';ls('jt_u',m.u);ls('jt_tok',m.tok);$('auP').value='';$('auMsg').textContent='';if(!MATCH&&!OFFG&&!(loadMode))showScr('scrMenu');break;
    case 'autherr':$('auMsg').textContent=m.msg;if(m.resume){ls('jt_tok',null)}if(!MATCH)showScr('scrAuth');break;
    case 'kicked':AUTHED=false;barUI();toast('با دستگاه دیگری وارد شدی');if(!MATCH)showScr('scrAuth');break;
    case 'toast':toast(m.msg);break;
@@ -2896,7 +2908,9 @@ function onMsg(m){
    case 'clmade':showScr('scrClan');break;
    case 'cls':renderClJoin(m.list||[]);break;
    case 'mail':MAIL=m.mail||[];barUI();if(!$('ovMail').hidden)renderMail();break;
-   case 'fl':FL=m;barUI();if(!$('ovFr').hidden)renderTbFr();if(curScr==='scrMenu')mnTitle();if(curScr==='scrFr'||curScr==='scrBt')renderFL();break;
+   case 'pf':if(m.p&&curScr==='scrPf'&&PF&&PF.name===m.p.name)showPf(m.p);break;
+   case 'sres':renderSearch(m);break;
+   case 'fl':FL=m;if(m.me){myTag=m.me.tag||myTag;myId=m.me.id||''}if(curScr==='scrPf'&&PF)sendW({t:'pfget',u:PF.name});if(!$('ovFr').hidden&&srQ&&$('frPaneS').style.display!=='none')sendW({t:'search',q:srQ});barUI();if(!$('ovFr').hidden)renderTbFr();if(curScr==='scrMenu')mnTitle();if(curScr==='scrFr'||curScr==='scrBt')renderFL();break;
    case 'invin':invFrom=m.from;$('ipT').textContent=m.from+' تو را به نبرد دعوت کرد ⚔️';$('invPop').hidden=false;break;
    case 'invgone':$('invPop').hidden=true;invFrom=null;break;
    case 'invwait':invWait=m.to;closeOv();if(curScr!=='scrBt')showScr('scrBt');else renderFL();break;
@@ -2919,7 +2933,7 @@ $('auOff').onclick=offline;$('tbOff').onclick=()=>{closeOv();offline()};
 $('mnBattle').onclick=()=>showScr('scrBt');
 $('frBack').onclick=()=>showScr('scrMenu');
 $('btBack').onclick=()=>{if(invWait)sendW({t:'invcancel'});showScr('scrMenu')};
-$('setOut').onclick=()=>{closeOv();sendW({t:'logout'});ls('jt_tok',null);AUTHED=false;myName='';MAIL=[];CLAN=null;FL={friends:[],inc:[],out:[]};showScr('scrAuth')};
+$('setOut').onclick=()=>{closeOv();sendW({t:'logout'});ls('jt_tok',null);AUTHED=false;myName='';myTag='';myId='';MAIL=[];CLAN=null;FL={friends:[],inc:[],out:[]};showScr('scrAuth')};
 $('frAdd').onclick=()=>{const u=$('frU').value.trim();if(!u)return;sendW({t:'fadd',u});$('frU').value=''};
 $('ipYes').onclick=()=>{if(invFrom)sendW({t:'invacc',u:invFrom});$('invPop').hidden=true};
 $('ipNo').onclick=()=>{if(invFrom)sendW({t:'invdec',u:invFrom});$('invPop').hidden=true;invFrom=null};
@@ -2949,15 +2963,30 @@ function barUI(){
   $('tb').hidden=!show;if(!show)closeOv();
   const bs=AUTHED&&!MATCH&&!OFFG&&PAGES.includes(curScr);
   $('bn').hidden=!bs;$('bnL').classList.toggle('on',curScr==='scrDev');$('bnM').classList.toggle('on',curScr==='scrMenu');$('bnR').classList.toggle('on',curScr==='scrClan');
-  $('tbName').textContent=myName||'';
+  $('tbN').textContent=myName||'';$('tbT').textContent=myName?(myId?'@'+myId+' · ':'')+(myTag?'#'+myTag:''):'';
   const un=MAIL.filter(x=>!x.read).length;
   $('tbMnB').hidden=!un;$('tbMnB').textContent=un;$('tbMailB').hidden=!un;$('tbMailB').textContent=un}
-function openProfile(name){
-  closeOv();const self=name===myName,f=FL.friends.find(x=>x.u===name),st=self?(FL.me||{}):(f?{w:f.w}:{});
-  $('pfName').textContent=name;$('pfSub').textContent=self?'پروفایل من':(f?(f.busy?'در بازی':(f.on?'آنلاین':'آفلاین')):'');
-  $('pfW').textContent=st.w!==undefined?st.w:'-';$('pfL').textContent=st.l!==undefined?st.l:'-';$('pfD').textContent=st.d!==undefined?st.d:'-';
-  $('pfInv').hidden=!(CLAN&&CLAN.mine&&CLAN.mode==='invite'&&!self);
-  showScr('scrPf')}
+function showPf(p){
+  PF=p;const self=p.rel==='self',st=v=>v!==undefined?v:'-';
+  $('pfName').textContent=p.name;
+  $('pfId').textContent=p.id?'@'+p.id:'';$('pfId').hidden=!p.id;
+  $('pfTag').textContent=p.tag?'#'+p.tag:'';
+  $('pfSub').textContent=self?'پروفایل من':(p.on===undefined?'':(p.busy?'در بازی':(p.on?'آنلاین':'آفلاین')));
+  $('pfClan').textContent=p.clan?'🛡 '+p.clan.name+' · #'+p.clan.tag:'';
+  $('pfW').textContent=st(p.w);$('pfL').textContent=st(p.l);$('pfD').textContent=st(p.d);
+  $('pfIdRow').hidden=!self;
+  const ad=!self&&(p.rel==='none'||p.rel==='inc');$('pfAdd').hidden=!ad;$('pfAdd').textContent=p.rel==='inc'?'✅ قبول درخواست دوستی':'➕ افزودن دوست';
+  $('pfInv').hidden=!(CLAN&&CLAN.mine&&CLAN.mode==='invite'&&!self)}
+function openProfile(name,preset){
+  closeOv();let p=preset;
+  if(!p){
+    if(name===myName)p={name,tag:myTag,id:myId,rel:'self',...(FL.me||{}),on:true,busy:false};
+    else{const f=FL.friends.find(x=>x.u===name);p=f?{name,tag:f.tag,id:f.id,w:f.w,on:f.on,busy:f.busy,rel:'friend'}:{name,rel:'none'}}}
+  showPf(p);$('pfIdIn').value=p.rel==='self'?myId:'';showScr('scrPf');sendW({t:'pfget',u:p.name})}
+function copyTxt(t,msg){try{navigator.clipboard.writeText(t).then(()=>toast(msg),()=>{})}catch(_){}}
+$('pfTag').onclick=()=>{if(PF&&PF.tag)copyTxt('#'+PF.tag,'تگ کپی شد')};
+$('pfAdd').onclick=()=>{if(PF&&PF.tag)sendW({t:'fadd',u:'#'+PF.tag})};
+$('pfIdSave').onclick=()=>sendW({t:'setid',id:$('pfIdIn').value.trim()});
 $('tbName').onclick=()=>openProfile(myName);
 $('bnL').onclick=()=>goPage('scrDev');$('bnM').onclick=()=>goPage('scrMenu');$('bnR').onclick=()=>goPage('scrClan');
 /* کشیدن انگشت: راست = صفحه چپ (در دست توسعه)، چپ = برگشت به منو؛ صفحه راست فعلاً خالی */
@@ -2986,9 +3015,9 @@ function renderTbFr(){
   const L=FL.friends;
   $('ovFrList').innerHTML=L.length?L.map(f=>{
     const n=esc(f.u),sel=selFr===f.u;
-    return '<div class="fr tap'+(sel?' sel':'')+'" data-n="'+n+'"><span><i class="od'+(f.on?' on':'')+'"></i><b>'+n+'</b><small>🏆 '+(f.w|0)+'</small>'+(f.busy?'<small>در بازی</small>':'')+'</span><small>'+(sel?'▲':'▼')+'</small></div>'
+    return '<div class="fr tap'+(sel?' sel':'')+'" data-n="'+n+'"><span><i class="od'+(f.on?' on':'')+'"></i><span class="nm"><b>'+n+'</b><small>'+(f.id?'@'+esc(f.id)+' · ':'')+'#'+esc(f.tag||'')+'</small></span><small>🏆 '+(f.w|0)+'</small>'+(f.busy?'<small>در بازی</small>':'')+'</span><small>'+(sel?'▲':'▼')+'</small></div>'
     +(sel?'<div class="fopt"><button data-a="pf" data-u="'+n+'">👤 مشاهده پروفایل</button><button class="pr" data-a="inv" data-u="'+n+'">⚔️ درخواست نبرد دوستانه</button><button class="dg" data-a="frem" data-u="'+n+'">🗑 حذف دوست</button></div>':'')}).join('')
-   :'<div class="sec">هنوز دوستی نداری. نام کاربری یکی را بالا بنویس.</div>'}
+   :'<div class="sec">هنوز دوستی نداری. نام کاربری، آیدی یا تگ یکی را بالا بنویس، یا از تب «جستجو» پیدایش کن.</div>'}
 $('ovFrList').onclick=e=>{
   const b=e.target.closest('button[data-a]');
   if(b){const a=b.dataset.a,u=b.dataset.u;
@@ -2998,6 +3027,25 @@ $('ovFrList').onclick=e=>{
     return}
   const r=e.target.closest('.fr[data-n]');if(!r)return;
   selFr=selFr===r.dataset.n?'':r.dataset.n;renderTbFr()};
+function frTab(t){const s=t==='s';$('frPaneL').style.display=s?'none':'flex';$('frPaneS').style.display=s?'flex':'none';$('frTabL').classList.toggle('on',!s);$('frTabS').classList.toggle('on',s);if(s)setTimeout(()=>$('srQ').focus(),50)}
+$('frTabL').onclick=()=>frTab('l');$('frTabS').onclick=()=>frTab('s');
+$('tbFr').addEventListener('click',()=>{if(!$('ovFr').hidden)frTab('l')});
+function doSearch(){const q=$('srQ').value.trim();if(!q)return;srQ=q;$('srRes').innerHTML='<div class="sec">در حال جستجو…</div>';sendW({t:'search',q})}
+$('srGo').onclick=doSearch;$('srQ').onkeydown=e=>{if(e.key==='Enter')doSearch()};
+function renderSearch(m){
+  if(m.q!==srQ)return;let h='';
+  if(m.p){const p=m.p;SR=p;
+    const act=p.rel==='self'?'<small>این خودتی</small>':p.rel==='friend'?'<small>دوست توست</small>':p.rel==='out'?'<small>درخواست فرستاده شد</small>':'<button class="pr" data-a="sadd">➕ افزودن</button>';
+    h='<div class="fr"><span><i class="od'+(p.on?' on':'')+'"></i><span class="nm"><b>'+esc(p.name)+'</b><small>'+(p.id?'@'+esc(p.id)+' · ':'')+'#'+esc(p.tag)+'</small></span><small>🏆 '+p.w+'</small></span>'+act+'</div>'
+     +'<button data-a="spf" type="button">👤 مشاهده پروفایل</button>'}
+  else if(m.clan){const c=m.clan;
+    h='<div class="fr"><span class="nm"><b>🛡 '+esc(c.name)+'</b><small>#'+esc(c.tag)+' · 👥 '+c.n+' · 👑 '+esc(c.owner)+'</small></span>'+(c.mode==='open'&&!CLAN?'<button class="pr" data-a="sjoin" data-n="'+esc(c.name)+'">عضو شو</button>':'<small>'+(c.mode==='closed'?'🔒 بسته':c.mode==='invite'?'✉️ با دعوت':'')+'</small>')+'</div>'}
+  else h='<div class="sec">بازیکن یا قبیله‌ای با این آیدی/تگ پیدا نشد.</div>';
+  $('srRes').innerHTML=h}
+$('srRes').onclick=e=>{const b=e.target.closest('button[data-a]');if(!b||!SR)return;
+  if(b.dataset.a==='spf')openProfile(SR.name,SR);
+  else if(b.dataset.a==='sadd')sendW({t:'fadd',u:'#'+SR.tag});
+  else if(b.dataset.a==='sjoin')sendW({t:'cljoin',name:b.dataset.n})};
 function mailTime(t){try{return new Date(t).toLocaleString('fa-IR',{dateStyle:'short',timeStyle:'short'})}catch(_){return ''}}
 function renderMail(){
   $('ovMailList').innerHTML=MAIL.length?MAIL.map(x=>{
@@ -3017,10 +3065,10 @@ $('ovMailList').onclick=e=>{
 /* --- قبیله --- */
 const CL_MODE={open:'🌍 باز · همه می‌توانند عضو شوند',closed:'🔒 بسته · کسی نمی‌تواند عضو شود',invite:'✉️ با دعوت · فقط با دعوت سازنده'};
 function renderClan(){
-  $('clBody').innerHTML=CLAN?'<div class="clcard"><h3>'+esc(CLAN.name)+'</h3><div class="sec">'+CL_MODE[CLAN.mode]+'</div><div class="sec">👑 سازنده: '+esc(CLAN.owner)+'</div>'
+  $('clBody').innerHTML=CLAN?'<div class="clcard"><h3>'+esc(CLAN.name)+'</h3><div class="idl"><span class="cp" id="clTag">#'+esc(CLAN.tag||'')+'</span></div><div class="sec">'+CL_MODE[CLAN.mode]+'</div><div class="sec">👑 سازنده: '+esc(CLAN.owner)+'</div>'
     +'<div class="sec">اعضا ('+CLAN.members.length+')</div>'+CLAN.members.map(n=>'<div class="fr"><b>'+esc(n)+'</b></div>').join('')+'</div>'
    :'<button class="big pr" data-a="new" type="button">🛡 ساخت قبیله</button><button class="big blk" data-a="join" type="button">عضو شدن در یک قبیله</button>'}
-$('clBody').onclick=e=>{const b=e.target.closest('button[data-a]');if(!b)return;
+$('clBody').onclick=e=>{if(e.target.id==='clTag'){copyTxt(e.target.textContent,'تگ قبیله کپی شد');return}const b=e.target.closest('button[data-a]');if(!b)return;
   if(b.dataset.a==='new'){$('clName').value='';$('clMsg').textContent='';clMode='open';clModeUI();showScr('scrClanNew')}
   else{$('clJoinList').innerHTML='<div class="sec">در حال بارگذاری…</div>';showScr('scrClanJoin');sendW({t:'cllist'})}};
 function clModeUI(){document.querySelectorAll('#scrClanNew .cm').forEach(b=>b.classList.toggle('on',b.dataset.m===clMode))}
@@ -3031,7 +3079,7 @@ $('clMake').onclick=()=>{const name=$('clName').value.trim().replace(/\s+/g,' ')
 $('clNewBack').onclick=()=>showScr('scrClan');$('clJoinBack').onclick=()=>showScr('scrClan');
 function renderClJoin(L){
   if(curScr!=='scrClanJoin')return;
-  $('clJoinList').innerHTML=L.length?L.map(c=>'<div class="fr"><span><b>'+esc(c.name)+'</b><small>👥 '+c.n+'</small></span><button class="pr" data-n="'+esc(c.name)+'">عضو شو</button></div>').join(''):'<div class="sec">هنوز قبیلهٔ بازی وجود ندارد.</div>'}
+  $('clJoinList').innerHTML=L.length?L.map(c=>'<div class="fr"><span class="nm"><b>'+esc(c.name)+'</b><small>#'+esc(c.tag||'')+' · 👥 '+c.n+'</small></span><button class="pr" data-n="'+esc(c.name)+'">عضو شو</button></div>').join(''):'<div class="sec">هنوز قبیلهٔ بازی وجود ندارد.</div>'}
 $('clJoinList').onclick=e=>{const b=e.target.closest('button[data-n]');if(b)sendW({t:'cljoin',name:b.dataset.n})};
 $('pfInv').onclick=()=>sendW({t:'clinv',u:$('pfName').textContent});
 
