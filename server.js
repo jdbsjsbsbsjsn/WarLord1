@@ -341,9 +341,9 @@ function leaveSession(ws) {                  // خروج یا قطع اتصال
   if (mt) {
     const i = mt.p.indexOf(k);
     sendU(mt.p[1 - i], { t: 'opp', on: false });
-    if (!mt.ended) mt.tmr[i] = setTimeout(() => {          // ۹۰ ثانیه فرصت بازگشت
+    if (!mt.ended) mt.tmr[i] = setTimeout(() => {          // ۶۰ ثانیه فرصت بازگشت
       if (!conns.has(k) && inMatch.get(k) === mt && !mt.ended) abort(mt, 1 - i, i, 'disconnect');
-    }, 90000);
+    }, 60000);
   }
   pushFriendsOf(k);
 }
@@ -829,6 +829,6 @@ function handleMsg(ws, raw) {
 wss.on('connection', ws => ws.on('close', () => leaveSession(ws)));
 setInterval(() => wss.clients.forEach(w => { w.searches = 0; w.msgs = 0; }), 60000);
 setInterval(() => { pruneSessions(); rlSweep(); }, 3600000);
-setInterval(() => wss.clients.forEach(w => { if (!w.isAlive) return w.terminate(); w.isAlive = false; w.ping(); }), 25000);
+setInterval(() => wss.clients.forEach(w => { if (!w.isAlive) return w.terminate(); w.isAlive = false; w.ping(); }), 10000);
 
 loadDb().then(() => server.listen(PORT, () => console.log('http://localhost:' + PORT)));

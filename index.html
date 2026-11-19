@@ -346,6 +346,7 @@ button em{font-style:normal;font-size:11px;font-weight:500;opacity:.8}
 /* ===== آنلاین: مولد تصادفی قابل‌تکرار (mulberry32) و وضعیت شبکه ===== */
 let RS=(Date.now()^0x5bd1e995)|0;
 function RL(){RS=RS+0x6D2B79F5|0;let t=Math.imul(RS^RS>>>15,1|RS);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}
+let offSince=0,oppOff=0,tryN=0,hidAt=0;
 let ONLINE=false,ME=2,LOBBY=true,CONN=false,tmSent=0,MATCH=false,OFFG=false,oppName='',oppOn=true,abortInfo=null,swapped=false;
 var BOTG=false;   /* حالت تمرین با هوش مصنوعی: بازیکن آبی (۱) را ربات بازی می‌کند */
 const mine=()=>(!ONLINE&&!(BOTG&&P===1))||(CONN&&!LOBBY&&ME===P);
@@ -2913,7 +2914,7 @@ function persp(on){if(on===swapped)return;swapped=on;NM.reverse();CL.reverse();T
 /* --- شروع/پایان نبرد --- */
 function startMatch(m){
   MATCH=true;hideScr();$('invPop').hidden=true;invWait=null;
-  RPT=false;MATCH=true;ONLINE=true;OFFG=false;GT0=0;ME=m.me;oppName=m.opp;oppOn=true;LOBBY=true;abortInfo=null;desync=false;Q=[];HM={};OH={};
+  RPT=false;MATCH=true;ONLINE=true;OFFG=false;GT0=0;ME=m.me;oppName=m.opp;oppOn=true;oppOff=0;LOBBY=true;abortInfo=null;desync=false;Q=[];HM={};OH={};
   persp(ME===1);$('nw').textContent='🏳 تسلیم';
   loadMode='match';loadStart=Date.now();showLoad()}
 function endMatchLocal(){MATCH=false;ONLINE=false;ME=2;LOBBY=true;Q=[];abortInfo=null;persp(false);$('nw').textContent='بازی جدید';$('nw2').textContent='بازی جدید';
@@ -2935,6 +2936,7 @@ function endText(){
 
 /* --- اجرای دستورهای بازی --- */
 function net(c){
+  if(ONLINE&&MATCH&&(!CONN||!AUTHED)){flash('📡 اتصال قطع است؛ حرکتت ارسال نشد');return}
   if(!ONLINE){if(c.a==='init'&&c.seed==null)c.seed=(Math.random()*2147483647)|0;apply(c);return}
   if(phase!=='play'&&(c.a==='cell'||c.a==='shop'||c.a==='dr'||c.a==='to'))c.o=ME;
   sendW({t:'cmd',c})}
@@ -2968,29 +2970,41 @@ setInterval(()=>{
   if(loadMode==='match'&&!LOBBY&&Date.now()-loadStart>=3000){ldSet(100);hideLoad();entryMusic()}
 },25);
 function netUI(){const el=$('net'),t=$('netT'),b=$('netMenu');
-  if(!MATCH&&!OFFG){el.hidden=true;return}el.hidden=false;let s,cls='';b.hidden=!OFFG;
+  if(!MATCH&&!OFFG){el.hidden=true;const bb=$('dcBan');if(bb)bb.hidden=true;return}el.hidden=false;let s,cls='';b.hidden=!OFFG;
   if(OFFG)s=BOTG?'تمرین با هوش مصنوعی':'بازی حضوری';
   else if(desync){s='⚠ بازی با حریف ناهمگام شد — صفحه را رفرش کن';cls='bad'}
   else if(Date.now()<flashT){s=flashMsg;cls='bad'}
-  else if(!CONN)s='اتصال قطع شد؛ در حال اتصال دوباره…';
-  else{cls='me'+ME;s='تو در برابر '+oppName+(oppOn?'':' (قطع است)')+(LOBBY?'':(over?'':(P===ME?' · نوبت توست':' · نوبت حریف')))}
-  t.textContent=s;el.className=cls}
+  else if(!CONN)s='اتصال قطع شد؛ در حال اتصال دوباره… ('+Math.floor((Date.now()-(offSince||Date.now()))/1000)+' ثانیه)';
+  else{cls='me'+ME;s='تو در برابر '+oppName+(oppOn?'':' (قطع است — '+Math.floor((Date.now()-(oppOff||Date.now()))/1000)+' ثانیه)')+(LOBBY?'':(over?'':(P===ME?' · نوبت توست':' · نوبت حریف')))}
+  t.textContent=s;el.className=cls;dcBanner()}
+function dcBanner(){let b=$('dcBan');if(!b){b=document.createElement('div');b.id='dcBan';b.style.cssText='position:fixed;z-index:95;top:max(70px,env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);max-width:92vw;background:#000d;border:1px solid #e5483c;color:#fff;border-radius:12px;padding:10px 16px;font-size:14px;text-align:center;pointer-events:none;line-height:1.7';b.hidden=true;document.body.appendChild(b)}
+  const on=ONLINE&&MATCH&&!over&&!abortInfo&&!LOBBY&&(!CONN||!AUTHED||!oppOn);if(!on){b.hidden=true;return}
+  if(!CONN||!AUTHED)b.innerHTML='📡 اتصالت قطع شد<br><small>در حال اتصال دوباره… اگر مدتی برنگردی بازی به نفع حریف تموم می‌شه</small>';
+  else b.innerHTML='⚠️ '+esc(oppName)+' قطع شد<br><small>منتظر برگشتنش هستیم… اگه برنگرده، تو برنده می‌شی</small>';
+  b.hidden=false}
+/* برگشت از پس‌زمینه/قطعی شبکه: بلافاصله دوباره وصل شو (سرور تاریخچهٔ بازی را دوباره می‌فرستد) */
+function reconNow(force){if(!ONLINE&&!MATCH&&!WS&&!ls('jt_tok'))return;if(!force&&WS&&WS.readyState===1)return;clearTimeout(retryT);tryN=0;connect()}
+document.addEventListener('visibilitychange',()=>{if(document.hidden){hidAt=Date.now();return}
+  reconNow(MATCH&&ONLINE&&hidAt&&Date.now()-hidAt>4000);hidAt=0});
+window.addEventListener('online',()=>reconNow(true));
+window.addEventListener('pageshow',e=>{if(e.persisted)reconNow(true)});
 setInterval(netUI,300);
 $('netMenu').onclick=()=>{if(!$('scrLoad').hidden)return;loadMode='out';showLoad();setTimeout(()=>{BOTG=false;OFFG=false;LOBBY=true;hideLoad();showScr(AUTHED?'scrMenu':'scrAuth')},3000)};
 
 /* --- اتصال و پیام‌های سرور --- */
 function connect(){
   clearTimeout(retryT);
+  if(WS){const o=WS;WS=null;o.onmessage=o.onclose=o.onerror=o.onopen=null;try{o.close()}catch(_){}}
   const base=new URLSearchParams(location.search).get('server')||(location.protocol.startsWith('http')?(location.protocol==='https:'?'wss://':'ws://')+location.host:'ws://localhost:3000');
   const ws=WS=new WebSocket(base+'/ws');
-  ws.onopen=()=>{CONN=true;const u=ls('jt_u'),t=ls('jt_tok');
+  ws.onopen=()=>{CONN=true;tryN=0;const u=ls('jt_u'),t=ls('jt_tok');
     if(wantAuth){sendW(wantAuth);wantAuth=null}else if(typeof u==='string'&&u&&typeof t==='string'&&t)sendW({t:'resume',u,tok:t})};
-  ws.onclose=ev=>{if(WS!==ws)return;CONN=false;AUTHED=false;if(ev.code===4001)return;retryT=setTimeout(connect,1500)};
+  ws.onclose=ev=>{if(WS!==ws)return;CONN=false;AUTHED=false;if(!offSince)offSince=Date.now();if(ev.code===4001)return;retryT=setTimeout(connect,[300,800,1500,2500][Math.min(tryN++,3)])};
   ws.onerror=()=>{try{ws.close()}catch(_){}};
   ws.onmessage=ev=>{let m;try{m=JSON.parse(ev.data)}catch(_){return}onMsg(m)}}
 function onMsg(m){
   switch(m.t){
-   case 'authok':AUTHED=true;myName=m.u;myTag=m.tag||'';myId=m.id||'';ls('jt_u',m.u);ls('jt_tok',m.tok);$('auP').value='';$('auP2').value='';$('auId').value='';$('auU').value='';regUI(false);if(!MATCH&&!OFFG&&!(loadMode))showScr('scrMenu');if(m.reg&&m.tag)showTagBox(m.tag);break;
+   case 'authok':AUTHED=true;offSince=0;myName=m.u;myTag=m.tag||'';myId=m.id||'';ls('jt_u',m.u);ls('jt_tok',m.tok);$('auP').value='';$('auP2').value='';$('auId').value='';$('auU').value='';regUI(false);if(!MATCH&&!OFFG&&!(loadMode))showScr('scrMenu');if(m.reg&&m.tag)showTagBox(m.tag);break;
    case 'autherr':$('auMsg').textContent=m.msg;if(m.resume){ls('jt_tok',null)}if(!MATCH)showScr('scrAuth');break;
    case 'kicked':AUTHED=false;barUI();toast('با دستگاه دیگری وارد شدی');if(!MATCH)showScr('scrAuth');break;
    case 'toast':toast(m.msg);break;
@@ -3011,7 +3025,7 @@ function onMsg(m){
    case 'match':startMatch(m);break;
    case 'hello':if(m.t0){GT0=m.t0;SOFF=Date.now()-m.now}Q=m.log.map((c,n)=>({g:m.g,n,c}));HM={};OH={};desync=false;break;
    case 'cmd':if(m.c&&m.c.a==='init'&&m.t0){GT0=m.t0;SOFF=Date.now()-m.now}if(MATCH)Q.push({g:m.g,n:m.n,c:m.c});break;
-   case 'opp':oppOn=m.on;break;
+   case 'opp':oppOn=m.on;oppOff=m.on?0:Date.now();break;
    case 'h':{const k=m.g+':'+m.n;if(HM[k]!==undefined&&HM[k]!==m.h)desync=true;else OH[k]=m.h;break}
    case 'abort':if(MATCH&&!over){abortInfo=m;over=true;shopOpen=false;try{cfClose()}catch(_){}clearTimeout(autoT);autoT=0;draw()}break;
   }}
