@@ -722,9 +722,9 @@ function initScene(){
  const floor=new THREE.Mesh(new THREE.BoxGeometry(11.4,.3,16.4),new THREE.MeshStandardMaterial({color:0x1d1813,roughness:1}));floor.position.set(CTR.x,-.28,CTR.z);scene.add(floor);
  [[-1,1],[1,1],[-1,-1],[1,-1]].forEach(([a,b])=>{const m=new THREE.Mesh(new THREE.CylinderGeometry(.42,.5,.9,16),new THREE.MeshStandardMaterial({color:0x2a241d,roughness:.7}));m.position.set(CTR.x+a*5.9,-.1,CTR.z+b*8.5);m.castShadow=true;scene.add(m);
   const g=new THREE.Mesh(new THREE.SphereGeometry(.17,12,8),new THREE.MeshBasicMaterial({color:0xe8a33d}));g.position.set(m.position.x,.45,m.position.z);scene.add(g)});
- const bdGeo=new THREE.RingGeometry(.94,1,6,1).rotateX(-Math.PI/2),bdMat=new THREE.MeshBasicMaterial({color:0xa89f8b});
+ const bdGeo=new THREE.RingGeometry(.94,1,6,1).rotateX(-Math.PI/2),bdMat=new THREE.MeshBasicMaterial({color:0x5c5649});
  for(let c=0;c<COLS;c++){tiles[c]=[];for(let r=0;r<ROWS;r++){
-  const mat=new THREE.MeshStandardMaterial({color:(c+r)%2?0x6a5c49:0x7d6d58,roughness:.85,emissive:0x000000});
+  const mat=new THREE.MeshStandardMaterial({color:(c+r)%2?0x2e271f:0x392f26,roughness:.85,emissive:0x000000});
   const m=new THREE.Mesh(GEO.tile,mat);m.position.set(CELL_X(c),-.17,CELL_Z(c,r));m.receiveShadow=true;m.userData={c,r};scene.add(m);tiles[c][r]=m;pickables.push(m);
   const bd=new THREE.Mesh(bdGeo,bdMat);bd.position.set(CELL_X(c),.012,CELL_Z(c,r));scene.add(bd)}}
  ringMesh=new THREE.Mesh(new THREE.RingGeometry(.8,.95,6,1).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({color:0xffffff}));ringMesh.position.y=.03;ringMesh.visible=false;scene.add(ringMesh);
@@ -3928,8 +3928,8 @@ var TX={
     "ولی حواست باشه: وقتی چند دشمن هم‌فاصله باشن، ضربه‌ها تصادفی به یکی‌شون می‌خوره 🎲"],
  D:["کارت خوب بود! 👊\nولی اگه از شانسی بودن ضربه‌ها خسته شدی، قهرمان تو یه ویژگی مخصوص داره... یه لحظه نگاه کن!"],
  E:["ناخدا کلمب به میدون اومد! 🏴‍☠️\nجون دشمن‌ها رو هم دوباره پر کردم تا راحت تمرین کنی.",
-    "قهرمان‌ها وقتی هم‌کمبوی خودشون هم توی میدون باشه، یه سری قابلیت جدید باز می‌کنن ✨",
-    "قابلیت قهرمان تو الان اینه: ضربه‌هاش دیگه تصادفی نیست و فقط به دشمنی می‌خوره که خودت بخوای 🎯"],
+    "آکروبات تو و ناخدا کلمب هر دو مبارزن و کمبوی مشترک دارن؛ برای همین وقتی کنار هم باشن هم‌افزایی می‌کنن ✨",
+    "هم‌افزایی مبارزها اینه که ضربه‌هاشون دیگه تصادفی نیست و فقط به دشمنی می‌خوره که خودت بخوای 🎯"],
  F:["اوه! 😳 این وضعیت سختیه...\nچهار تا شوالیه یه‌جا جمع شدن. وقتشه از قابلیتت استفاده کنی!",
     "قابلیت قهرمان تو ضربه‌های زنجیره‌ایه و جایی که دشمن‌ها انبوهن، خیلی خوب عمل می‌کنه 🔥"],
  G:["آفرین، کارت خوب بود! 👏\nولی حواست باشه: هر قابلیت اکسیر مصرف می‌کنه و اکسیر تو هم محدوده 💧",
