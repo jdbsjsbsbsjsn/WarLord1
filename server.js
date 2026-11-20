@@ -151,10 +151,10 @@ const server = http.createServer((req, res) => {
     res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
     return res.end(fs.readFileSync(path.join(__dirname, 'index.html')));
   }
-  const m = /^\/loading(\.jpg|\.png|\.webp)$/.exec(p);
+  const m = /^\/(loading|alice)(\.jpg|\.png|\.webp)$/.exec(p);   // عکس لودینگ و عکس کماندو آلیس (راهنمای توتریال)
   if (m) {
-    const f = path.join(__dirname, 'loading' + m[1]);
-    if (fs.existsSync(f)) { res.writeHead(200, { 'content-type': MIME[m[1]], 'cache-control': 'public, max-age=300' }); return fs.createReadStream(f).pipe(res); }
+    const f = path.join(__dirname, m[1] + m[2]);
+    if (fs.existsSync(f)) { res.writeHead(200, { 'content-type': MIME[m[2]], 'cache-control': 'public, max-age=300' }); return fs.createReadStream(f).pipe(res); }
   }
   if (p === '/entry.mp3') {                      // موزیک ورود (اختیاری): فایل entry.mp3 کنار server.js
     const f = path.join(__dirname, 'entry.mp3');
