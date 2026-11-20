@@ -843,7 +843,7 @@ function buildMakao(M,team){
  const dr=new THREE.Mesh(new THREE.CylinderGeometry(.075,.075,.14,10),Sv);dr.rotation.x=Math.PI/2;gp(dr,0,0,.02);
  gp(new THREE.Mesh(new THREE.BoxGeometry(.06,.14,.08),Sv),0,-.1,-.08);gp(new THREE.Mesh(new THREE.OctahedronGeometry(.03),Gm),0,.06,.06);
  return G}
-window.SIMPLE_GFX=true;const FIG={ali:buildAlice,mak:buildMakao};
+const FIG={ali:buildAlice,mak:buildMakao};
 /* ===== GX — موتور گرافیک مهره‌ها (ابزار مشترک برای همهٔ کاراکترها) =====
  کاراکتر جدید: تابعی مثل gxAlice بنویس (M,team)=>Group و با GX.reg('کلید',تابع) ثبتش کن.
  ابزارها: GX.pal(M) مواد PBR | GX.lathe بدنه/دامن چین‌دار | GX.limb/GX.strand لولهٔ باریک‌شونده (دست، پا، مو)
@@ -1996,13 +1996,13 @@ function mkUnit(u){
  const head=new THREE.Mesh(GEO.head,M(pale));head.position.y=ranged?1.62:1.32;
  const band=new THREE.Mesh(GEO.band,M(0xf3ead8));band.rotation.x=Math.PI/2;band.position.y=.5;
  const inner=new THREE.Group();inner.add(body,head,band);inner.scale.setScalar(s);inner.rotation.y=u.o===0?Math.PI:0;
- let fig=null,figM=[];if(!window.SIMPLE_GFX&&FIG[u.k]){const n0=mats.length;fig=FIG[u.k](M,team);mats.slice(n0).forEach(m=>{m.userData.nt=1});fig.traverse(o=>{if(o.isMesh){o.castShadow=true;o.userData.u=u;figM.push(o)}});[body,head,band].forEach(m=>{m.material.visible=false});inner.add(fig)}
+ let fig=null,figM=[];if(FIG[u.k]){const n0=mats.length;fig=FIG[u.k](M,team);mats.slice(n0).forEach(m=>{m.userData.nt=1});fig.traverse(o=>{if(o.isMesh){o.castShadow=true;o.userData.u=u;figM.push(o)}});[body,head,band].forEach(m=>{m.material.visible=false});inner.add(fig)}
  [base,body,head,band].forEach(m=>{m.castShadow=true;m.userData.u=u});pickables.push(base,body,head);figM.forEach(m=>pickables.push(m));
  const shield=new THREE.Mesh(GEO.shield,new THREE.MeshBasicMaterial({color:0xffd34d}));shield.rotation.x=Math.PI/2;shield.position.y=.9;
  const hack=new THREE.Mesh(GEO.shield,new THREE.MeshBasicMaterial({color:0x39ff88}));hack.rotation.x=Math.PI/2;hack.position.y=.12;hack.scale.setScalar(.95);
  const cage=new THREE.Mesh(GEO.cage,new THREE.MeshBasicMaterial({color:0x111111,wireframe:true}));cage.position.y=.95;
  const lb=mkLabel();lb.sp.position.set(0,.1,.72);
- g.add(inner,shield,hack,cage,lb.sp);if(!window.SIMPLE_GFX&&FIG[u.k]){const rg=new THREE.Mesh(new THREE.TorusGeometry(.7,.035,8,48).rotateX(Math.PI/2),new THREE.MeshBasicMaterial({color:team,toneMapped:false}));rg.position.y=.19;g.add(rg)}
+ g.add(inner,shield,hack,cage,lb.sp);if(FIG[u.k]){const rg=new THREE.Mesh(new THREE.TorusGeometry(.7,.035,8,48).rotateX(Math.PI/2),new THREE.MeshBasicMaterial({color:team,toneMapped:false}));rg.position.y=.19;g.add(rg)}
  g.position.set(CELL_X(u.c),0,CELL_Z(u.c,u.r));
  g.userData={mats,shield,hack,cage,lb,pick:[base,body,head,...figM],y0:u.o===0?Math.PI:0,fy:0,ft:0,tx:g.position.x,tz:g.position.z,ty:0,flash:0,last:u.hp,tint:[0,0,0],s,em:[team.r*.28,team.g*.28,team.b*.28]};
  scene.add(g);return g}
