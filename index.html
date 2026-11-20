@@ -132,14 +132,13 @@ button em{font-style:normal;font-size:11px;font-weight:500;opacity:.8}
  <div id="stage">
   <canvas id="cv"></canvas>
   <button id="nw" type="button">بازی جدید</button>
-  <button id="cbtn" type="button">کمبوها</button><button id="dbtn" type="button" hidden></button>
+  <button id="cbtn" type="button">کمبوها</button><button id="dbtn" type="button" hidden></button><button id="eb" type="button" hidden>دشمن ▼</button><section id="ec" hidden></section>
   <button id="shp" type="button" aria-label="فروشگاه">🛒</button><button id="spb" type="button" hidden>✨ طلسم‌ها</button>
   <section id="shop"></section>
   <section id="cb" hidden></section>
-  <section id="dr" hidden></section>
+  <section id="dr" hidden></section><div id="ctl"><section id="info" class="card empty"></section><div id="bar"><button id="ab" type="button"></button></div></div>
   <div id="end" hidden><div class="endbox"><h2 id="endt"></h2><button id="nw2" type="button">بازی جدید</button></div></div>
  </div>
- <div id="ctl"><section id="info" class="card empty"></section><div id="bar"><button id="ab" type="button"></button></div></div>
  <div id="msg" aria-live="polite"></div>
 </main>
 <style>
@@ -257,6 +256,27 @@ button em{font-style:normal;font-size:11px;font-weight:500;opacity:.8}
 #ldBar i{display:block;height:100%;width:0;background:var(--gold);transition:width .22s ease-out}
 #ldPct{font-size:15px;letter-spacing:1px;direction:ltr}
 @keyframes ld{to{width:100%}}
+</style>
+<style>
+/* تمام‌صفحه: صحنه همهٔ فضا را می‌گیرد؛ گزارش حذف؛ کمبوها پایین‌چپ، قابلیت پایین‌راست */
+body{padding:0;padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
+#app{max-width:none;display:flex;flex-direction:column;gap:0}
+#hud{width:100%;max-width:560px;margin:0 auto;padding:6px 8px}
+#stage{border-radius:0;grid-column:auto;grid-row:auto}
+#msg{display:none!important}
+#end{z-index:10}
+#ctl{position:absolute;inset:0;z-index:4;display:block;pointer-events:none}
+#info{position:absolute;left:8px;bottom:8px;width:min(60%,250px);height:auto;max-height:45%;overflow-y:auto;padding:6px 8px;gap:4px;background:rgba(20,22,28,.86);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);pointer-events:auto;direction:rtl}
+#info.empty{display:none}
+#info .chips{overflow:visible}
+.cbl{display:flex;flex-direction:column;gap:3px;border-top:1px solid var(--line);padding-top:4px}
+.cl{display:flex;justify-content:space-between;gap:8px;font-size:12px;line-height:1.4}
+.cl b{color:var(--gold)}.cl span{color:var(--good);white-space:nowrap}
+.cbl .none{color:var(--mut);font-size:11px}
+#eb{position:absolute;top:38px;right:6px;z-index:5;min-height:0;height:26px;padding:0 10px;font-size:11px;font-weight:700;border-radius:999px;background:rgba(20,22,28,.75);color:var(--ice);border-color:var(--ice)}
+#ec{position:absolute;top:68px;right:6px;z-index:5;width:min(60%,250px);padding:6px 8px;background:rgba(20,22,28,.9);border:1px solid var(--line);border-radius:12px;direction:rtl}
+#bar{position:absolute;right:8px;bottom:8px;width:auto;pointer-events:auto}
+#bar button{flex:none;min-width:112px;min-height:60px;padding:6px 14px;box-shadow:0 4px 14px rgba(0,0,0,.45)}
 </style>
 <div class="scr" id="scrAuth"><div class="box"><h1>جنگ‌سالار</h1>
 <input id="auU" placeholder="تگ حساب (مثل #AB12CD34EF56)" maxlength="14" autocapitalize="characters" autocomplete="username" spellcheck="false" style="direction:ltr">
@@ -428,8 +448,8 @@ function add(k,o,c,r){const h=H[k],u={k,o,c,r,hp:h.hp,max:h.hp,mv:h.m,act:false,
 /* ===== مرحلهٔ انتخاب و چیدن قهرمان (۱۶۰ ثانیه برای هر بازیکن) ===== */
 function init(){NOGAME=false;clearTimeout(autoT);autoT=0;PK=[[],[]];SP=[[],[]];DX=[[],[]];zoneClear();smnGen++;LOCK=0;spl=null;shopOpen=false;U=[];P=0;T=0;E=[7,7];D=[0,0];ST=[];SC=[0,0];sel=null;mode='mv';over=false;MV=0;msg='';if(ONLINE)startDraftBoth();else startDraft(0)}
 const shuf=a=>{for(let i=a.length-1;i>0;i--){const j=RL()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a},rnd=a=>a[RL()*a.length|0];
-/* ===== اکسیر هیروها: هر هیرو هنگام انتخاب از همان ۴۴ اکسیرِ طلسم‌ها کم می‌کند؛ بدون اکسیر کافی خرید ممکن نیست ===== */
-const XC={acro:5,aka:6,cri:11,doj:5,pri:4,raf:5,bri:5,ali:5,mar:4,mak:6,and:4,zep:7,jack:6,blk:8,jal:5,ikh:4,col:6,ear:6,ik:4,iw:4,mus:9,ske:5,bud:3,que:4,fd:8,ft:8,mac:6,eld:6,spg:5,med:10,eli:7,ber:5,dk:6,gq:6,dn:4,dw:6},XT=44,
+/* ===== اکسیر هیروها: هر هیرو هنگام انتخاب از همان ۴۲ اکسیرِ طلسم‌ها کم می‌کند؛ بدون اکسیر کافی خرید ممکن نیست ===== */
+const XC={acro:5,aka:6,cri:11,doj:5,pri:4,raf:5,bri:5,ali:5,mar:4,mak:6,and:4,zep:7,jack:6,blk:8,jal:5,ikh:4,col:6,ear:6,ik:4,iw:4,mus:9,ske:5,bud:3,que:4,fd:8,ft:8,mac:6,eld:6,spg:5,med:10,eli:7,ber:5,dk:6,gq:6,dn:4,dw:6},XT=42,
  hc=k=>XC[k]|0,
  hCost=o=>(PK[o]||[]).reduce((s,k)=>s+hc(k),0),
  elLeft=o=>XT-spCost(o)-hCost(o),
@@ -654,7 +674,10 @@ function cbRender(){const b=$('cb');b.hidden=!cbOpen;if(!cbOpen)return;
    return '<div class="cr'+(on?' on':'')+'"><span class="n">'+PX(n)+' / '+PX(nx||th[th.length-1]||n)+'</span><b>'+t+'</b><small>'+txt+'</small></div>'}).join('');
   return '<div class="cbp t'+o+'"><h3>'+NM[o]+' · '+PX(PK[o].length)+' قهرمان</h3>'+(rows||'<div class="dp">هنوز قهرمانی انتخاب نشده</div>')+'</div>'};
  b.innerHTML='<div class="cbh"><span>کمبوهای انتخاب‌شده</span><button type="button" data-x="1">بستن</button></div><div class="cbc">'+(ONLINE&&phase!=='play'?col(ME):col(0)+col(1))+'</div>'}
-function ui(){if(DSW)return;cbRender();
+const TO=()=>ONLINE?(ME<2?ME:P):BOTG?0:P;
+let EC=false;function ecRender(){const on=phase==='play'&&!over&&!NOGAME;$('eb').hidden=!on;$('eb').textContent=EC?'دشمن ▲':'دشمن ▼';$('ec').hidden=!(on&&EC);if(on&&EC)$('ec').innerHTML=cbl(1-TO())}
+function cbl(o){const m=SY[o]||{},r=Object.keys(m).map(t=>{const n=m[t]|0,th=TH[t]||[],lv=th.filter(x=>x<=n).length;return lv?[lv,'<div class="cl"><b>'+t+'</b><span>سطح '+PX(lv)+(th.length>1?' از '+PX(th.length):'')+'</span></div>']:null}).filter(Boolean).sort((x,y)=>y[0]-x[0]).map(x=>x[1]).join('');return '<div class="cbl"><div class="ex">کمبوهای فعال تیم '+NM[o]+'</div>'+(r||'<span class="none">کمبوی فعالی ندارد</span>')+'</div>'}
+function ui(){if(DSW)return;cbRender();ecRender();
  // سربرگ: اکسیر دو طرف و حرکت باقی‌مانده
  const dr=phase!=='play'&&!abortInfo;$('ctl').hidden=$('msg').hidden=dr;$('dr').hidden=!dr||drClosed||(ONLINE&&P!==ME);$('dbtn').hidden=!(dr&&drClosed);
  if(dr&&drClosed){const tn=tray&&H[tray]?H[tray].n:'';$('dbtn').innerHTML='<span>📂 '+(phase==='pick'?'انتخاب هیرو':'چیدمان')+'</span>'+(tn?'<em>مستقر کن: '+esc(tn)+'</em>':'')}$('dr').dataset.pos=(ONLINE||P===0)?'top':'bottom';
@@ -667,15 +690,15 @@ function ui(){if(DSW)return;cbRender();
  const ab=$('ab'),inf=$('info');
  if(sel){const h=H[sel.k],pc=Math.max(0,Math.min(1,vhp(sel)/sel.max));
   const st=[[sel.fly>0,'در حال پرواز','i'],[sel.weak,'ضعیف‌شده','w'],[sel.crit>0,'کریتیکال فعال','g'],[sel.fr>0,'فریز','i'],[sel.jl>0,'زندانی','w'],[sel.sl>0,'کند','i'],[sel.sh>0,'سپر','g'],[sel.inv,'نامرئی',''],[sel.hk,'هک‌شده','w'],[sel.bb,'بمب '+PX(sel.bb|0),'w'],[sel.mb,'بمب‌گذار','g'],[sel.ps>0,'مسموم','w'],[sel.ar>0,'زره','g'],[sel.mk>0,'نیزه‌خورده','w'],[sel.bl>0,'قابلیت بسته','w'],[sel.used,'قابلیت مصرف شد',''],[sel.act,'اقدام انجام شد','']].filter(x=>x[0]).map(x=>chip(x[1],x[2])).join('');
-  const ex=(sel.md?chip('بونوس دوشیزگان +'+PX(Math.round(sel.md)),'g'):'')+(TR[sel.k]?TR[sel.k].map(t=>chip(t+' '+PX(SY[sel.o][t]|0),(SY[sel.o][t]|0)>=2?'g':'')).join(''):'')+(swapMates(sel).length?chip('جابه‌جایی با یار کناری ممکن است','g'):'')+(sel.k==='mak'?chip('گلوله '+PX(sel.ammo)):'')+(sel.k==='and'?chip('شارژ '+PX(Math.round(sel.chg))):'')+(sel.k==='med'?chip('مار '+PX(sel.sn|0)+'/۶'):'')+(sel.k==='gq'?chip('گلوله '+PX(sel.sh2)+(sel.fire?' آتشی':'')):'');
+  const ex=(sel.md?chip('بونوس دوشیزگان +'+PX(Math.round(sel.md)),'g'):'')+(swapMates(sel).length?chip('جابه‌جایی با یار کناری ممکن است','g'):'')+(sel.k==='mak'?chip('گلوله '+PX(sel.ammo)):'')+(sel.k==='and'?chip('شارژ '+PX(Math.round(sel.chg))):'')+(sel.k==='med'?chip('مار '+PX(sel.sn|0)+'/۶'):'')+(sel.k==='gq'?chip('گلوله '+PX(sel.sh2)+(sel.fire?' آتشی':'')):'');
   inf.className='card t'+sel.o;
   inf.innerHTML='<div class="uh"><span class="dot"></span><strong>'+esc(h.n)+'</strong><span class="who">'+NM[sel.o]+'</span><div class="hp"><i style="width:'+(pc*100)+'%" class="'+(pc>.5?'hi':pc>.25?'mid':'lo')+'"></i><span>'+PX(Math.round(vhp(sel)))+' / '+PX(sel.max)+'</span></div></div>'
-   +'<div class="chips">'+chip('حرکت '+PX(sel.mv)+' از '+PX(h.m))+chip('برد '+PX(h.r))+chip('هزینه '+PX(h.c)+' اکسیر')+ex+st+'</div>';
+   +'<div class="chips">'+chip('حرکت '+PX(sel.mv)+' از '+PX(h.m))+chip('برد '+PX(h.r))+chip('هزینه '+PX(h.c)+' اکسیر')+ex+st+'</div>'+cbl(TO());
   ab.hidden=false;
-  ab.innerHTML=mode==='ab'?'<span>لغو انتخاب هدف</span>':h.c?'<span>قابلیت</span><em>'+PX(cost(sel))+' اکسیر</em>':'<span>این قهرمان قابلیت ندارد</span>';
+  ab.innerHTML=mode==='ab'?'<span>لغو انتخاب هدف</span>':h.c?'<span>قابلیت</span><em>'+PX(cost(sel))+' اکسیر</em>'+(h.o1?'<em>'+PX(Math.max(0,h.o1-(sel.used|0)))+' از '+PX(h.o1)+' بار</em>':''):'<span>این قهرمان قابلیت ندارد</span>';
   ab.classList.toggle('on',mode==='ab');
   ab.disabled=over||sel.o!==P||sel.act||sel.mo||sel.mv<1||MV<1||E[P]<cost(sel)||!abT(sel).length}
- else{inf.className='card empty';inf.innerHTML='<span>یکی از قهرمان‌هایت را انتخاب کن</span>';ab.hidden=false;ab.classList.remove('on');ab.innerHTML='<span>قابلیت</span>';ab.disabled=true}
+ else{inf.className='card t'+TO();inf.innerHTML=cbl(TO());ab.hidden=false;ab.classList.remove('on');ab.innerHTML='<span>قابلیت</span>';ab.disabled=true}
  
  // پیام‌ها
  if(msg!==lastMsg){if(msg.startsWith('بازی شروع شد'))LOG=[];if(msg)LOG.unshift(msg);LOG=LOG.slice(0,3);lastMsg=msg}
@@ -724,7 +747,7 @@ function initScene(){
   const g=new THREE.Mesh(new THREE.SphereGeometry(.17,12,8),new THREE.MeshBasicMaterial({color:0xe8a33d}));g.position.set(m.position.x,.45,m.position.z);scene.add(g)});
  const bdGeo=new THREE.RingGeometry(.94,1,6,1).rotateX(-Math.PI/2),bdMat=new THREE.MeshBasicMaterial({color:0x5c5649});
  for(let c=0;c<COLS;c++){tiles[c]=[];for(let r=0;r<ROWS;r++){
-  const mat=new THREE.MeshStandardMaterial({color:(c+r)%2?0x2e271f:0x392f26,roughness:.85,emissive:0x000000});
+  const mat=new THREE.MeshStandardMaterial({color:(c+r)%2?0x17130f:0x1c1713,roughness:.85,emissive:0x000000});
   const m=new THREE.Mesh(GEO.tile,mat);m.position.set(CELL_X(c),-.17,CELL_Z(c,r));m.receiveShadow=true;m.userData={c,r};scene.add(m);tiles[c][r]=m;pickables.push(m);
   const bd=new THREE.Mesh(bdGeo,bdMat);bd.position.set(CELL_X(c),.012,CELL_Z(c,r));scene.add(bd)}}
  ringMesh=new THREE.Mesh(new THREE.RingGeometry(.8,.95,6,1).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({color:0xffffff}));ringMesh.position.y=.03;ringMesh.visible=false;scene.add(ringMesh);
@@ -2016,7 +2039,8 @@ function popup(txt,pos,col){
 function vhp(u){const q=u.vq;if(!q||!q.length){u.vq=null;return u.hp}const n=performance.now();while(q.length&&q[0].at<=n){u.vb=q[0].hp;q.shift()}if(!q.length){u.vq=null;return u.hp}return u.vb}
 function queueVis(t,h0,dl){if(!(dl>0)&&!(t.vq&&t.vq.length))return;if(!t.vq||!t.vq.length){t.vb=h0;t.vq=[];t.vc=t.c;t.vr=t.r}
  t.vq.push({at:performance.now()+Math.max(0,dl),hp:t.hp});setTimeout(()=>{try{draw()}catch(e){}},Math.max(0,dl)+40)}
-function hitDelay(a,t){const ga=unitG.get(a),gt=unitG.get(t),k=a.k,own=!!CX&&CX.a===a,ab=own&&CX.ab,i=own?(CX.i|0):0,D=ga&&gt?ga.position.distanceTo(gt.position):1,dc=Math.max(1,dist(a,t)),
+function hitDelay(a,t){if(a.k==='acro'&&CX&&CX.a===a&&CX.ab){const n=CX.ai|0;CX.ai=n+1;return n*210+170}
+const ga=unitG.get(a),gt=unitG.get(t),k=a.k,own=!!CX&&CX.a===a,ab=own&&CX.ab,i=own?(CX.i|0):0,D=ga&&gt?ga.position.distanceTo(gt.position):1,dc=Math.max(1,dist(a,t)),
  fl=(spd,mn)=>Math.max(mn||180,D*spd*1000);
  if(k==='cri')return ab?530:370;
  if(k==='dk')return ab?720:390;
@@ -2057,7 +2081,7 @@ function syncStatues(){
   const c=document.createElement('canvas');c.width=LW;c.height=LH;plate(c.getContext('2d'),H[s.k].n.split(' ')[0],PX(Math.round(s.heal)),s.heal/s.max,'#8a8a8a',false,'#7cc4ff');
   const t=new THREE.CanvasTexture(c),sp=new THREE.Sprite(new THREE.SpriteMaterial({map:t,transparent:true,depthTest:false,toneMapped:false}));sp.scale.set(LW/LU,LH/LU,1);sp.position.set(m.position.x,1.45,m.position.z+.3);sp.renderOrder=10;stGroup.add(sp)})}
 function syncTiles(){
- const mvT=sel&&!over?reach(sel):{},hitT=sel&&!sel.act&&!sel.mo&&!over?U.filter(t=>canHit(sel,t)):[],abL=mode==='ab'&&sel?abT(sel):[],swT=sel&&mode==='mv'?swapMates(sel):[];
+ const my=mine()&&sel&&sel.o===P,mvT=my&&!over?reach(sel):{},hitT=my&&!sel.act&&!sel.mo&&!over?U.filter(t=>canHit(sel,t)):[],abL=my&&mode==='ab'?abT(sel):[],swT=my&&mode==='mv'?swapMates(sel):[];
  hlTiles=[];
  for(let c=0;c<COLS;c++)for(let r=0;r<ROWS;r++){let f=0;
   if((c+','+r) in mvT&&mode==='mv')f=0x2ec86e;
@@ -2069,8 +2093,8 @@ function syncTiles(){
 function loop(){
  requestAnimationFrame(loop);const dt=Math.min(.05,clock.getDelta()),t=clock.elapsedTime;
  unitG.forEach((g,u)=>{const d=g.userData,k=1-Math.exp(-dt*10);
-  g.position.x+=(d.tx-g.position.x)*k;g.position.z+=(d.tz-g.position.z)*k;
-  g.position.y+=(d.ty+(u.fly>0?.12*Math.sin(t*3):0)-g.position.y)*k;
+  if(!d.anim){g.position.x+=(d.tx-g.position.x)*k;g.position.z+=(d.tz-g.position.z)*k;
+  g.position.y+=(d.ty+(u.fly>0?.12*Math.sin(t*3):0)-g.position.y)*k}
   d.flash=Math.max(0,d.flash-dt*2.5);d.mats.forEach(m=>{const q=m.userData.nt?0:1,w=m.userData.nt?.45:1;m.emissive.setRGB(d.em[0]*q+d.tint[0]*w+d.flash*.8,d.em[1]*q+d.tint[1]*w+d.flash*.1,d.em[2]*q+d.tint[2]*w+d.flash*.1)});
   g.children[0].scale.setScalar(d.s*(1+(sel_===u?.04*Math.sin(t*6):0)));{const iw=g.children[0];if(d.ft>0)d.hf=1;const tg=d.hf?d.fy:d.y0;d.ft-=dt;let df=tg-iw.rotation.y;df=Math.atan2(Math.sin(df),Math.cos(df));iw.rotation.y+=df*(1-Math.exp(-dt*14))}
   if(d.shield.visible)d.shield.rotation.z=t*2});
@@ -2246,7 +2270,7 @@ $('cfy').onclick=()=>{if(cfStep===1){cfStep=2;cfRender();$('cfn').focus()}else i
 $('cf').onclick=e=>{if(e.target===$('cf'))cfClose()};
 addEventListener('keydown',e=>{if(e.key==='Escape'&&cfStep)cfClose()});
 $('nw').onclick=()=>MATCH?forfeitAsk():cfOpen();
-$('cbtn').onclick=()=>{cbOpen=!cbOpen;cbRender()};$('dbtn').onclick=()=>{drClosed=false;draw()};
+$('cbtn').onclick=()=>{cbOpen=!cbOpen;cbRender()};$('eb').onclick=()=>{EC=!EC;ecRender()};$('dbtn').onclick=()=>{drClosed=false;draw()};
 $('cb').onclick=e=>{if(e.target.closest('[data-x]')){cbOpen=false;cbRender()}};
 addEventListener('resize',()=>{resize();U&&draw()});$('nw2').onclick=()=>MATCH?finishMatch():cfOpen();
 $('dr').onclick=e=>{const b=e.target.closest('button,[data-t]');if(!b)return;const d=b.dataset;
@@ -2495,6 +2519,21 @@ const _ua=useAb;useAb=function(u,t){const k=u.k,mb=!!u.mb;if(FXI)try{const g=uni
   else if(k==='ber'){const s=FS.get(u);if(s)s.an=performance.now()+3500;rageFX(g)}
   if(phase==='play'){CX={a:u,i:0,ab:true,snd:false,near:false,prev:null};CX.snd=!!abSnd(u,t);if(k==='dk')dkStart(u,t,true);if(!CX.snd&&k!=='que')SFX.ab()}}catch(e){}
  try{const p={n:Math.min(3,D[1-u.o]),b:k==='pri'?U.filter(x=>x.o===u.o&&x!==u).reduce((m,x)=>x.hp>m.hp?x:m,{hp:-1}):null};_ua(u,t);if(FXI&&phase==='play')try{voiceAfter(u,t,p)}catch(e){}}finally{if(CX&&CX.al&&!CX.alDone)try{aliFX(u,t,0,true)}catch(e){}CX=null}};
+{const _ua2=useAb;useAb=function(u,t){let g=null,pl=null;
+ if(u.k==='acro'&&FXI&&phase==='play')try{g=unitG.get(u);pl=g&&acroPlan(u)}catch(e){}
+ if(!pl)return _ua2(u,t);
+ const pts=[[u.c,u.r],...pl.path.map(x=>[x.c,x.r]),pl.exit];g.userData.anim=1;
+ try{return _ua2(u,t)}finally{try{acroAnim(g,pts)}catch(e){g.userData.anim=0}}}}
+function acroAnim(g,pts){const d=g.userData,inner=g.children[0],L=210,N=pts.length-1,P=pts.map(p=>V3(p[0],p[1])),t0=performance.now();let last=0;
+ const halo=new THREE.Sprite(new THREE.SpriteMaterial({map:GL,color:0xffeeb0,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,toneMapped:false,opacity:.9}));halo.scale.setScalar(3.2);halo.renderOrder=9;scene.add(halo);
+ ring(P[0],0xffe9a0,2.2,.5,.15);SFX.wind&&SFX.wind(.7);LOCK++;
+ (function f(){const e=performance.now()-t0,i=Math.min(N-1,Math.floor(e/L)),k=Math.min(1,(e-i*L)/L),a=P[i],b=P[i+1],x=a.x+(b.x-a.x)*k,z=a.z+(b.z-a.z)*k,y=Math.sin(k*Math.PI)*1.5,pp=new THREE.Vector3(x,y,z);
+  g.position.set(x,y,z);inner.rotation.x=-k*Math.PI*2;d.hf=1;d.fy=Math.atan2(b.x-a.x,b.z-a.z);d.ft=1;
+  halo.position.set(x,y+.9,z);halo.material.opacity=.65+.25*Math.sin(e/35);halo.scale.setScalar(3+.5*Math.sin(e/50));
+  burst(pp,4,0xcfe8ff,{sp:.3,size:.55,life:.45,g:0,vy:0,up:0,y:.5,r:.15,h:.6});
+  if(i>last){last=i;const q=P[i];ring(q,0xfff0c0,1.6,.35,.15);burst(q,14,0xffe9a0,{sp:3,size:.3,life:.4,g:2,y:.6})}
+  if(e<N*L)return requestAnimationFrame(f);
+  scene.remove(halo);halo.material.dispose();inner.rotation.x=0;d.anim=0;g.position.set(P[N].x,0,P[N].z);ring(P[N],0xffe9a0,2,.5,.15);LOCK--;draw()})()}
 const _at=attack;attack=function(a,t){if(FXI&&phase==='play')try{CX={a,i:0,ab:false,snd:false,near:false,prev:null};CX.snd=!!atkSnd(a,t);if(a.k==='dk')dkStart(a,t,false)}catch(e){}
  const fl=U.filter(x=>x.o!==a.o&&x.hp>0&&x.hp>=x.max);try{return _at(a,t)}finally{if(CX&&CX.mk&&!CX.mkDone)try{makFX(a,t,0)}catch(e){}if(CX&&CX.cr&&!CX.crDone)try{criFX(a,t,0,false)}catch(e){}if(CX&&CX.al&&!CX.alDone)try{aliFX(a,t,0,false)}catch(e){}CX=null;if(a.k==='zep'&&fl.some(x=>x.hp<=0))say('One shot!',0,'zep')}};
 const _zp=zep;zep=function(u,t,DM){if(FXI&&phase==='play')try{zepFX(u,t,DM||[840,630,420,210])}catch(e){}return _zp(u,t,DM)};
@@ -3743,7 +3782,7 @@ rs:['','روی یک خانهٔ خالی در نیمهٔ خودت: آخرین ق�
 /* قوانین */
 var RULES=[
 ['','هدف بازی','تمام قهرمان‌های دشمن را از بین ببر. اگر همهٔ قهرمان‌های یک طرف بمیرند، طرف مقابل برنده است (موجودات احضاری حساب نمی‌شوند).'],
-['','انتخاب و چیدن','هر بازیکن ۷ قهرمان انتخاب می‌کند. کل اکسیر انتخاب ۴۴ است و بین قهرمان‌ها و طلسم‌ها (حداکثر ۴ تا) تقسیم می‌شود. قهرمان‌های هم‌کمبو در کنار هم کمبو فعال می‌کنند. ۱۶۰ ثانیه برای انتخاب و چیدن وقت داری. مهره‌ها را در نیمهٔ خودت بچین.'],
+['','انتخاب و چیدن','هر بازیکن ۷ قهرمان انتخاب می‌کند. کل اکسیر انتخاب ۴۲ است و بین قهرمان‌ها و طلسم‌ها (حداکثر ۴ تا) تقسیم می‌شود. قهرمان‌های هم‌کمبو در کنار هم کمبو فعال می‌کنند. ۱۶۰ ثانیه برای انتخاب و چیدن وقت داری. مهره‌ها را در نیمهٔ خودت بچین.'],
 ['','نوبت و حرکت','هر نوبت تیم تعدادی «حرکت» دارد: نوبت اول ۳، دوم ۴، سوم ۵، چهارم ۵؛ بعد از آن نصفِ مجموع حرکتِ قهرمان‌ها. هر قدم، ضربه یا قابلیت یک حرکت خرج می‌کند. هر قهرمان بیشتر از «حرکت» خودش در نوبت قدم برنمی‌دارد.'],
 ['','ضربه زدن','ضربه یک حرکت می‌خورد و بعد از آن آن قهرمان دیگر نمی‌تواند حرکت کند (مگر با کمبوی کریسدور). اگر چند دشمن هم‌فاصله باشند، ضربه تصادفی به یکی می‌خورد (با کمبوی مبارز خودت انتخاب می‌کنی).'],
 ['','برد (فاصله)','برد ۱ یعنی فقط خانهٔ کناری. برد ۳ یعنی تا ۳ خانه. خانه‌ها شش‌ضلعی‌اند و فاصله با شمارش خانه‌ها حساب می‌شود. نزدیک‌زن‌ها نمی‌توانند به قهرمان پرنده ضربه بزنند.'],
