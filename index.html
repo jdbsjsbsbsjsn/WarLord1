@@ -2,25 +2,10 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <title>جنگ‌سالار سه‌بعدی</title>
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700&display=swap" rel="stylesheet">
-<script>(function(){var box=null,seen={};function show(t){if(seen[t])return;seen[t]=1;if(!box){box=document.createElement("div");box.style.cssText="position:fixed;z-index:99;inset:auto 8px 8px 8px;max-height:40vh;overflow:auto;background:#300;color:#fff;font:12px monospace;padding:8px;border-radius:8px;direction:ltr;white-space:pre-wrap;word-break:break-all";box.onclick=function(){box.remove();box=null};(document.body||document.documentElement).appendChild(box)}box.textContent+=(box.textContent?"\n":"")+t;console.error(t)}
-addEventListener("error",function(e){var src=e.target&&(e.target.src||e.target.href);if(src&&e.target!==window){console.warn("LOAD FAIL: "+src);return}
-var w=(e.filename?" @"+e.filename.split("/").pop()+":"+e.lineno+":"+e.colno:"");show("ERR: "+(e.message||"?")+w+((e.error&&e.error.stack)?"\n"+String(e.error.stack).split("\n").slice(1,4).join("\n"):""))},true);
-window.__errShow=show;addEventListener("unhandledrejection",function(e){show("PROMISE: "+(e.reason&&(e.reason.stack||e.reason.message)||e.reason))})})()</script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r160/three.min.js"></script>
-<script>window.THREE||document.write('<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"><\/script>')</script>
-<script>window.THREE||document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r159/three.min.js"><\/script>')</script>
-<script>window.THREE||document.write('<script src="https://cdn.jsdelivr.net/npm/three@0.159.0/build/three.min.js"><\/script>')</script>
-<script>window.THREE||document.write('<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"><\/script>')</script>
-<script>window.THREE||document.write('<script src="https://unpkg.com/three@0.158.0/build/three.min.js"><\/script>')</script>
-<script>if(!window.THREE){document.addEventListener('DOMContentLoaded',function(){var m=document.getElementById('msg');if(m)m.textContent='بارگذاری موتور سه‌بعدی ناموفق بود؛ اینترنت/VPN را بررسی و صفحه را دوباره باز کن.'});throw new Error('THREE failed to load from all CDNs')}</script>
-<script>THREE.ColorManagement&&(THREE.ColorManagement.enabled=false);
-/* three r15x+ کلاس‌های ES6 است و بدون new خطا می‌دهد: هر کلاس را طوری می‌پیچیم که هر دو شکل new X() و X() کار کند */
-(function(T){var warned={};Object.keys(T).forEach(function(k){var C=T[k];
- if(typeof C!=='function'||!/^[A-Z]/.test(k)||!/^class\b/.test(Function.prototype.toString.call(C)))return;
- var W=function(){if(!new.target&&!warned[k]){warned[k]=1;console.warn('THREE.'+k+' called without new',new Error().stack)}
-  return Reflect.construct(C,arguments,new.target&&new.target!==W?new.target:C)};
- W.prototype=C.prototype;Object.setPrototypeOf(W,C);try{Object.defineProperty(W,'name',{value:k})}catch(e){}
- try{T[k]=W}catch(e){}})})(THREE);</script>
+<script>addEventListener("error",e=>{const d=document.createElement("div");d.style.cssText="position:fixed;z-index:99;inset:auto 8px 8px 8px;background:#300;color:#fff;font:12px monospace;padding:8px;border-radius:8px;direction:ltr;white-space:pre-wrap";d.textContent="ERR: "+(e.message||(e.target&&e.target.src)||"?");document.body&&document.body.appendChild(d)},true)</script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script>window.THREE||document.write('<script src="https://unpkg.com/three@0.160.0/build/three.min.js"><\/script>')</script>
+<script>THREE.ColorManagement&&(THREE.ColorManagement.enabled=false)</script>
 <style>
 /* چیدمان: ستون باریک؛ سربرگ سه‌ستونه، صحنهٔ سه‌بعدی، کارت قهرمان، دکمه‌ها، گزارش */
 :root{--bg:#13151a;--panel:#1c1f26;--panel2:#242832;--line:#313744;--fg:#e9ecf1;--mut:#9aa3b2;
@@ -82,7 +67,6 @@ button em{font-style:normal;font-size:11px;font-weight:500;opacity:.8}
 #nw:hover:not(:disabled){opacity:1}
 #cf{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(8,9,12,.74)}
 #cf[hidden]{display:none}
-#tga{position:fixed;inset:0;z-index:95;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(8,9,12,.86)}#tga[hidden]{display:none}#tga .cfbox{gap:10px}#tga button{font:inherit;font-size:15px;min-height:44px;border-radius:12px;border:1px solid var(--line);background:var(--panel2);color:var(--fg);cursor:pointer}#tga button.pr{background:var(--gold);color:var(--ink);border-color:var(--gold);font-weight:700}#tga button:disabled{opacity:.45}
 #tgo{position:fixed;inset:0;z-index:95;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(8,9,12,.86)}#tgo[hidden]{display:none}#tgo .cfbox{gap:10px}#tgo button{font:inherit;font-size:15px;min-height:44px;border-radius:12px;border:1px solid var(--line);background:var(--panel2);color:var(--fg);cursor:pointer}#tgo button.pr{background:var(--gold);color:var(--ink);border-color:var(--gold);font-weight:700}#tgo button:disabled{opacity:.45}#tgv{direction:ltr;unicode-bidi:isolate;font-size:22px;font-weight:700;letter-spacing:1px;color:var(--gold);background:var(--bg);border:1px dashed var(--gold);border-radius:12px;padding:12px 8px;user-select:all;-webkit-user-select:all;word-break:break-all}
 .cfbox{width:min(340px,100%);background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px 16px 14px;display:flex;flex-direction:column;gap:8px;text-align:center}
 .cfbox h2{margin:0;font-size:18px}.cfbox p{margin:0;color:var(--mut);font-size:13px}
@@ -164,7 +148,6 @@ button em{font-style:normal;font-size:11px;font-weight:500;opacity:.8}
 #net button{font:inherit;font-size:11px;padding:0 8px;min-height:20px;border-radius:8px;border:1px solid var(--line);background:var(--panel2);color:var(--fg)}
 .scr{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;padding:16px;background:radial-gradient(ellipse at 50% 15%,#2b2233,#13151a 70%);overflow-y:auto}
 .scr[hidden]{display:none}
-body.cov #app{visibility:hidden}
 .box{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:12px;width:min(92vw,380px);text-align:center;max-height:92vh;overflow-y:auto}
 .box h1{margin:0;font-size:28px;color:var(--gold)}.box h2{margin:0;font-size:18px}
 .box input{font:inherit;font-size:16px;padding:11px;border-radius:10px;border:1px solid var(--line);background:var(--panel2);color:var(--fg);text-align:center;min-width:0;width:100%}
@@ -369,7 +352,6 @@ body.cov #app{visibility:hidden}
 <button id="pfInv" class="pr" type="button" hidden>🛡 دعوت به قبیله</button><button id="pfBack" type="button">بازگشت</button></div></div></div>
 <div id="invPop" hidden><b id="ipT"></b><div class="row"><button id="ipYes" class="pr" type="button">قبول</button><button id="ipNo" type="button">رد</button></div></div>
 <div class="scr" id="scrLoad" hidden><img id="ldImg" alt="" src="loading.jpg"><div id="ldBox"><b>در حال بارگذاری…</b><div id="ldBar"><i></i></div><b id="ldPct">1%</b></div></div>
-<div id="tga" hidden role="dialog" aria-modal="true"><div class="cfbox"><h2>🎓 آموزش می‌خواهی؟</h2><p>آموزش قدم‌به‌قدم یاد می‌دهد بازی چطور کار می‌کند: حرکت‌دادن مهره‌ها، حمله، اکسیر و قابلیت‌ها. اگر تازه‌کاری پیشنهاد می‌کنیم حتماً بزنی «بله». اگر «خیر» را بزنی مستقیم به صفحهٔ اصلی می‌روی و هر وقت خواستی می‌توانی آموزش را از منو باز کنی.</p><button id="tgaY" class="pr" type="button">بله، آموزش را شروع کن</button><button id="tgaN" type="button" disabled>خیر</button></div></div>
 <div id="tgo" hidden role="dialog" aria-modal="true"><div class="cfbox"><h2>✅ حساب ساخته شد</h2><p>قبل از هر کاری، این تگ را جایی ذخیره کن (اسکرین‌شات بگیر یا کپی کن). برای بازیابی حساب و ورود دوباره حتماً لازم است.</p><div id="tgv"></div><button id="tgc" type="button">📋 کپی تگ</button><button id="tgok" class="pr" type="button" disabled>تگ را ذخیره کردم</button></div></div>
 <div id="toast" hidden></div>
 <div id="cf" hidden role="dialog" aria-modal="true" aria-labelledby="cft"><div class="cfbox"><h2 id="cft"></h2><p id="cfp"></p><div class="cfb"><button id="cfn" type="button">انصراف</button><button id="cfy" type="button"></button></div></div></div>
@@ -908,7 +890,7 @@ GX.head=(G,M,o)=>{const p=new THREE.Vector3(0,o.y,0),h=new THREE.Mesh(new THREE.
 GX.anim=(G,fn)=>GX.A.push({G,fn,ph:Math.random()*6.28});
 GX.up=o=>{while(o){if(o===scene)return true;o=o.parent}return false};
 GX.tick=t=>{for(let i=GX.A.length-1;i>=0;i--){const a=GX.A[i];if(!GX.up(a.G)){if(a.G.userData.seen)GX.A.splice(i,1);continue}a.G.userData.seen=1;a.fn(t+a.ph)}};
-GX.reg=(k,fn,old)=>{FIG[k]=(M,t)=>{try{return fn(M,t)}catch(e){console.error('GX',k,e);try{window.__errShow&&__errShow('GX '+k+': '+(e&&e.message)+' | '+String(e&&e.stack).split('\n').slice(1,3).join(' | '))}catch(_){}return old?old(M,t):new THREE.Group()}}};
+GX.reg=(k,fn,old)=>{FIG[k]=(M,t)=>{try{return fn(M,t)}catch(e){console.error('GX',k,e);return old?old(M,t):new THREE.Group()}}};
 const _gxPC=placeCamera;placeCamera=function(){_gxPC();GX.tick(clock.elapsedTime)};
 const _gxIS=initScene;initScene=function(){_gxIS();try{GX.post()}catch(e){console.error('GX.post',e)}};
 GX.post=()=>{const sun=scene.children.find(o=>o.isDirectionalLight),hl=scene.children.find(o=>o.isHemisphereLight);
@@ -2014,9 +1996,7 @@ function mkUnit(u){
  const head=new THREE.Mesh(GEO.head,M(pale));head.position.y=ranged?1.62:1.32;
  const band=new THREE.Mesh(GEO.band,M(0xf3ead8));band.rotation.x=Math.PI/2;band.position.y=.5;
  const inner=new THREE.Group();inner.add(body,head,band);inner.scale.setScalar(s);inner.rotation.y=u.o===0?Math.PI:0;
- let fig=null,figM=[];if(FIG[u.k]){const n0=mats.length;fig=FIG[u.k](M,team);mats.slice(n0).forEach(m=>{m.userData.nt=1});fig.traverse(o=>{if(o.isMesh){o.castShadow=true;o.userData.u=u;figM.push(o)}});let figOk=figM.length>0;if(figOk){try{const bx=new THREE.Box3().setFromObject(fig),sz=bx.getSize(new THREE.Vector3());figOk=isFinite(sz.x+sz.y+sz.z)&&sz.y>.05}catch(e){figOk=false}}
-  if(!figOk){try{window.__errShow&&__errShow('مدل قهرمان «'+u.k+'» ساخته نشد؛ نمای ساده نشان داده می‌شود')}catch(_){}}
-  if(figOk)[body,head,band].forEach(m=>{m.material.visible=false});inner.add(fig)}
+ let fig=null,figM=[];if(FIG[u.k]){const n0=mats.length;fig=FIG[u.k](M,team);mats.slice(n0).forEach(m=>{m.userData.nt=1});fig.traverse(o=>{if(o.isMesh){o.castShadow=true;o.userData.u=u;figM.push(o)}});[body,head,band].forEach(m=>{m.material.visible=false});inner.add(fig)}
  [base,body,head,band].forEach(m=>{m.castShadow=true;m.userData.u=u});pickables.push(base,body,head);figM.forEach(m=>pickables.push(m));
  const shield=new THREE.Mesh(GEO.shield,new THREE.MeshBasicMaterial({color:0xffd34d}));shield.rotation.x=Math.PI/2;shield.position.y=.9;
  const hack=new THREE.Mesh(GEO.shield,new THREE.MeshBasicMaterial({color:0x39ff88}));hack.rotation.x=Math.PI/2;hack.position.y=.12;hack.scale.setScalar(.95);
@@ -2058,7 +2038,7 @@ function paintLabel(u,g){const d=g.userData,sl=sel_===u,v=vhp(u),p=Math.max(0,Ma
  plate(d.lb.cv.getContext('2d'),H[u.k].n+((u.bbv!=null?u.bbv:u.bb|0)>0?' 💣×'+PX(u.bbv!=null?u.bbv:u.bb):''),PX(Math.round(v)),p,CL[u.o],sl,p>.5?'#4cd964':p>.25?'#ffcc00':'#ff3b30');
  d.lb.tex.needsUpdate=true;d.lb.sp.renderOrder=sl?30:10}
 let sel_=null;
-function hid(u){return phase!=='play'&&u.o!==(ONLINE?ME:(BOTG?0:P))}
+function hid(u){return phase!=='play'&&u.o!==(ONLINE?ME:P)}
 function syncUnits(){
  sel_=sel;
  for(const [u,g] of [...unitG]){if(!U.includes(u)){if(phase==='play'&&u.vq){const v0=vhp(u);if(u.vq){const d0=Math.round(v0)-Math.round(g.userData.last);if(d0<0){popup('-'+PX(-d0),g.position,'#ff5a4d');g.userData.flash=1}g.userData.last=v0;g.visible=true;paintLabel(u,g);continue}}
@@ -2088,16 +2068,12 @@ function syncTiles(){
  if(sel){ringMesh.visible=true;ringMesh.position.set(CELL_X(sel.c),.03,CELL_Z(sel.c,sel.r))}else ringMesh.visible=false}
 function loop(){
  requestAnimationFrame(loop);const dt=Math.min(.05,clock.getDelta()),t=clock.elapsedTime;
- {const cv_=NOGAME||!!document.querySelector('.scr:not([hidden])');if(cv_!==COVD){COVD=cv_;document.body.classList.toggle('cov',cv_)}if(cv_)return}
- try{loopBody(dt,t)}catch(err){if(!loop._e||loop._e!==err.message){loop._e=err.message;console.error('loop',err)}}}
-let COVD=false;
-function loopBody(dt,t){
- unitG.forEach((g,u)=>{try{const d=g.userData,k=1-Math.exp(-dt*10);
+ unitG.forEach((g,u)=>{const d=g.userData,k=1-Math.exp(-dt*10);
   g.position.x+=(d.tx-g.position.x)*k;g.position.z+=(d.tz-g.position.z)*k;
   g.position.y+=(d.ty+(u.fly>0?.12*Math.sin(t*3):0)-g.position.y)*k;
   d.flash=Math.max(0,d.flash-dt*2.5);d.mats.forEach(m=>{const q=m.userData.nt?0:1,w=m.userData.nt?.45:1;m.emissive.setRGB(d.em[0]*q+d.tint[0]*w+d.flash*.8,d.em[1]*q+d.tint[1]*w+d.flash*.1,d.em[2]*q+d.tint[2]*w+d.flash*.1)});
   g.children[0].scale.setScalar(d.s*(1+(sel_===u?.04*Math.sin(t*6):0)));{const iw=g.children[0];if(d.ft>0)d.hf=1;const tg=d.hf?d.fy:d.y0;d.ft-=dt;let df=tg-iw.rotation.y;df=Math.atan2(Math.sin(df),Math.cos(df));iw.rotation.y+=df*(1-Math.exp(-dt*14))}
-  if(d.shield&&d.shield.visible)d.shield.rotation.z=t*2}catch(err){if(!loop._u||loop._u!==err.message){loop._u=err.message;console.error('unit anim',err)}}});
+  if(d.shield.visible)d.shield.rotation.z=t*2});
  hlTiles.forEach(m=>m.emissiveIntensity=.5+.2*Math.sin(t*5));
  for(let i=pops.length-1;i>=0;i--){const p=pops[i];p.t+=dt;p.sp.position.y+=dt*1.1;p.sp.material.opacity=Math.max(0,1-p.t/1.4);
   if(p.t>1.4){scene.remove(p.sp);p.sp.material.map.dispose();p.sp.material.dispose();pops.splice(i,1)}}
@@ -2784,7 +2760,7 @@ function dgFallback(M,team,K){const G=new THREE.Group(),m=M(GX.c(K.mid),{roughne
  const h=new THREE.Mesh(new THREE.IcosahedronGeometry(.25,0),m);h.position.set(0,2.1,.3);G.add(h);
  [-1,1].forEach(s=>{const w=new THREE.Mesh(new THREE.ConeGeometry(.6,1.4,3),m);w.position.set(s*.8,1.8,-.2);w.rotation.z=-s*.6;G.add(w)});
  return G}
-const reg=(k)=>{const old=FIG[k];FIG[k]=(M,t)=>{try{return gxDragon(M,t,DGT[k])}catch(e){console.error('dragon',k,e);try{window.__errShow&&__errShow('dragon '+k+': '+(e&&e.message)+' | '+String(e&&e.stack).split('\n').slice(1,3).join(' | '))}catch(_){}try{return dgFallback(M,t,DGT[k])}catch(e2){return old?old(M,t):new THREE.Group()}}}};
+const reg=(k)=>{const old=FIG[k];FIG[k]=(M,t)=>{try{return gxDragon(M,t,DGT[k])}catch(e){console.error('dragon',k,e);try{return dgFallback(M,t,DGT[k])}catch(e2){return old?old(M,t):new THREE.Group()}}}};
 reg('fd');reg('ft');
 
 /* ---------- کمک‌ها ---------- */
@@ -3042,7 +3018,7 @@ function connect(){
   ws.onmessage=ev=>{let m;try{m=JSON.parse(ev.data)}catch(_){return}onMsg(m)}}
 function onMsg(m){
   switch(m.t){
-   case 'authok':AUTHED=true;offSince=0;myName=m.u;myTag=m.tag||'';myId=m.id||'';ls('jt_u',m.u);ls('jt_tok',m.tok);$('auP').value='';$('auP2').value='';$('auId').value='';$('auU').value='';regUI(false);if(!MATCH&&!OFFG&&!(loadMode))showScr('scrMenu');if(m.reg&&m.tag)askTut(m.tag);break;
+   case 'authok':AUTHED=true;offSince=0;myName=m.u;myTag=m.tag||'';myId=m.id||'';ls('jt_u',m.u);ls('jt_tok',m.tok);$('auP').value='';$('auP2').value='';$('auId').value='';$('auU').value='';regUI(false);if(!MATCH&&!OFFG&&!(loadMode))showScr('scrMenu');if(m.reg&&m.tag)showTagBox(m.tag);break;
    case 'autherr':$('auMsg').textContent=m.msg;if(m.resume){ls('jt_tok',null)}if(!MATCH)showScr('scrAuth');break;
    case 'kicked':AUTHED=false;barUI();toast('با دستگاه دیگری وارد شدی');if(!MATCH)showScr('scrAuth');break;
    case 'toast':toast(m.msg);break;
@@ -3319,13 +3295,8 @@ function openProfile(name,preset){
     else{const f=FL.friends.find(x=>x.u===name);p=f?{name,id:f.id,w:f.w,on:f.on,busy:f.busy,rel:'friend'}:{name,rel:'none'}}}
   showPf(p);showScr('scrPf');sendW({t:'pfget',u:p.name})}
 let tgT=0;
-window.PENDTAG=null;let tgaT=0;
-function askTut(tag){window.PENDTAG=tag;const n=$('tgaN');let k=4;$('tga').hidden=false;n.disabled=true;n.textContent='خیر ('+k+')';clearInterval(tgaT);
-  tgaT=setInterval(()=>{k--;if(k>0)n.textContent='خیر ('+k+')';else{clearInterval(tgaT);n.disabled=false;n.textContent='خیر، می‌روم به صفحهٔ اصلی'}},1000);
-  $('tgaY').onclick=()=>{clearInterval(tgaT);$('tga').hidden=true;if(window.TUT&&TUT.afterReg){TUT.afterReg();if($('scrLoad').hidden&&!TUT.on){const t=window.PENDTAG;window.PENDTAG=null;if(t)showTagBox(t)}}else{const t=window.PENDTAG;window.PENDTAG=null;if(t)showTagBox(t)}};
-  n.onclick=()=>{if(n.disabled)return;clearInterval(tgaT);$('tga').hidden=true;ls('jt_tut1','1');const t=window.PENDTAG;window.PENDTAG=null;if(!MATCH&&!OFFG&&!loadMode)showScr('scrMenu');if(t)showTagBox(t)}}
 function showTagBox(tag){$('tgv').textContent='#'+tag;$('tgok').disabled=true;$('tgo').hidden=false;clearTimeout(tgT);tgT=setTimeout(()=>{$('tgok').disabled=false},4000);
-  $('tgc').onclick=()=>copyTxt('#'+tag,'تگ کپی شد');$('tgok').onclick=()=>{$('tgo').hidden=true}}
+  $('tgc').onclick=()=>copyTxt('#'+tag,'تگ کپی شد');$('tgok').onclick=()=>{$('tgo').hidden=true;if(window.TUT&&TUT.afterReg)TUT.afterReg()}}
 function copyTxt(t,msg){try{navigator.clipboard.writeText(t).then(()=>toast(msg),()=>{})}catch(_){}}
 $('pfAdd').onclick=()=>{if(PF&&PF.name)sendW({t:'fadd',u:PF.name})};
 $('setTagCp').onclick=()=>{if(myTag)copyTxt('#'+myTag,'تگ کپی شد')};
@@ -4009,7 +3980,7 @@ function teardown(){Z.on=false;Z.stage='wait';clearInterval(Z.tick);clearInterva
 function leave(next){if(Z.leaving)return;Z.leaving=true;Z.stage='wait';
  ['tutMis','tutDlg','tutWin','tutEl','tutBadge'].forEach(function(id){q(id).hidden=true});
  loadMode='out';showLoad();
- setTimeout(function(){teardown();hideLoad();Z.leaving=false;if(next)Z.part2();else showScr(AUTHED?'scrMenu':'scrAuth');if(window.PENDTAG){var pt=window.PENDTAG;window.PENDTAG=null;showTagBox(pt)}},3000)}
+ setTimeout(function(){teardown();hideLoad();Z.leaving=false;if(next)Z.part2();else showScr(AUTHED?'scrMenu':'scrAuth')},3000)}
 /* جای بخش تمرینی دوم: فعلاً صفحهٔ «در دست توسعه» */
 Z.part2=function(){showScr(AUTHED?'scrDev':'scrAuth')};
 Z.afterReg=function(){ls('jt_tut1','1');Z.start()};
