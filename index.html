@@ -129,16 +129,18 @@ button em{font-style:normal;font-size:11px;font-weight:500;opacity:.8}
   <div id="turn" data-p="0"><strong id="tn"></strong><small id="tl"></small></div>
   <div class="side t1" id="s1"><div class="sn"><b>آبی</b><span class="ex"><span id="x1"></span> اکسیر</span></div><div class="pips" id="p1"></div></div>
  </header>
+ <div id="sb"><span class="sbi">📢</span><span id="sbT"></span></div>
  <div id="stage">
   <canvas id="cv"></canvas>
   <button id="nw" type="button">بازی جدید</button>
   <button id="cbtn" type="button">کمبوها</button><button id="dbtn" type="button" hidden></button><button id="eb" type="button" hidden>دشمن ▼</button><section id="ec" hidden></section><button id="evb" type="button" hidden>رخدادها</button><section id="evm" hidden></section><section id="dc" hidden></section>
-  <button id="shp" type="button" aria-label="فروشگاه">🛒</button><button id="spb" type="button" hidden>✨ طلسم‌ها</button>
+  
   <section id="shop"></section>
   <section id="cb" hidden></section>
   <section id="dr" hidden></section><div id="ctl"><section id="info" class="card empty"></section><div id="bar"><button id="ab" type="button"></button></div></div>
   <div id="end" hidden><div class="endbox"><h2 id="endt"></h2><button id="nw2" type="button">بازی جدید</button></div></div>
  </div>
+ <div id="bb"><button id="bbL" type="button" aria-label="رخدادها">📜</button><button id="bbC" type="button"><i>🌀</i><span>کمبوهای فعال (<b id="bbCt">۰</b>)</span><span id="bbCa">▼</span></button><div id="bbR"><button id="shp" type="button" aria-label="فروشگاه">🛒 فروشگاه</button><button id="spb" type="button" hidden>✨ طلسم‌ها</button></div></div>
  <div id="msg" aria-live="polite"></div>
 </main>
 <style>
@@ -295,6 +297,29 @@ body{padding:0;padding-left:env(safe-area-inset-left,0px);padding-right:env(safe
 #dc{position:absolute;left:10px;z-index:3;pointer-events:none;direction:rtl}#dc[data-pos=bot]{bottom:12px}#dc[data-pos=top]{top:38px}#dc .cbl{display:flex;flex-direction:column;align-items:flex-end}#dc[data-pos=bot] .cbl{flex-direction:column}
 @keyframes cpop{0%{transform:scale(.3);opacity:0}60%{transform:scale(1.12)}100%{transform:none;opacity:1}}.cp2.new{animation:cpop .45s ease-out}
 #evm .evl p{margin:0 0 4px;font-size:12.5px;line-height:1.5}#evm .none{color:var(--mut)}
+/* ===== تم فانتزی چوبی-طلایی مطابق کانسپت ===== */
+:root{--bg:#1a120c;--panel:#2b1e15;--panel2:#3d2b1c;--line:#8a6a3a;--fg:#f6ecda;--mut:#c2b093}
+html,body{background:#1a120c}
+#stage{background:#2a1d13}
+#hud{padding:8px 10px 6px;gap:10px}
+.side{border:2px solid #b8893a;border-radius:14px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.5),0 2px 6px rgba(0,0,0,.5)}
+.side.t0{background:linear-gradient(180deg,#6a1c1c,#34100f)}.side.t1{background:linear-gradient(180deg,#1c3f78,#0e1f40)}
+.side .sn b{color:#fff}.ex{color:#fff;font-weight:700}
+.pips i{background:rgba(0,0,0,.4)}
+#turn{border:2px solid #b8893a;border-radius:14px;background:linear-gradient(180deg,#4a3320,#2b1e15);min-width:96px;box-shadow:0 2px 6px rgba(0,0,0,.5)}
+#turn::before{content:'⏳';font-size:20px;line-height:1}
+#sb{flex:none;display:flex;align-items:center;gap:8px;margin:0 10px 6px;padding:5px 10px;min-height:34px;border:1px solid #8a6a3a;border-radius:10px;background:linear-gradient(180deg,#32231a,#21160f);font-size:13px;cursor:pointer;box-shadow:inset 0 0 8px rgba(0,0,0,.5)}
+#sb .sbi{color:var(--gold)}#sbT{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#bb{flex:none;display:flex;direction:ltr;align-items:center;gap:8px;padding:8px 10px;background:linear-gradient(180deg,#3a281a,#1f150e);border-top:3px solid #8a6a3a}
+#bbL{width:54px;height:54px;min-height:0;padding:0;border-radius:12px;font-size:22px;border:2px solid #b8893a;background:linear-gradient(180deg,#4a3320,#2b1e15)}
+#bbC{flex:1;min-width:0;min-height:54px;flex-direction:row;gap:10px;direction:rtl;border-radius:14px;border:2px solid #b8893a;background:linear-gradient(180deg,#3d2b1c,#241810);font-size:15px}
+#bbC i{font-style:normal;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle,#8a4cd0,#3a1a66);border:2px solid #e0b24a;font-size:18px}
+#bbC span{white-space:nowrap}
+#bbR{display:flex;min-width:140px}
+#bbR button{position:static;transform:none;flex:1;width:auto;min-height:54px;padding:0 12px;font-size:17px;border-radius:14px;flex-direction:row;gap:6px;background:linear-gradient(180deg,#ffd466,#e0a62c);color:#3a2408;border:2px solid #fff0b0;box-shadow:0 3px 0 #8a5e12}
+.cbHide #info,.cbHide #dc{display:none}
+#evb{display:none!important}
+#evm{top:auto;bottom:8px}
 </style>
 <div class="scr" id="scrAuth"><div class="box"><h1>جنگ‌سالار</h1>
 <input id="auU" placeholder="تگ حساب (مثل #AB12CD34EF56)" maxlength="14" autocapitalize="characters" autocomplete="username" spellcheck="false" style="direction:ltr">
@@ -470,7 +495,7 @@ const shuf=a=>{for(let i=a.length-1;i>0;i--){const j=RL()*(i+1)|0;[a[i],a[j]]=[a
 const XC={acro:5,aka:6,cri:11,doj:5,pri:4,raf:5,bri:5,ali:5,mar:4,mak:6,and:4,zep:7,jack:6,blk:8,jal:5,ikh:4,col:6,ear:6,ik:4,iw:4,mus:9,ske:5,bud:3,que:4,fd:8,ft:8,mac:6,eld:6,spg:5,med:10,eli:7,ber:5,dk:6,gq:6,dn:4,dw:6},XT=42,
  hc=k=>XC[k]|0,
  hCost=o=>(PK[o]||[]).reduce((s,k)=>s+hc(k),0),
- elLeft=o=>XT-hCost(o),spLeft=o=>7-spCost(o),
+ elLeft=o=>XT-spCost(o)-hCost(o),spLeft=o=>elLeft(o),
  afford=k=>phase==='pick'&&DR.pool.has(k)&&hc(k)<=elLeft(P);
 let drClosed=false;
 /* اگر هیچ‌کدام از کارت‌های پیشنهادی را نتوانی بخری ولی هیروی ارزان‌تری در چرخه مانده، یکی‌شان جایگزین می‌شود تا گیر نکنی */
@@ -694,8 +719,8 @@ function cbRender(){const b=$('cb');b.hidden=!cbOpen;if(!cbOpen)return;
  b.innerHTML='<div class="cbh"><span>کمبوهای انتخاب‌شده</span><button type="button" data-x="1">بستن</button></div><div class="cbc">'+(ONLINE&&phase!=='play'?col(ME):col(0)+col(1))+'</div>'}
 const TO=()=>ONLINE?(ME<2?ME:P):BOTG?0:P;
 let EC=false;var HSTAT='',EV=[],EVO=false;
-function ecRender(){const on=phase==='play'&&!over&&!NOGAME;$('eb').hidden=!on;$('cbtn').hidden=on;$('evb').hidden=!on;if(!on)$('evm').hidden=true;$('eb').textContent=EC?'کمبوهای دشمن ▲':'کمبوهای دشمن ▼';$('ec').hidden=!(on&&EC);if(on&&EC)$('ec').innerHTML=cbl(1-TO());dcRender()}
-function evRender(){const on=phase==='play'&&!over&&!NOGAME;$('evm').hidden=!(on&&EVO);if(!(on&&EVO))return;$('evm').innerHTML='<div class="cbh"><span>رخدادها</span><button type="button" data-x="1">بستن</button></div>'+(sel&&HSTAT?'<div class="evh">'+HSTAT+'</div>':'')+'<div class="evl">'+(EV.length?EV.map(m=>'<p>'+esc(m)+'</p>').join(''):'<p class="none">هنوز رخدادی نیست</p>')+'</div>'}
+function ecRender(){const on=phase==='play'&&!over&&!NOGAME;$('eb').hidden=!on;$('cbtn').hidden=on;{const o=TO(),mm={};if(phase==='play')Object.assign(mm,SY[o]||{});else(PK[o]||[]).forEach(k=>(TR[k]||[]).forEach(t=>mm[t]=(mm[t]||0)+1));$('bbCt').textContent=PX(Object.keys(mm).filter(t=>(TH[t]||[]).some(x=>x<=mm[t])).length);$('bbCa').textContent=document.body.classList.contains('cbHide')?'▲':'▼';if(phase!=='play')$('sbT').textContent=phase==='pick'?'قهرمان‌هایت را انتخاب کن':'مهره‌ها را در نیمهٔ خودت بچین'}$('evb').hidden=!on;if(!on)$('evm').hidden=true;$('eb').textContent=EC?'کمبوهای دشمن ▲':'کمبوهای دشمن ▼';$('ec').hidden=!(on&&EC);if(on&&EC)$('ec').innerHTML=cbl(1-TO());dcRender()}
+function evRender(){$('sbT').textContent=LOG[0]||'';const on=phase==='play'&&!over&&!NOGAME;$('evm').hidden=!(on&&EVO);if(!(on&&EVO))return;$('evm').innerHTML='<div class="cbh"><span>رخدادها</span><button type="button" data-x="1">بستن</button></div>'+(sel&&HSTAT?'<div class="evh">'+HSTAT+'</div>':'')+'<div class="evl">'+(EV.length?EV.map(m=>'<p>'+esc(m)+'</p>').join(''):'<p class="none">هنوز رخدادی نیست</p>')+'</div>'}
 var DSEEN=new Set();
 function dcRender(){const d=phase!=='play'&&!abortInfo&&!NOGAME&&!!PK;$('dc').hidden=!d;if(!d)return;const o=ONLINE?(ME<2?ME:P):P,pk=PK[o]||[];if(!pk.length)DSEEN.clear();const m={};pk.forEach(k=>(TR[k]||[]).forEach(t=>m[t]=(m[t]||0)+1));$('dc').dataset.pos=(ONLINE||P===0)?'bot':'top';$('dc').innerHTML=cbl(o,m,DSEEN)}
 function cbl(o,mm,seen){const m=mm||SY[o]||{},r=Object.keys(m).map(t=>{const n=m[t]|0,th=TH[t]||[],lv=th.filter(x=>x<=n).length,key=t+':'+lv,nw=seen&&!seen.has(key);if(seen&&lv)seen.add(key);return lv?[lv,'<span class="cp2'+(nw?' new':'')+'">کمبوی '+t+' سطح '+PX(lv)+'/'+PX(th.length)+'</span>']:null}).filter(Boolean).sort((x,y)=>y[0]-x[0]).map(x=>x[1]).join('');return '<div class="cbl">'+(r||'<span class="cp2 none">کمبوی فعالی ندارد</span>')+'</div>'}
@@ -704,7 +729,7 @@ function ui(){if(DSW)return;cbRender();ecRender();
  const dr=phase!=='play'&&!abortInfo;$('ctl').hidden=$('msg').hidden=dr;$('dr').hidden=!dr||drClosed||(ONLINE&&P!==ME);$('dbtn').hidden=!(dr&&drClosed);
  if(dr&&drClosed){const tn=tray&&H[tray]?H[tray].n:'';$('dbtn').innerHTML='<span>📂 '+(phase==='pick'?'انتخاب هیرو':'چیدمان')+'</span>'+(tn?'<em>مستقر کن: '+esc(tn)+'</em>':'')}$('dr').dataset.pos=(ONLINE||P===0)?'top':'bottom';
  [0,1].forEach(o=>{const n=dr?7:Math.max(7,E[o]),on=dr?(ONLINE?PK[o].length:(o<P?7:o===P?DR.picks.length:0)):E[o];let h='';for(let i=0;i<n;i++)h+='<i'+(i<on?' class="on"':'')+'></i>';
-  $('p'+o).innerHTML=h;$('s'+o).classList.toggle('act',!over&&P===o);$('s'+o).querySelector('.ex').textContent=dr?PX(on)+'/۷'+((ONLINE&&o!==ME)?'':' · 💧'+PX(elLeft(o))):PX(Math.max(0,E[o]))+' اکسیر'});
+  $('p'+o).innerHTML=h;$('s'+o).classList.toggle('act',!over&&P===o);$('s'+o).querySelector('.ex').textContent=dr?PX(on)+'/۷'+((ONLINE&&o!==ME)?'':' · 💧'+PX(elLeft(o))):PX(Math.max(0,E[o]))+'/۷ 💧'});
  if(!dr)$('tn').style.color='';$('tn').textContent=dr?PX(Math.max(0,Math.ceil((dl-Date.now())/1000))):over?'—':PX(MV);$('turn').dataset.p=over?'':P;
  $('tl').textContent=dr?(phase==='pick'?'انتخاب قهرمان · ':'چیدمان · ')+NM[P]:over?'پایان بازی':'حرکت باقی‌مانده · نوبت '+NM[P];
  // کارت قهرمان انتخاب‌شده
@@ -757,7 +782,7 @@ function initScene(){
  renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true});
  renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
  renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.useLegacyLights=true;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=.9;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
- scene=new THREE.Scene();scene.background=new THREE.Color(0x15120f);scene.fog=new THREE.Fog(0x15120f,28,48);
+ scene=new THREE.Scene();scene.background=new THREE.Color(0x2a1d13);scene.fog=new THREE.Fog(0x2a1d13,28,48);
  camera=new THREE.PerspectiveCamera(38,1,.5,100);clock=new THREE.Clock();raycaster=new THREE.Raycaster();
  scene.add(new THREE.HemisphereLight(0xfff1dc,0x3a3128,.7));
  const sun=new THREE.DirectionalLight(0xffeccc,.8);sun.position.set(-4,16,16);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);
@@ -2292,7 +2317,7 @@ $('cfy').onclick=()=>{if(cfStep===1){cfStep=2;cfRender();$('cfn').focus()}else i
 $('cf').onclick=e=>{if(e.target===$('cf'))cfClose()};
 addEventListener('keydown',e=>{if(e.key==='Escape'&&cfStep)cfClose()});
 $('nw').onclick=()=>MATCH?forfeitAsk():cfOpen();
-$('cbtn').onclick=()=>{cbOpen=!cbOpen;cbRender()};$('eb').onclick=()=>{EC=!EC;ecRender()};$('evb').onclick=()=>{EVO=!EVO;evRender()};$('evm').onclick=e=>{if(e.target.closest('[data-x]')){EVO=false;evRender()}};$('dbtn').onclick=()=>{drClosed=false;draw()};
+$('cbtn').onclick=()=>{cbOpen=!cbOpen;cbRender()};$('eb').onclick=()=>{EC=!EC;ecRender()};$('evb').onclick=()=>{EVO=!EVO;evRender()};$('bbL').onclick=$('sb').onclick=()=>{EVO=!EVO;evRender()};$('bbC').onclick=()=>{document.body.classList.toggle('cbHide');ecRender()};$('evm').onclick=e=>{if(e.target.closest('[data-x]')){EVO=false;evRender()}};$('dbtn').onclick=()=>{drClosed=false;draw()};
 $('cb').onclick=e=>{if(e.target.closest('[data-x]')){cbOpen=false;cbRender()}};
 addEventListener('resize',()=>{resize();U&&draw()});$('nw2').onclick=()=>MATCH?finishMatch():cfOpen();
 $('dr').onclick=e=>{const b=e.target.closest('button,[data-t]');if(!b)return;const d=b.dataset;
