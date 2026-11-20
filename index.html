@@ -711,19 +711,19 @@ function initScene(){
  renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true});
  renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
  renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.useLegacyLights=true;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.2;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
- scene=new THREE.Scene();scene.background=new THREE.Color(0x15120f);scene.fog=new THREE.Fog(0x15120f,28,48);
+ scene=new THREE.Scene();scene.background=new THREE.Color(0x1c1814);
  camera=new THREE.PerspectiveCamera(38,1,.5,100);clock=new THREE.Clock();raycaster=new THREE.Raycaster();
  scene.add(new THREE.HemisphereLight(0xfff1dc,0x3a3128,.7));
  const sun=new THREE.DirectionalLight(0xffeccc,.8);sun.position.set(-4,16,16);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);
  Object.assign(sun.shadow.camera,{left:-12,right:12,top:12,bottom:-12,near:1,far:50});sun.target.position.copy(CTR);scene.add(sun,sun.target);
  // قاب و کف صفحه
- const frame=new THREE.Mesh(new THREE.BoxGeometry(12.2,.5,17.2),new THREE.MeshStandardMaterial({color:0x3b3025,roughness:.9}));frame.position.set(CTR.x,-.55,CTR.z);frame.receiveShadow=true;scene.add(frame);
- const floor=new THREE.Mesh(new THREE.BoxGeometry(11.4,.3,16.4),new THREE.MeshStandardMaterial({color:0x1d1813,roughness:1}));floor.position.set(CTR.x,-.28,CTR.z);scene.add(floor);
- [[-1,1],[1,1],[-1,-1],[1,-1]].forEach(([a,b])=>{const m=new THREE.Mesh(new THREE.CylinderGeometry(.42,.5,.9,16),new THREE.MeshStandardMaterial({color:0x2a241d,roughness:.7}));m.position.set(CTR.x+a*5.9,-.1,CTR.z+b*8.5);m.castShadow=true;scene.add(m);
-  const g=new THREE.Mesh(new THREE.SphereGeometry(.17,12,8),new THREE.MeshBasicMaterial({color:0xe8a33d}));g.position.set(m.position.x,.45,m.position.z);scene.add(g)});
- const bdGeo=new THREE.RingGeometry(.9,.98,6,1).rotateX(-Math.PI/2),bdMat=new THREE.MeshBasicMaterial({color:0x2a231b});
+ const frame=new THREE.Mesh(new THREE.BoxGeometry(12.2,.5,17.2),new THREE.MeshStandardMaterial({color:0xa89c84,roughness:.95}));frame.position.set(CTR.x,-.55,CTR.z);frame.receiveShadow=true;scene.add(frame);
+ const floor=new THREE.Mesh(new THREE.BoxGeometry(11.4,.3,16.4),new THREE.MeshStandardMaterial({color:0x2a251f,roughness:1}));floor.position.set(CTR.x,-.28,CTR.z);scene.add(floor);
+ [[-1,1],[1,1],[-1,-1],[1,-1]].forEach(([a,b])=>{const m=new THREE.Mesh(new THREE.CylinderGeometry(.42,.5,.9,16),new THREE.MeshStandardMaterial({color:0xb7ab92,roughness:.9}));m.position.set(CTR.x+a*5.9,-.1,CTR.z+b*8.5);m.castShadow=true;scene.add(m);
+});
+ const bdGeo=new THREE.RingGeometry(.9,.98,6,1).rotateX(-Math.PI/2),bdMat=new THREE.MeshBasicMaterial({color:0x7d705c});
  for(let c=0;c<COLS;c++){tiles[c]=[];for(let r=0;r<ROWS;r++){
-  const mat=new THREE.MeshStandardMaterial({color:(c+r)%2?0x6a5c49:0x7d6d58,roughness:.85,emissive:0x000000});
+  const mat=new THREE.MeshStandardMaterial({color:(c+r)%2?0x5b5146:0x6c6153,roughness:.85,emissive:0x000000});
   const m=new THREE.Mesh(GEO.tile,mat);m.position.set(CELL_X(c),-.17,CELL_Z(c,r));m.receiveShadow=true;m.userData={c,r};scene.add(m);tiles[c][r]=m;pickables.push(m);
   const bd=new THREE.Mesh(bdGeo,bdMat);bd.position.set(CELL_X(c),.012,CELL_Z(c,r));scene.add(bd)}}
  ringMesh=new THREE.Mesh(new THREE.RingGeometry(.8,.95,6,1).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({color:0xffffff}));ringMesh.position.y=.03;ringMesh.visible=false;scene.add(ringMesh);
@@ -3512,127 +3512,9 @@ connect();
 
 
 <script>
-/* ===== ارتقای گرافیک: Bloom، مه، گرد و غبار، نور گوشه‌ها، تنظیم کیفیت ===== */
+/* ===== تنظیمات صدا ===== */
 (function(){
 'use strict';
-var GQ='high';try{GQ=localStorage.getItem('jt_gq')||'high'}catch(e){}
-if(GQ!=='low')GQ='high';
-var HQ=GQ==='high',bloomOK=false,inst=false;
-var _r,fbTex,rtA,rtB,qScene,qCam,mP,mBlur,mComp,dust,dustPos,dustVel,mist=[],lights=[],vig;
-function sv(v){try{localStorage.setItem('jt_gq',v)}catch(e){}}
-/* --- Vignette --- */
-function mkVig(){var st=document.getElementById('stage');if(!st)return;
- var cs=getComputedStyle(st);if(cs.position==='static')st.style.position='relative';
- vig=document.createElement('div');vig.style.cssText='position:absolute;inset:0;pointer-events:none;z-index:2;background:radial-gradient(ellipse at 50% 45%,rgba(0,0,0,0) 55%,rgba(0,0,0,.5) 100%);transition:opacity .4s';
- st.appendChild(vig)}
-/* --- Settings UI --- */
-function mkUI(){var p=document.getElementById('setG');if(!p||document.getElementById('gqSec'))return;
- var d=document.createElement('div');d.id='gqSec';
- d.innerHTML='<div class="sec">کیفیت گرافیک (برای گوشی‌های ضعیف «کم» را بزن؛ تغییر خودکار انجام نمی‌شود)</div><div style="display:flex;gap:8px;margin:6px 0 10px"><button type="button" id="gqH" class="pr" style="flex:1">بالا (مه و ذرات)</button><button type="button" id="gqL" class="pr" style="flex:1">کم (سبک)</button></div>';
- 
- d.querySelector('#gqH').onclick=function(){setQ('high',true)};
- d.querySelector('#gqL').onclick=function(){setQ('low',true)};
- paintUI();p.insertBefore(d,p.querySelector('.sec:nth-of-type(1)')||p.firstChild);}
-function paintUI(){var h=document.getElementById('gqH'),l=document.getElementById('gqL');if(!h)return;
- h.style.opacity=HQ?1:.45;l.style.opacity=HQ?.45:1;h.style.outline=HQ?'2px solid #e8a33d':'none';l.style.outline=HQ?'none':'2px solid #e8a33d'}
-function setQ(q,msg){GQ=q;HQ=q==='high';sv(q);apply();paintUI();
- if(msg&&typeof toast==='function')toast(HQ?'کیفیت گرافیک: بالا':'کیفیت گرافیک: کم')}
-function apply(){
- if(typeof renderer==='undefined'||!renderer)return;
- renderer.setPixelRatio(Math.min(devicePixelRatio||1,HQ?2:1.5));
- try{resize()}catch(e){}
- if(dust)dust.visible=HQ;mist.forEach(function(m){m.visible=HQ});
- lights.forEach(function(l){l.intensity=HQ?.7:0});
- if(vig)vig.style.opacity=HQ?1:0}
-/* --- Scene additions --- */
-function softTex(){var c=document.createElement('canvas');c.width=c.height=64;var x=c.getContext('2d'),g=x.createRadialGradient(32,32,0,32,32,32);
- g.addColorStop(0,'rgba(255,255,255,1)');g.addColorStop(.4,'rgba(255,255,255,.35)');g.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=g;x.fillRect(0,0,64,64);
- var t=new THREE.CanvasTexture(c);return t}
-function mistTex(){var c=document.createElement('canvas');c.width=c.height=256;var x=c.getContext('2d');x.clearRect(0,0,256,256);
- for(var i=0;i<46;i++){var px=Math.random()*256,py=Math.random()*256,r=30+Math.random()*50;
-  for(var ox=-256;ox<=256;ox+=256)for(var oy=-256;oy<=256;oy+=256){var g=x.createRadialGradient(px+ox,py+oy,0,px+ox,py+oy,r);g.addColorStop(0,'rgba(255,240,220,.22)');g.addColorStop(1,'rgba(255,240,220,0)');x.fillStyle=g;x.fillRect(0,0,256,256)}}
- var t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;return t}
-function addScene(){
- var C=CTR,N=200;
- var g=new THREE.BufferGeometry();dustPos=new Float32Array(N*3);dustVel=new Float32Array(N*3);
- for(var i=0;i<N;i++){dustPos[i*3]=C.x+(Math.random()-.5)*13;dustPos[i*3+1]=.2+Math.random()*4.5;dustPos[i*3+2]=C.z+(Math.random()-.5)*18;
-  dustVel[i*3]=(Math.random()-.5)*.15;dustVel[i*3+1]=.05+Math.random()*.12;dustVel[i*3+2]=(Math.random()-.5)*.15}
- g.setAttribute('position',new THREE.BufferAttribute(dustPos,3));
- dust=new THREE.Points(g,new THREE.PointsMaterial({map:softTex(),size:.16,color:0xffd9a0,transparent:true,opacity:.55,depthWrite:false,blending:THREE.AdditiveBlending,sizeAttenuation:true,fog:true}));
- dust.frustumCulled=false;dust.renderOrder=3;scene.add(dust);
- var mt=mistTex();
- [[.12,.10,.025,.012,1.6],[.38,.07,-.018,.02,1.1]].forEach(function(a){
-  var t=mt.clone();t.needsUpdate=true;t.repeat.set(a[4],a[4]*1.4);
-  var m=new THREE.Mesh(new THREE.PlaneGeometry(13,18).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({map:t,transparent:true,opacity:a[1],depthWrite:false,blending:THREE.AdditiveBlending,fog:false}));
-  m.position.set(C.x,a[0],C.z);m.renderOrder=2;m.userData.v=[a[2],a[3]];scene.add(m);mist.push(m)});
- [[-1,1],[1,1],[-1,-1],[1,-1]].forEach(function(s){
-  var l=new THREE.PointLight(0xe8a33d,.7,8,2);l.position.set(C.x+s[0]*5.9,.9,C.z+s[1]*8.5);scene.add(l);lights.push(l)})}
-/* --- Bloom pipeline --- */
-var VS='varying vec2 vUv;void main(){vUv=uv;gl_Position=vec4(position.xy,0.,1.);}';
-function mkBloom(){
- qScene=new THREE.Scene();qCam=new THREE.OrthographicCamera(-1,1,1,-1,0,1);
- var geo=new THREE.PlaneGeometry(2,2);
- mP=new THREE.ShaderMaterial({uniforms:{t:{value:null},px:{value:new THREE.Vector2()},th:{value:.62}},vertexShader:VS,depthTest:false,depthWrite:false,
-  fragmentShader:'uniform sampler2D t;uniform vec2 px;uniform float th;varying vec2 vUv;vec3 f(vec2 o){vec3 c=texture2D(t,vUv+o*px).rgb;float l=max(c.r,max(c.g,c.b));return c*smoothstep(th,th+.3,l);}void main(){vec3 c=f(vec2(0.))*.4+f(vec2(1.5,1.5))*.15+f(vec2(-1.5,1.5))*.15+f(vec2(1.5,-1.5))*.15+f(vec2(-1.5,-1.5))*.15;gl_FragColor=vec4(c,1.);}'});
- mBlur=new THREE.ShaderMaterial({uniforms:{t:{value:null},d:{value:new THREE.Vector2()}},vertexShader:VS,depthTest:false,depthWrite:false,
-  fragmentShader:'uniform sampler2D t;uniform vec2 d;varying vec2 vUv;void main(){vec3 c=texture2D(t,vUv).rgb*.227;c+=(texture2D(t,vUv+d*1.385).rgb+texture2D(t,vUv-d*1.385).rgb)*.316;c+=(texture2D(t,vUv+d*3.23).rgb+texture2D(t,vUv-d*3.23).rgb)*.07;gl_FragColor=vec4(c,1.);}'});
- mComp=new THREE.ShaderMaterial({uniforms:{t:{value:null},k:{value:1.15}},vertexShader:VS,transparent:true,blending:THREE.AdditiveBlending,depthTest:false,depthWrite:false,
-  fragmentShader:'uniform sampler2D t;uniform float k;varying vec2 vUv;void main(){gl_FragColor=vec4(texture2D(t,vUv).rgb*k,1.);}'});
- var q=new THREE.Mesh(geo,mP);q.frustumCulled=false;qScene.add(q);qScene.userData.q=q}
-function sizes(){
- var s=new THREE.Vector2();renderer.getDrawingBufferSize(s);var w=Math.max(2,Math.floor(s.x)),h=Math.max(2,Math.floor(s.y));
- if(!fbTex||fbTex.image.width!==w||fbTex.image.height!==h){
-  if(fbTex)fbTex.dispose();fbTex=new THREE.FramebufferTexture(w,h);fbTex.minFilter=fbTex.magFilter=THREE.LinearFilter;fbTex.generateMipmaps=false;
-  var bw=Math.max(2,w>>2),bh=Math.max(2,h>>2);
-  if(rtA)rtA.dispose();if(rtB)rtB.dispose();
-  var o={depthBuffer:false,stencilBuffer:false};rtA=new THREE.WebGLRenderTarget(bw,bh,o);rtB=new THREE.WebGLRenderTarget(bw,bh,o)}
- return[w,h]}
-function pass(mat,target){qScene.userData.q.material=mat;renderer.setRenderTarget(target);_r.call(renderer,qScene,qCam)}
-var cp=new THREE.Vector2(0,0);
-function bloomRender(s,c){
- var wh=sizes();
- c.layers.set(0);_r.call(renderer,s,c);
- renderer.copyFramebufferToTexture(cp,fbTex);
- mP.uniforms.t.value=fbTex;mP.uniforms.px.value.set(1/wh[0],1/wh[1]);pass(mP,rtA);
- mBlur.uniforms.t.value=rtA.texture;mBlur.uniforms.d.value.set(1/rtA.width,0);pass(mBlur,rtB);
- mBlur.uniforms.t.value=rtB.texture;mBlur.uniforms.d.value.set(0,1/rtA.height);pass(mBlur,rtA);
- mBlur.uniforms.t.value=rtA.texture;mBlur.uniforms.d.value.set(2/rtA.width,0);pass(mBlur,rtB);
- mBlur.uniforms.t.value=rtB.texture;mBlur.uniforms.d.value.set(0,2/rtA.height);pass(mBlur,rtA);
- renderer.setRenderTarget(null);
- var ac=renderer.autoClear;renderer.autoClear=false;
- mComp.uniforms.t.value=rtA.texture;pass(mComp,null);
- c.layers.set(1);renderer.clearDepth();
- /* scene.background رنگی باعث پاک‌شدن کل تصویر (میدان) در این پاس می‌شد و فقط برچسب‌ها می‌ماندند */
- var bg0=s.background;s.background=null;
- try{_r.call(renderer,s,c)}finally{s.background=bg0;renderer.autoClear=ac}}
-/* --- Per-frame --- */
-var last=0,acc=0,n=0,t0=0,degraded=false;
-function frame(){
- var now=performance.now()/1000,dt=Math.min(.05,now-last||.016);last=now;
- if(HQ&&dust){
-  for(var i=0;i<dustPos.length;i+=3){dustPos[i]+=dustVel[i]*dt;dustPos[i+1]+=dustVel[i+1]*dt;dustPos[i+2]+=dustVel[i+2]*dt;
-   if(dustPos[i+1]>4.8){dustPos[i+1]=.1}}
-  dust.geometry.attributes.position.needsUpdate=true;
-  mist.forEach(function(m){var t=m.material.map;t.offset.x+=m.userData.v[0]*dt;t.offset.y+=m.userData.v[1]*dt})}
- if(typeof unitG!=='undefined')unitG.forEach(function(g){var l=g.userData&&g.userData.lb;if(l&&l.sp&&l.sp.layers.mask!==2)l.sp.layers.set(1)});
- if(typeof pops!=='undefined')pops.forEach(function(p){if(p.sp&&p.sp.layers.mask!==2)p.sp.layers.set(1)});
-}
-function install(){
- if(inst)return;if(typeof renderer==='undefined'||!renderer||typeof scene==='undefined'||!scene||typeof camera==='undefined'||!camera||typeof CTR==='undefined')return;
- inst=true;_r=renderer.render;
- try{addScene()}catch(e){console.warn('gfx',e)}
- renderer.render=function(s,c){
-  if(s!==scene||c!==camera)return _r.call(renderer,s,c);
-  try{frame()}catch(e){}
-  if(HQ&&bloomOK){
-   try{bloomRender(s,c);c.layers.mask=3;return}
-   catch(e){bloomOK=false;console.warn('bloom off',e);renderer.setRenderTarget(null);renderer.autoClear=true}}
-  c.layers.mask=3;return _r.call(renderer,s,c)};
- var pc=placeCamera;
- placeCamera=function(){pc();if(HQ){var t=performance.now()/1000;camera.position.x+=Math.sin(t*.35)*.07;camera.position.y+=Math.sin(t*.27)*.05;camera.lookAt(CTR.x,0,CTR.z+.3)}};
- mkVig();mkUI();apply()}
-
-/* --- صدا + پنل «گرافیک و صدا» --- */
 var VOL=80,MUTE=false;
 try{var v=localStorage.getItem('jt_vol');if(v!==null)VOL=Math.max(0,Math.min(100,+v||0));MUTE=localStorage.getItem('jt_mute')==='1'}catch(e){}
 window.jtVol=function(){return MUTE?0:VOL/100};
@@ -3645,10 +3527,9 @@ function initSnd(){
  m.onclick=function(){MUTE=!MUTE;try{localStorage.setItem('jt_mute',MUTE?'1':'0')}catch(e){}applyVol();paintSnd()};
  g.onclick=function(){showSetPane('setG')};
  var _au=au;au=function(){var a=_au();applyVol();return a};
- var _sp=showSetPane;showSetPane=function(p){['setM','setS','setP','setG','setI'].forEach(function(i){var e=document.getElementById(i);if(e)e.hidden=i!==p});if(p==='setP'){renderSw();renderCc();renderAv()}if(p==='setG'){paintSnd();paintUI()}};
- mkUI();paintSnd()}
+ var _sp=showSetPane;showSetPane=function(p){['setM','setS','setP','setG','setI'].forEach(function(i){var e=document.getElementById(i);if(e)e.hidden=i!==p});if(p==='setP'){renderSw();renderCc();renderAv()}if(p==='setG'){paintSnd()}};
+ paintSnd()}
 try{initSnd()}catch(e){console.warn('snd',e)}
-var iv=setInterval(function(){try{install()}catch(e){inst=true;console.warn('gfx install',e)}if(inst)clearInterval(iv)},300);
 })();
 </script>
 <script>
