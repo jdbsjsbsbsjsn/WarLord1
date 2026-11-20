@@ -710,7 +710,7 @@ function plate(x,name,num,frac,col,sel,barCol){
 function initScene(){
  renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true});
  renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
- renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.useLegacyLights=true;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=.9;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+ renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.useLegacyLights=true;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
  scene=new THREE.Scene();scene.background=new THREE.Color(0x15120f);scene.fog=new THREE.Fog(0x15120f,28,48);
  camera=new THREE.PerspectiveCamera(38,1,.5,100);clock=new THREE.Clock();raycaster=new THREE.Raycaster();
  scene.add(new THREE.HemisphereLight(0xfff1dc,0x3a3128,.7));
@@ -721,9 +721,9 @@ function initScene(){
  const floor=new THREE.Mesh(new THREE.BoxGeometry(11.4,.3,16.4),new THREE.MeshStandardMaterial({color:0x1d1813,roughness:1}));floor.position.set(CTR.x,-.28,CTR.z);scene.add(floor);
  [[-1,1],[1,1],[-1,-1],[1,-1]].forEach(([a,b])=>{const m=new THREE.Mesh(new THREE.CylinderGeometry(.42,.5,.9,16),new THREE.MeshStandardMaterial({color:0x2a241d,roughness:.7}));m.position.set(CTR.x+a*5.9,-.1,CTR.z+b*8.5);m.castShadow=true;scene.add(m);
   const g=new THREE.Mesh(new THREE.SphereGeometry(.17,12,8),new THREE.MeshBasicMaterial({color:0xe8a33d}));g.position.set(m.position.x,.45,m.position.z);scene.add(g)});
- const bdGeo=new THREE.RingGeometry(.9,.98,6,1).rotateX(-Math.PI/2),bdMat=new THREE.MeshBasicMaterial({color:0x2a231b});
+ const bdGeo=new THREE.RingGeometry(.88,.99,6,1).rotateX(-Math.PI/2),bdMat=new THREE.MeshBasicMaterial({color:0x8a7d69});
  for(let c=0;c<COLS;c++){tiles[c]=[];for(let r=0;r<ROWS;r++){
-  const mat=new THREE.MeshStandardMaterial({color:(c+r)%2?0x6a5c49:0x7d6d58,roughness:.85,emissive:0x000000});
+  const mat=new THREE.MeshStandardMaterial({color:(c+r)%2?0x3a322a:0x40372e,roughness:1,metalness:0,emissive:0x000000});
   const m=new THREE.Mesh(GEO.tile,mat);m.position.set(CELL_X(c),-.17,CELL_Z(c,r));m.receiveShadow=true;m.userData={c,r};scene.add(m);tiles[c][r]=m;pickables.push(m);
   const bd=new THREE.Mesh(bdGeo,bdMat);bd.position.set(CELL_X(c),.012,CELL_Z(c,r));scene.add(bd)}}
  ringMesh=new THREE.Mesh(new THREE.RingGeometry(.8,.95,6,1).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({color:0xffffff}));ringMesh.position.y=.03;ringMesh.visible=false;scene.add(ringMesh);
@@ -843,7 +843,7 @@ function buildMakao(M,team){
  const dr=new THREE.Mesh(new THREE.CylinderGeometry(.075,.075,.14,10),Sv);dr.rotation.x=Math.PI/2;gp(dr,0,0,.02);
  gp(new THREE.Mesh(new THREE.BoxGeometry(.06,.14,.08),Sv),0,-.1,-.08);gp(new THREE.Mesh(new THREE.OctahedronGeometry(.03),Gm),0,.06,.06);
  return G}
-const FIG={ali:buildAlice,mak:buildMakao};
+window.SIMPLE_GFX=true;const FIG={ali:buildAlice,mak:buildMakao};
 /* ===== GX — موتور گرافیک مهره‌ها (ابزار مشترک برای همهٔ کاراکترها) =====
  کاراکتر جدید: تابعی مثل gxAlice بنویس (M,team)=>Group و با GX.reg('کلید',تابع) ثبتش کن.
  ابزارها: GX.pal(M) مواد PBR | GX.lathe بدنه/دامن چین‌دار | GX.limb/GX.strand لولهٔ باریک‌شونده (دست، پا، مو)
@@ -902,6 +902,7 @@ GX.post=()=>{const sun=scene.children.find(o=>o.isDirectionalLight),hl=scene.chi
  const pn=(c,w,h,x,y,z)=>{const m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({color:c,side:THREE.DoubleSide}));m.position.set(x,y,z);m.lookAt(0,0,0);es.add(m)};
  pn(new THREE.Color(4,3.6,3.2),10,8,-8,12,12);pn(new THREE.Color(1.2,2,3.6),4,12,12,6,-10);pn(new THREE.Color(1.5,1.2,1),8,3,0,2,14);
  scene.traverse(o=>{if(o.isMesh&&o.material&&o.material.isMeshStandardMaterial)o.material.envMapIntensity=.25});
+ for(let c=0;c<COLS;c++)for(let r=0;r<ROWS;r++)tiles[c][r].material.envMapIntensity=0;
  const pm=new THREE.PMREMGenerator(renderer);scene.environment=pm.fromScene(es,.02).texture;pm.dispose()};
 
 /* ---------- آلیس ---------- */
@@ -1995,13 +1996,13 @@ function mkUnit(u){
  const head=new THREE.Mesh(GEO.head,M(pale));head.position.y=ranged?1.62:1.32;
  const band=new THREE.Mesh(GEO.band,M(0xf3ead8));band.rotation.x=Math.PI/2;band.position.y=.5;
  const inner=new THREE.Group();inner.add(body,head,band);inner.scale.setScalar(s);inner.rotation.y=u.o===0?Math.PI:0;
- let fig=null,figM=[];if(FIG[u.k]){const n0=mats.length;fig=FIG[u.k](M,team);mats.slice(n0).forEach(m=>{m.userData.nt=1});fig.traverse(o=>{if(o.isMesh){o.castShadow=true;o.userData.u=u;figM.push(o)}});[body,head,band].forEach(m=>{m.material.visible=false});inner.add(fig)}
+ let fig=null,figM=[];if(!window.SIMPLE_GFX&&FIG[u.k]){const n0=mats.length;fig=FIG[u.k](M,team);mats.slice(n0).forEach(m=>{m.userData.nt=1});fig.traverse(o=>{if(o.isMesh){o.castShadow=true;o.userData.u=u;figM.push(o)}});[body,head,band].forEach(m=>{m.material.visible=false});inner.add(fig)}
  [base,body,head,band].forEach(m=>{m.castShadow=true;m.userData.u=u});pickables.push(base,body,head);figM.forEach(m=>pickables.push(m));
  const shield=new THREE.Mesh(GEO.shield,new THREE.MeshBasicMaterial({color:0xffd34d}));shield.rotation.x=Math.PI/2;shield.position.y=.9;
  const hack=new THREE.Mesh(GEO.shield,new THREE.MeshBasicMaterial({color:0x39ff88}));hack.rotation.x=Math.PI/2;hack.position.y=.12;hack.scale.setScalar(.95);
  const cage=new THREE.Mesh(GEO.cage,new THREE.MeshBasicMaterial({color:0x111111,wireframe:true}));cage.position.y=.95;
  const lb=mkLabel();lb.sp.position.set(0,.1,.72);
- g.add(inner,shield,hack,cage,lb.sp);if(FIG[u.k]){const rg=new THREE.Mesh(new THREE.TorusGeometry(.7,.035,8,48).rotateX(Math.PI/2),new THREE.MeshBasicMaterial({color:team,toneMapped:false}));rg.position.y=.19;g.add(rg)}
+ g.add(inner,shield,hack,cage,lb.sp);if(!window.SIMPLE_GFX&&FIG[u.k]){const rg=new THREE.Mesh(new THREE.TorusGeometry(.7,.035,8,48).rotateX(Math.PI/2),new THREE.MeshBasicMaterial({color:team,toneMapped:false}));rg.position.y=.19;g.add(rg)}
  g.position.set(CELL_X(u.c),0,CELL_Z(u.c,u.r));
  g.userData={mats,shield,hack,cage,lb,pick:[base,body,head,...figM],y0:u.o===0?Math.PI:0,fy:0,ft:0,tx:g.position.x,tz:g.position.z,ty:0,flash:0,last:u.hp,tint:[0,0,0],s,em:[team.r*.28,team.g*.28,team.b*.28]};
  scene.add(g);return g}
