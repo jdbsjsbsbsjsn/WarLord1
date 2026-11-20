@@ -4,7 +4,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700&display=swap" rel="stylesheet">
 <script>addEventListener("error",e=>{const d=document.createElement("div");d.style.cssText="position:fixed;z-index:99;inset:auto 8px 8px 8px;background:#300;color:#fff;font:12px monospace;padding:8px;border-radius:8px;direction:ltr;white-space:pre-wrap";d.textContent="ERR: "+(e.message||(e.target&&e.target.src)||"?");document.body&&document.body.appendChild(d)},true)</script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
-<script>window.THREE||document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"><\/script>')</script>
+<script>window.THREE||document.write('<script src="https://unpkg.com/three@0.160.0/build/three.min.js"><\/script>')</script>
 <script>THREE.ColorManagement&&(THREE.ColorManagement.enabled=false)</script>
 <style>
 /* چیدمان: ستون باریک؛ سربرگ سه‌ستونه، صحنهٔ سه‌بعدی، کارت قهرمان، دکمه‌ها، گزارش */
@@ -312,12 +312,25 @@ button em{font-style:normal;font-size:11px;font-weight:500;opacity:.8}
 <div id="ovMailList"></div><button id="ovMailClose" type="button">بستن</button></div></div>
 <div class="ovl" id="ovSet" hidden><div class="box">
 <div class="setp" id="setM"><h2>تنظیمات</h2>
+<button id="setGoI" class="setgo" type="button">هویت من<small>تغییر نام کاربری و آیدی</small></button>
 <button id="setGoS" class="setgo" type="button">🔒 امنیت<small>تگ، آیدی، رمز عبور و خروج از حساب</small></button>
 <button id="setGoP" class="setgo" type="button">🎨 شخصی‌سازی<small>رنگ پروفایل و رنگ کادر چت</small></button>
+<button id="setGoG" class="setgo" type="button">گرافیک و صدا<small>کیفیت گرافیک و میزان صدای بازی</small></button>
 <button id="ovSetClose" type="button">بستن</button></div>
+<div class="setp" id="setG" hidden><h2>گرافیک و صدا</h2>
+<div class="sec">میزان صدا</div>
+<div style="display:flex;gap:10px;align-items:center;margin:6px 0 10px"><input id="volR" type="range" min="0" max="100" step="5" style="flex:1;direction:ltr"><b id="volV" style="min-width:42px;text-align:center"></b></div>
+<button id="muteB" class="pr" type="button" style="margin-bottom:10px">قطع صدا</button>
+<button class="setBack" type="button">بازگشت</button></div>
+<div class="setp" id="setI" hidden><h2>هویت من</h2>
+<div class="sec">تغییر نام کاربری (نام همان چیزی است که با آن وارد می‌شوی؛ دوستانت نام جدید را می‌بینند)</div>
+<input id="nmIn" placeholder="نام جدید (۳ تا ۱۶ حرف)" maxlength="16" spellcheck="false">
+<input id="nmPw" type="password" placeholder="رمز فعلی برای تأیید" maxlength="64" autocomplete="current-password">
+<button id="nmSave" class="pr" type="button">ثبت نام جدید</button>
+<div class="sec">تغییر آیدی (۴ تا ۲۰ حرف انگلیسی، عدد یا _؛ هر آیدی فقط برای یک نفر است)</div>
+<div class="row"><input id="idIn2" placeholder="مثلاً ALI_WAR" maxlength="20" autocapitalize="characters" spellcheck="false" style="direction:ltr;text-transform:uppercase"><button id="idSave2" class="pr" type="button" style="flex:none">ثبت آیدی</button></div>
+<button class="setBack" type="button">بازگشت</button></div>
 <div class="setp" id="setS" hidden><h2>🔒 امنیت</h2>
-<div class="sec">🆔 تعویض آیدی</div><div class="sec">هر آیدی فقط برای یک نفر است و تکراری نمی‌شود (۴ تا ۲۰ حرف انگلیسی، عدد یا _)</div>
-<div class="row"><input id="pfIdIn" placeholder="مثلاً ALI_WAR" maxlength="20" autocapitalize="characters" spellcheck="false" style="direction:ltr;text-transform:uppercase"><button id="pfIdSave" class="pr" type="button" style="flex:none">ثبت آیدی</button></div>
 <div class="sec">🔑 تگ ورود تو (برای ورود دوباره لازم است؛ به کسی نده)</div><div class="pftag"><button id="setTagCp" type="button">کپی</button><b id="setTag"></b></div>
 <div class="sec">🔒 تعویض رمز حساب (رمز جدید: حداقل ۸ کاراکتر، حرف انگلیسی و عدد، و حداقل یک حرف بزرگ)</div>
 <input id="pwOld" type="password" placeholder="رمز فعلی" maxlength="64" autocomplete="current-password">
@@ -2888,7 +2901,7 @@ setInterval(()=>{if($('scrLoad').hidden)return;const t=Date.now()-loadStart;let 
   if(p>=100&&loadMode==='match'&&LOBBY)p=99;   // تا شروع واقعی بازی روی ۹۹ می‌ماند
   ldSet(p)},60);
 function entryMusic(){
-  try{const a=new Audio('entry.mp3');a.volume=.9;const pr=a.play();if(pr&&pr.catch)pr.catch(synthEntry);return}catch(e){}
+  try{const a=new Audio('entry.mp3');a.volume=Math.min(1,.9*(window.jtVol?window.jtVol():.8)/.8);const pr=a.play();if(pr&&pr.catch)pr.catch(synthEntry);return}catch(e){}
   synthEntry()}
 function synthEntry(){try{
   if(!au())return;
@@ -3008,6 +3021,7 @@ function onMsg(m){
    case 'autherr':$('auMsg').textContent=m.msg;if(m.resume){ls('jt_tok',null)}if(!MATCH)showScr('scrAuth');break;
    case 'kicked':AUTHED=false;barUI();toast('با دستگاه دیگری وارد شدی');if(!MATCH)showScr('scrAuth');break;
    case 'toast':toast(m.msg);break;
+   case 'nameok':myName=m.u;ls('jt_u',m.u);$('nmPw').value='';$('nmIn').value=m.u;break;
    case 'pwok':['pwOld','pwNew','pwNew2'].forEach(i=>$(i).value='');toast('رمز حساب تغییر کرد');break;
    case 'clan':CLAN=m.clan||null;if(!CLAN)CLCHAT=[];if(curScr==='scrClan')renderClan();if(curScr==='scrClanJoin'&&CLAN)showScr('scrClan');break;
    case 'clmade':showScr('scrClan');break;
@@ -3292,8 +3306,8 @@ const CC_DEF=6,CCOLS=PCOLS,CCN=PCN;
 const ccCol=c=>CCOLS[(c==null?CC_DEF:(c|0))%12]||CCOLS[CC_DEF];
 function renderCc(){const cur=FL.me&&FL.me.cc!=null?FL.me.cc|0:CC_DEF;$('ccSw').innerHTML=CCOLS.map((c,i)=>'<button type="button" class="sw'+(i===cur?' on':'')+'" data-c="'+i+'" style="background:'+c+'" aria-label="'+CCN[i]+'"></button>').join('');$('ccPrev').style.background=ccCol(cur);$('ccPrevN').textContent=myName||''}
 $('ccSw').onclick=e=>{const b=e.target.closest('button[data-c]');if(!b)return;if(FL.me)FL.me.cc=+b.dataset.c;renderCc();sendW({t:'setcc',c:+b.dataset.c})};
-function showSetPane(p){['setM','setS','setP'].forEach(i=>$(i).hidden=i!==p);if(p==='setP'){renderSw();renderCc();renderAv()}}
-$('setGoS').onclick=()=>showSetPane('setS');$('setGoP').onclick=()=>showSetPane('setP');
+function showSetPane(p){['setM','setS','setP','setI'].forEach(i=>$(i).hidden=i!==p);if(p==='setP'){renderSw();renderCc();renderAv()}}
+$('setGoS').onclick=()=>showSetPane('setS');$('setGoI').onclick=()=>showSetPane('setI');$('nmSave').onclick=()=>sendW({t:'setname',n:$('nmIn').value.trim(),o:$('nmPw').value});$('setGoP').onclick=()=>showSetPane('setP');
 document.querySelectorAll('.setBack').forEach(b=>b.onclick=()=>showSetPane('setM'));
 /* ===== نمادهای سیاه و سفید پروفایل (۱۲ طرح SVG) ===== */
 var AVN=['شکوفه رز','اژدها','شمشیرها','تاج','جمجمه','گرگ','سپر','قلعه','تبر','شعله','ماه و ستاره','لنگر','ستاره','قلب','رعد','الماس','کلید','خورشید','کاج','کوهستان','موج','چشم','پنجه','تیر','کمان','کلاه‌خود','جام','ستاره هشت‌پر','کتاب','مشعل','عنکبوت','مار','گربه','جغد','ماهی','شاخ گوزن','کوسه','بمب','توپ','پرچم','چکش','کلاه جادوگر','عصای جادو','صندوق گنج','سکه','ساعت شنی','چرخ‌دنده','پنتاگرام','پر','قطره','برگ','شبدر','زنگ','پیاده شطرنج','تاس','قطب‌نما','جمجمه و استخوان','شمشیر','هرم','مارپیچ'];
@@ -3368,8 +3382,8 @@ $('pwSave').onclick=()=>{const o=$('pwOld').value,n=$('pwNew').value,n2=$('pwNew
   if(!o)return toast('رمز فعلی را وارد کن');const e=pwErr(n)||(n!==n2?'رمز جدید و تکرار آن یکسان نیست':'');if(e)return toast(e);
   sendW({t:'chpw',o,n,n2})};
 $('pcSw').onclick=e=>{const b=e.target.closest('button[data-c]');if(!b)return;if(FL.me)FL.me.pc=+b.dataset.c;renderSw();sendW({t:'setcol',c:+b.dataset.c})};
-$('pfIdSave').onclick=()=>sendW({t:'setid',id:$('pfIdIn').value.trim().replace(/^@/,'').toUpperCase()});
-['auId','pfIdIn'].forEach(i=>$(i).addEventListener('input',e=>{const el=e.target,a=el.selectionStart,b=el.selectionEnd,v=el.value.toUpperCase();if(v!==el.value){el.value=v;try{el.setSelectionRange(a,b)}catch(_){}}}));
+$('idSave2').onclick=()=>sendW({t:'setid',id:$('idIn2').value.trim().replace(/^@/,'').toUpperCase()});
+['auId','idIn2'].forEach(i=>$(i).addEventListener('input',e=>{const el=e.target,a=el.selectionStart,b=el.selectionEnd,v=el.value.toUpperCase();if(v!==el.value){el.value=v;try{el.setSelectionRange(a,b)}catch(_){}}}));
 $('auU').addEventListener('input',e=>{if(!REG){const el=e.target,v=el.value.toUpperCase();if(v!==el.value)el.value=v}});
 $('tbName').onclick=()=>openProfile(myName);
 $('bnL').onclick=()=>goPage('scrDev');$('bnM').onclick=()=>goPage('scrMenu');$('bnR').onclick=()=>goPage('scrClan');
@@ -3390,7 +3404,7 @@ $('pfBack').onclick=()=>showScr('scrMenu');
 $('tbMn').onclick=e=>{e.stopPropagation();const o=$('tbDrop').hidden;closeOv();$('tbDrop').hidden=!o};
 document.addEventListener('click',e=>{if(!$('tbDrop').hidden&&!e.target.closest('#tbDrop'))$('tbDrop').hidden=true});
 $('tbFr').onclick=()=>{const o=$('ovFr').hidden;closeOv();if(o){$('ovFr').hidden=false;renderTbFr()}};
-$('tbSet').onclick=()=>{closeOv();$('pfIdIn').value=myId;$('setTag').textContent=myTag?'#'+myTag:'';['pwOld','pwNew','pwNew2'].forEach(i=>$(i).value='');showSetPane('setM');$('ovSet').hidden=false};
+$('tbSet').onclick=()=>{closeOv();$('idIn2').value=myId;$('nmIn').value=myName;$('nmPw').value='';$('setTag').textContent=myTag?'#'+myTag:'';['pwOld','pwNew','pwNew2'].forEach(i=>$(i).value='');showSetPane('setM');$('ovSet').hidden=false};
 $('tbMail').onclick=()=>{closeOv();$('ovMail').hidden=false;renderMail()};
 $('ovFrClose').onclick=closeOv;$('ovSetClose').onclick=closeOv;$('ovMailClose').onclick=closeOv;
 ['ovFr','ovMail','ovSet'].forEach(id=>$(id).addEventListener('click',e=>{if(e.target===$(id))closeOv()}));
@@ -3497,4 +3511,142 @@ connect();
 </script>
 
 
+<script>
+/* ===== ارتقای گرافیک: Bloom، مه، گرد و غبار، نور گوشه‌ها، تنظیم کیفیت ===== */
+(function(){
+'use strict';
+var GQ='high';try{GQ=localStorage.getItem('jt_gq')||'high'}catch(e){}
+if(GQ!=='low')GQ='high';
+var HQ=GQ==='high',bloomOK=true,inst=false;
+var _r,fbTex,rtA,rtB,qScene,qCam,mP,mBlur,mComp,dust,dustPos,dustVel,mist=[],lights=[],vig;
+function sv(v){try{localStorage.setItem('jt_gq',v)}catch(e){}}
+/* --- Vignette --- */
+function mkVig(){var st=document.getElementById('stage');if(!st)return;
+ var cs=getComputedStyle(st);if(cs.position==='static')st.style.position='relative';
+ vig=document.createElement('div');vig.style.cssText='position:absolute;inset:0;pointer-events:none;z-index:2;background:radial-gradient(ellipse at 50% 45%,rgba(0,0,0,0) 55%,rgba(0,0,0,.5) 100%);transition:opacity .4s';
+ st.appendChild(vig)}
+/* --- Settings UI --- */
+function mkUI(){var p=document.getElementById('setG');if(!p||document.getElementById('gqSec'))return;
+ var d=document.createElement('div');d.id='gqSec';
+ d.innerHTML='<div class="sec">کیفیت گرافیک (برای گوشی‌های ضعیف «کم» را بزن؛ تغییر خودکار انجام نمی‌شود)</div><div style="display:flex;gap:8px;margin:6px 0 10px"><button type="button" id="gqH" class="pr" style="flex:1">بالا (درخشش و مه)</button><button type="button" id="gqL" class="pr" style="flex:1">کم (سبک)</button></div>';
+ 
+ d.querySelector('#gqH').onclick=function(){setQ('high',true)};
+ d.querySelector('#gqL').onclick=function(){setQ('low',true)};
+ paintUI();p.insertBefore(d,p.querySelector('.sec:nth-of-type(1)')||p.firstChild);}
+function paintUI(){var h=document.getElementById('gqH'),l=document.getElementById('gqL');if(!h)return;
+ h.style.opacity=HQ?1:.45;l.style.opacity=HQ?.45:1;h.style.outline=HQ?'2px solid #e8a33d':'none';l.style.outline=HQ?'none':'2px solid #e8a33d'}
+function setQ(q,msg){GQ=q;HQ=q==='high';sv(q);if(HQ)bloomOK=true;apply();paintUI();
+ if(msg&&typeof toast==='function')toast(HQ?'کیفیت گرافیک: بالا':'کیفیت گرافیک: کم')}
+function apply(){
+ if(typeof renderer==='undefined'||!renderer)return;
+ renderer.setPixelRatio(Math.min(devicePixelRatio||1,HQ?2:1.5));
+ try{resize()}catch(e){}
+ if(dust)dust.visible=HQ;mist.forEach(function(m){m.visible=HQ});
+ lights.forEach(function(l){l.intensity=HQ?.7:0});
+ if(vig)vig.style.opacity=HQ?1:0}
+/* --- Scene additions --- */
+function softTex(){var c=document.createElement('canvas');c.width=c.height=64;var x=c.getContext('2d'),g=x.createRadialGradient(32,32,0,32,32,32);
+ g.addColorStop(0,'rgba(255,255,255,1)');g.addColorStop(.4,'rgba(255,255,255,.35)');g.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=g;x.fillRect(0,0,64,64);
+ var t=new THREE.CanvasTexture(c);return t}
+function mistTex(){var c=document.createElement('canvas');c.width=c.height=256;var x=c.getContext('2d');x.clearRect(0,0,256,256);
+ for(var i=0;i<46;i++){var px=Math.random()*256,py=Math.random()*256,r=30+Math.random()*50;
+  for(var ox=-256;ox<=256;ox+=256)for(var oy=-256;oy<=256;oy+=256){var g=x.createRadialGradient(px+ox,py+oy,0,px+ox,py+oy,r);g.addColorStop(0,'rgba(255,240,220,.22)');g.addColorStop(1,'rgba(255,240,220,0)');x.fillStyle=g;x.fillRect(0,0,256,256)}}
+ var t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;return t}
+function addScene(){
+ var C=CTR,N=200;
+ var g=new THREE.BufferGeometry();dustPos=new Float32Array(N*3);dustVel=new Float32Array(N*3);
+ for(var i=0;i<N;i++){dustPos[i*3]=C.x+(Math.random()-.5)*13;dustPos[i*3+1]=.2+Math.random()*4.5;dustPos[i*3+2]=C.z+(Math.random()-.5)*18;
+  dustVel[i*3]=(Math.random()-.5)*.15;dustVel[i*3+1]=.05+Math.random()*.12;dustVel[i*3+2]=(Math.random()-.5)*.15}
+ g.setAttribute('position',new THREE.BufferAttribute(dustPos,3));
+ dust=new THREE.Points(g,new THREE.PointsMaterial({map:softTex(),size:.16,color:0xffd9a0,transparent:true,opacity:.55,depthWrite:false,blending:THREE.AdditiveBlending,sizeAttenuation:true,fog:true}));
+ dust.frustumCulled=false;dust.renderOrder=3;scene.add(dust);
+ var mt=mistTex();
+ [[.12,.10,.025,.012,1.6],[.38,.07,-.018,.02,1.1]].forEach(function(a){
+  var t=mt.clone();t.needsUpdate=true;t.repeat.set(a[4],a[4]*1.4);
+  var m=new THREE.Mesh(new THREE.PlaneGeometry(13,18).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({map:t,transparent:true,opacity:a[1],depthWrite:false,blending:THREE.AdditiveBlending,fog:false}));
+  m.position.set(C.x,a[0],C.z);m.renderOrder=2;m.userData.v=[a[2],a[3]];scene.add(m);mist.push(m)});
+ [[-1,1],[1,1],[-1,-1],[1,-1]].forEach(function(s){
+  var l=new THREE.PointLight(0xe8a33d,.7,8,2);l.position.set(C.x+s[0]*5.9,.9,C.z+s[1]*8.5);scene.add(l);lights.push(l)})}
+/* --- Bloom pipeline --- */
+var VS='varying vec2 vUv;void main(){vUv=uv;gl_Position=vec4(position.xy,0.,1.);}';
+function mkBloom(){
+ qScene=new THREE.Scene();qCam=new THREE.OrthographicCamera(-1,1,1,-1,0,1);
+ var geo=new THREE.PlaneGeometry(2,2);
+ mP=new THREE.ShaderMaterial({uniforms:{t:{value:null},px:{value:new THREE.Vector2()},th:{value:.62}},vertexShader:VS,depthTest:false,depthWrite:false,
+  fragmentShader:'uniform sampler2D t;uniform vec2 px;uniform float th;varying vec2 vUv;vec3 f(vec2 o){vec3 c=texture2D(t,vUv+o*px).rgb;float l=max(c.r,max(c.g,c.b));return c*smoothstep(th,th+.3,l);}void main(){vec3 c=f(vec2(0.))*.4+f(vec2(1.5,1.5))*.15+f(vec2(-1.5,1.5))*.15+f(vec2(1.5,-1.5))*.15+f(vec2(-1.5,-1.5))*.15;gl_FragColor=vec4(c,1.);}'});
+ mBlur=new THREE.ShaderMaterial({uniforms:{t:{value:null},d:{value:new THREE.Vector2()}},vertexShader:VS,depthTest:false,depthWrite:false,
+  fragmentShader:'uniform sampler2D t;uniform vec2 d;varying vec2 vUv;void main(){vec3 c=texture2D(t,vUv).rgb*.227;c+=(texture2D(t,vUv+d*1.385).rgb+texture2D(t,vUv-d*1.385).rgb)*.316;c+=(texture2D(t,vUv+d*3.23).rgb+texture2D(t,vUv-d*3.23).rgb)*.07;gl_FragColor=vec4(c,1.);}'});
+ mComp=new THREE.ShaderMaterial({uniforms:{t:{value:null},k:{value:1.15}},vertexShader:VS,transparent:true,blending:THREE.AdditiveBlending,depthTest:false,depthWrite:false,
+  fragmentShader:'uniform sampler2D t;uniform float k;varying vec2 vUv;void main(){gl_FragColor=vec4(texture2D(t,vUv).rgb*k,1.);}'});
+ var q=new THREE.Mesh(geo,mP);q.frustumCulled=false;qScene.add(q);qScene.userData.q=q}
+function sizes(){
+ var s=new THREE.Vector2();renderer.getDrawingBufferSize(s);var w=Math.max(2,Math.floor(s.x)),h=Math.max(2,Math.floor(s.y));
+ if(!fbTex||fbTex.image.width!==w||fbTex.image.height!==h){
+  if(fbTex)fbTex.dispose();fbTex=new THREE.FramebufferTexture(w,h);fbTex.minFilter=fbTex.magFilter=THREE.LinearFilter;fbTex.generateMipmaps=false;
+  var bw=Math.max(2,w>>2),bh=Math.max(2,h>>2);
+  if(rtA)rtA.dispose();if(rtB)rtB.dispose();
+  var o={depthBuffer:false,stencilBuffer:false};rtA=new THREE.WebGLRenderTarget(bw,bh,o);rtB=new THREE.WebGLRenderTarget(bw,bh,o)}
+ return[w,h]}
+function pass(mat,target){qScene.userData.q.material=mat;renderer.setRenderTarget(target);_r.call(renderer,qScene,qCam)}
+var cp=new THREE.Vector2(0,0);
+function bloomRender(s,c){
+ var wh=sizes();
+ c.layers.set(0);_r.call(renderer,s,c);
+ renderer.copyFramebufferToTexture(cp,fbTex);
+ mP.uniforms.t.value=fbTex;mP.uniforms.px.value.set(1/wh[0],1/wh[1]);pass(mP,rtA);
+ mBlur.uniforms.t.value=rtA.texture;mBlur.uniforms.d.value.set(1/rtA.width,0);pass(mBlur,rtB);
+ mBlur.uniforms.t.value=rtB.texture;mBlur.uniforms.d.value.set(0,1/rtA.height);pass(mBlur,rtA);
+ mBlur.uniforms.t.value=rtA.texture;mBlur.uniforms.d.value.set(2/rtA.width,0);pass(mBlur,rtB);
+ mBlur.uniforms.t.value=rtB.texture;mBlur.uniforms.d.value.set(0,2/rtA.height);pass(mBlur,rtA);
+ renderer.setRenderTarget(null);
+ var ac=renderer.autoClear;renderer.autoClear=false;
+ mComp.uniforms.t.value=rtA.texture;pass(mComp,null);
+ c.layers.set(1);renderer.clearDepth();_r.call(renderer,s,c);
+ renderer.autoClear=ac}
+/* --- Per-frame --- */
+var last=0,acc=0,n=0,t0=0,degraded=false;
+function frame(){
+ var now=performance.now()/1000,dt=Math.min(.05,now-last||.016);last=now;
+ if(HQ&&dust){
+  for(var i=0;i<dustPos.length;i+=3){dustPos[i]+=dustVel[i]*dt;dustPos[i+1]+=dustVel[i+1]*dt;dustPos[i+2]+=dustVel[i+2]*dt;
+   if(dustPos[i+1]>4.8){dustPos[i+1]=.1}}
+  dust.geometry.attributes.position.needsUpdate=true;
+  mist.forEach(function(m){var t=m.material.map;t.offset.x+=m.userData.v[0]*dt;t.offset.y+=m.userData.v[1]*dt})}
+ if(typeof unitG!=='undefined')unitG.forEach(function(g){var l=g.userData&&g.userData.lb;if(l&&l.sp&&l.sp.layers.mask!==2)l.sp.layers.set(1)});
+ if(typeof pops!=='undefined')pops.forEach(function(p){if(p.sp&&p.sp.layers.mask!==2)p.sp.layers.set(1)});
+}
+function install(){
+ if(inst)return;if(typeof renderer==='undefined'||!renderer||typeof scene==='undefined'||!scene||typeof camera==='undefined'||!camera||typeof CTR==='undefined')return;
+ inst=true;_r=renderer.render;
+ try{mkBloom();addScene()}catch(e){bloomOK=false;console.warn('gfx',e)}
+ renderer.render=function(s,c){
+  if(s!==scene||c!==camera)return _r.call(renderer,s,c);
+  try{frame()}catch(e){}
+  if(HQ&&bloomOK){
+   try{bloomRender(s,c);c.layers.mask=3;return}
+   catch(e){bloomOK=false;console.warn('bloom off',e);renderer.setRenderTarget(null);renderer.autoClear=true}}
+  c.layers.mask=3;return _r.call(renderer,s,c)};
+ var pc=placeCamera;
+ placeCamera=function(){pc();if(HQ){var t=performance.now()/1000;camera.position.x+=Math.sin(t*.35)*.07;camera.position.y+=Math.sin(t*.27)*.05;camera.lookAt(CTR.x,0,CTR.z+.3)}};
+ mkVig();mkUI();apply()}
+
+/* --- صدا + پنل «گرافیک و صدا» --- */
+var VOL=80,MUTE=false;
+try{var v=localStorage.getItem('jt_vol');if(v!==null)VOL=Math.max(0,Math.min(100,+v||0));MUTE=localStorage.getItem('jt_mute')==='1'}catch(e){}
+window.jtVol=function(){return MUTE?0:VOL/100};
+function applyVol(){try{if(typeof MG!=='undefined'&&MG)MG.gain.value=MUTE?0:VOL/100}catch(e){}}
+function paintSnd(){var r=document.getElementById('volR'),t=document.getElementById('volV'),m=document.getElementById('muteB');if(!r)return;
+ r.value=VOL;t.textContent=VOL+'٪';m.textContent=MUTE?'صدا قطع است (برای وصل‌کردن بزن)':'قطع صدا'}
+function initSnd(){
+ var r=document.getElementById('volR'),m=document.getElementById('muteB'),g=document.getElementById('setGoG');if(!r||!g)return;
+ r.oninput=function(){VOL=+r.value;if(MUTE&&VOL>0)MUTE=false;try{localStorage.setItem('jt_vol',VOL);localStorage.setItem('jt_mute',MUTE?'1':'0')}catch(e){}applyVol();paintSnd()};
+ m.onclick=function(){MUTE=!MUTE;try{localStorage.setItem('jt_mute',MUTE?'1':'0')}catch(e){}applyVol();paintSnd()};
+ g.onclick=function(){showSetPane('setG')};
+ var _au=au;au=function(){var a=_au();applyVol();return a};
+ var _sp=showSetPane;showSetPane=function(p){['setM','setS','setP','setG','setI'].forEach(function(i){var e=document.getElementById(i);if(e)e.hidden=i!==p});if(p==='setP'){renderSw();renderCc();renderAv()}if(p==='setG'){paintSnd();paintUI()}};
+ mkUI();paintSnd()}
+try{initSnd()}catch(e){console.warn('snd',e)}
+var iv=setInterval(function(){try{install()}catch(e){inst=true;console.warn('gfx install',e)}if(inst)clearInterval(iv)},300);
+})();
+</script>
 </body></html>

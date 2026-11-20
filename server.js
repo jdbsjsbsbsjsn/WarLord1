@@ -459,6 +459,42 @@ function setId(ws, m) {
   toast(ws, 'آیدی ثبت شد: @' + v); pushFL(me); pushFriendsOf(me);
 }
 
+/* تعویض نام کاربری (نام همان کلید ورود است؛ همه‌جا جابه‌جا می‌شود). نیازمند رمز فعلی، فقط خارج از بازی */
+async function setName(ws, m) {
+  const old = ws.u, U = db.users[old];
+  if (!U) return;
+  if (++ws.tries > 12) return ws.close();
+  if (!rl('sn:' + old, 5, 3600000)) return toast(ws, 'تلاش زیاد؛ کمی بعد امتحان کن');
+  const name = String(m.n || '').trim(), nk = key(name), o = String(m.o || '');
+  if (name.length < 3 || name.length > 16 || !nameOk(name)) return toast(ws, 'نام کاربری باید ۳ تا ۱۶ حرف فارسی یا انگلیسی (جدا از هم، نه مخلوط) یا عدد باشد');
+  if (name === U.name) return toast(ws, 'این همان نام فعلی توست');
+  if (inMatch.has(old) || invOut.has(old) || invIn.has(old)) return toast(ws, 'در بازی یا دعوت نمی‌شود نام را عوض کرد');
+  try { if (!o || o.length > 64 || !hashEq(U.hash, await hashPw(o, U.salt))) return toast(ws, 'رمز فعلی اشتباه است'); }
+  catch (e) { return toast(ws, 'سرور شلوغ است؛ بعداً امتحان کن'); }
+  if (ws.u !== old || !db.users[old] || inMatch.has(old) || invOut.has(old) || invIn.has(old)) return;   // همزمانی در طول await
+  if (nk !== old && db.users[nk]) return toast(ws, 'این نام قبلاً گرفته شده');
+  const oldName = U.name;
+  U.name = name;
+  if (nk !== old) {
+    db.users[nk] = U; delete db.users[old];
+    for (const k of Object.keys(db.users)) { const u = db.users[k];
+      for (const f of ['friends', 'inc', 'out']) if (Array.isArray(u[f])) u[f] = u[f].map(x => x === old ? nk : x); }
+    for (const ck of Object.keys(db.clans)) { const c = db.clans[ck];
+      if (c.owner === old) c.owner = nk;
+      if (Array.isArray(c.members)) c.members = c.members.map(x => x === old ? nk : x); }
+    for (const t of Object.keys(db.sessions)) if (db.sessions[t].u === old) db.sessions[t].u = nk;
+    if (U.tag) userTags.set(U.tag, nk);
+    if (U.id) userIds.set(U.id, nk);
+    conns.delete(old); conns.set(nk, ws); ws.u = nk;
+  }
+  if (U.clan) { const a = clanChat.get(U.clan); if (a) { a.forEach(x => { if (!x.sys && x.u === oldName) x.u = name; }); saveChat(U.clan); } }
+  save();
+  send(ws, { t: 'nameok', u: name });
+  toast(ws, 'نام کاربری شد: ' + name);
+  pushFL(nk); pushFriendsOf(nk); pushClan(nk); pushClanLive(nk);
+  (U.friends || []).forEach(pushFL);
+}
+
 /* ---------- قبیله ----------
    وضعیت: open = همه می‌توانند عضو شوند، closed = کسی نمی‌تواند عضو شود، invite = فقط با دعوتِ سازنده (از پروفایل بازیکن) */
 const CMODES = new Set(['open', 'closed', 'invite']);
@@ -807,6 +843,7 @@ function handleMsg(ws, raw) {
       case 'mdel': { const a = db.users[me].mail || []; const i = a.findIndex(e => e.id === m.id); if (i >= 0) { a.splice(i, 1); save(); pushMail(me); } return; }
       case 'search': return search(ws, m);
       case 'setid': return setId(ws, m);
+      case 'setname': return setName(ws, m);
       case 'setcol': return setCol(ws, m);
       case 'setcc': return setCc(ws, m);
       case 'setav': return setAv(ws, m);
