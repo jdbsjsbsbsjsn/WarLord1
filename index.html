@@ -3,9 +3,9 @@
 <title>جنگ‌سالار سه‌بعدی</title>
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700&display=swap" rel="stylesheet">
 <script>(function(){var box=null,seen={};function show(t){if(seen[t])return;seen[t]=1;if(!box){box=document.createElement("div");box.style.cssText="position:fixed;z-index:99;inset:auto 8px 8px 8px;max-height:40vh;overflow:auto;background:#300;color:#fff;font:12px monospace;padding:8px;border-radius:8px;direction:ltr;white-space:pre-wrap;word-break:break-all";box.onclick=function(){box.remove();box=null};(document.body||document.documentElement).appendChild(box)}box.textContent+=(box.textContent?"\n":"")+t;console.error(t)}
-addEventListener("error",function(e){var src=e.target&&(e.target.src||e.target.href);if(src&&e.target!==window){show("LOAD FAIL: "+src);return}
+addEventListener("error",function(e){var src=e.target&&(e.target.src||e.target.href);if(src&&e.target!==window){console.warn("LOAD FAIL: "+src);return}
 var w=(e.filename?" @"+e.filename.split("/").pop()+":"+e.lineno+":"+e.colno:"");show("ERR: "+(e.message||"?")+w+((e.error&&e.error.stack)?"\n"+String(e.error.stack).split("\n").slice(1,4).join("\n"):""))},true);
-addEventListener("unhandledrejection",function(e){show("PROMISE: "+(e.reason&&(e.reason.stack||e.reason.message)||e.reason))})})()</script>
+window.__errShow=show;addEventListener("unhandledrejection",function(e){show("PROMISE: "+(e.reason&&(e.reason.stack||e.reason.message)||e.reason))})})()</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r160/three.min.js"></script>
 <script>window.THREE||document.write('<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"><\/script>')</script>
 <script>window.THREE||document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r159/three.min.js"><\/script>')</script>
@@ -908,7 +908,7 @@ GX.head=(G,M,o)=>{const p=new THREE.Vector3(0,o.y,0),h=new THREE.Mesh(new THREE.
 GX.anim=(G,fn)=>GX.A.push({G,fn,ph:Math.random()*6.28});
 GX.up=o=>{while(o){if(o===scene)return true;o=o.parent}return false};
 GX.tick=t=>{for(let i=GX.A.length-1;i>=0;i--){const a=GX.A[i];if(!GX.up(a.G)){if(a.G.userData.seen)GX.A.splice(i,1);continue}a.G.userData.seen=1;a.fn(t+a.ph)}};
-GX.reg=(k,fn,old)=>{FIG[k]=(M,t)=>{try{return fn(M,t)}catch(e){console.error('GX',k,e);return old?old(M,t):new THREE.Group()}}};
+GX.reg=(k,fn,old)=>{FIG[k]=(M,t)=>{try{return fn(M,t)}catch(e){console.error('GX',k,e);try{window.__errShow&&__errShow('GX '+k+': '+(e&&e.message)+' | '+String(e&&e.stack).split('\n').slice(1,3).join(' | '))}catch(_){}return old?old(M,t):new THREE.Group()}}};
 const _gxPC=placeCamera;placeCamera=function(){_gxPC();GX.tick(clock.elapsedTime)};
 const _gxIS=initScene;initScene=function(){_gxIS();try{GX.post()}catch(e){console.error('GX.post',e)}};
 GX.post=()=>{const sun=scene.children.find(o=>o.isDirectionalLight),hl=scene.children.find(o=>o.isHemisphereLight);
@@ -2014,7 +2014,7 @@ function mkUnit(u){
  const head=new THREE.Mesh(GEO.head,M(pale));head.position.y=ranged?1.62:1.32;
  const band=new THREE.Mesh(GEO.band,M(0xf3ead8));band.rotation.x=Math.PI/2;band.position.y=.5;
  const inner=new THREE.Group();inner.add(body,head,band);inner.scale.setScalar(s);inner.rotation.y=u.o===0?Math.PI:0;
- let fig=null,figM=[];if(FIG[u.k]){const n0=mats.length;fig=FIG[u.k](M,team);mats.slice(n0).forEach(m=>{m.userData.nt=1});fig.traverse(o=>{if(o.isMesh){o.castShadow=true;o.userData.u=u;figM.push(o)}});[body,head,band].forEach(m=>{m.material.visible=false});inner.add(fig)}
+ let fig=null,figM=[];if(FIG[u.k]){const n0=mats.length;fig=FIG[u.k](M,team);mats.slice(n0).forEach(m=>{m.userData.nt=1});fig.traverse(o=>{if(o.isMesh){o.castShadow=true;o.userData.u=u;figM.push(o)}});if(figM.length)[body,head,band].forEach(m=>{m.material.visible=false});inner.add(fig)}
  [base,body,head,band].forEach(m=>{m.castShadow=true;m.userData.u=u});pickables.push(base,body,head);figM.forEach(m=>pickables.push(m));
  const shield=new THREE.Mesh(GEO.shield,new THREE.MeshBasicMaterial({color:0xffd34d}));shield.rotation.x=Math.PI/2;shield.position.y=.9;
  const hack=new THREE.Mesh(GEO.shield,new THREE.MeshBasicMaterial({color:0x39ff88}));hack.rotation.x=Math.PI/2;hack.position.y=.12;hack.scale.setScalar(.95);
@@ -2782,7 +2782,7 @@ function dgFallback(M,team,K){const G=new THREE.Group(),m=M(GX.c(K.mid),{roughne
  const h=new THREE.Mesh(new THREE.IcosahedronGeometry(.25,0),m);h.position.set(0,2.1,.3);G.add(h);
  [-1,1].forEach(s=>{const w=new THREE.Mesh(new THREE.ConeGeometry(.6,1.4,3),m);w.position.set(s*.8,1.8,-.2);w.rotation.z=-s*.6;G.add(w)});
  return G}
-const reg=(k)=>{const old=FIG[k];FIG[k]=(M,t)=>{try{return gxDragon(M,t,DGT[k])}catch(e){console.error('dragon',k,e);try{return dgFallback(M,t,DGT[k])}catch(e2){return old?old(M,t):new THREE.Group()}}}};
+const reg=(k)=>{const old=FIG[k];FIG[k]=(M,t)=>{try{return gxDragon(M,t,DGT[k])}catch(e){console.error('dragon',k,e);try{window.__errShow&&__errShow('dragon '+k+': '+(e&&e.message)+' | '+String(e&&e.stack).split('\n').slice(1,3).join(' | '))}catch(_){}try{return dgFallback(M,t,DGT[k])}catch(e2){return old?old(M,t):new THREE.Group()}}}};
 reg('fd');reg('ft');
 
 /* ---------- کمک‌ها ---------- */
