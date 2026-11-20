@@ -2058,7 +2058,7 @@ function paintLabel(u,g){const d=g.userData,sl=sel_===u,v=vhp(u),p=Math.max(0,Ma
  plate(d.lb.cv.getContext('2d'),H[u.k].n+((u.bbv!=null?u.bbv:u.bb|0)>0?' 💣×'+PX(u.bbv!=null?u.bbv:u.bb):''),PX(Math.round(v)),p,CL[u.o],sl,p>.5?'#4cd964':p>.25?'#ffcc00':'#ff3b30');
  d.lb.tex.needsUpdate=true;d.lb.sp.renderOrder=sl?30:10}
 let sel_=null;
-function hid(u){return phase!=='play'&&u.o!==(ONLINE?ME:P)}
+function hid(u){return phase!=='play'&&u.o!==(ONLINE?ME:(BOTG?0:P))}
 function syncUnits(){
  sel_=sel;
  for(const [u,g] of [...unitG]){if(!U.includes(u)){if(phase==='play'&&u.vq){const v0=vhp(u);if(u.vq){const d0=Math.round(v0)-Math.round(g.userData.last);if(d0<0){popup('-'+PX(-d0),g.position,'#ff5a4d');g.userData.flash=1}g.userData.last=v0;g.visible=true;paintLabel(u,g);continue}}
