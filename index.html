@@ -710,7 +710,7 @@ function plate(x,name,num,frac,col,sel,barCol){
 function initScene(){
  renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true});
  renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
- renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.useLegacyLights=true;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.2;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+ renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.useLegacyLights=true;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=.9;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
  scene=new THREE.Scene();scene.background=new THREE.Color(0x15120f);scene.fog=new THREE.Fog(0x15120f,28,48);
  camera=new THREE.PerspectiveCamera(38,1,.5,100);clock=new THREE.Clock();raycaster=new THREE.Raycaster();
  scene.add(new THREE.HemisphereLight(0xfff1dc,0x3a3128,.7));
@@ -893,8 +893,8 @@ GX.reg=(k,fn,old)=>{FIG[k]=(M,t)=>{try{return fn(M,t)}catch(e){console.error('GX
 const _gxPC=placeCamera;placeCamera=function(){_gxPC();GX.tick(clock.elapsedTime)};
 const _gxIS=initScene;initScene=function(){_gxIS();try{GX.post()}catch(e){console.error('GX.post',e)}};
 GX.post=()=>{const sun=scene.children.find(o=>o.isDirectionalLight),hl=scene.children.find(o=>o.isHemisphereLight);
- if(sun){sun.shadow.mapSize.set(2048,2048);sun.shadow.bias=-.0003;sun.shadow.normalBias=.025;sun.intensity=1.15}if(hl)hl.intensity=.75;
- const rim=new THREE.DirectionalLight(0xfff1e0,.75),fill=new THREE.DirectionalLight(0xffc99a,.35);rim.position.set(CTR.x+6,9,CTR.z-12);fill.position.set(CTR.x-9,4,CTR.z+10);
+ if(sun){sun.shadow.mapSize.set(2048,2048);sun.shadow.bias=-.0003;sun.shadow.normalBias=.025;sun.intensity=.7}if(hl)hl.intensity=.5;
+ const rim=new THREE.DirectionalLight(0xfff1e0,.25),fill=new THREE.DirectionalLight(0xffc99a,.12);rim.position.set(CTR.x+6,9,CTR.z-12);fill.position.set(CTR.x-9,4,CTR.z+10);
  scene.add(rim,fill,rim.target,fill.target);rim.target.position.copy(CTR);fill.target.position.copy(CTR);
  const es=new THREE.Scene(),sg=new THREE.SphereGeometry(20,24,12),P=sg.attributes.position,cs=[];
  for(let i=0;i<P.count;i++){const y=P.getY(i)/20,c=y>0?new THREE.Color(0x6a5a4a).lerp(new THREE.Color(0xb59b7e),y):new THREE.Color(0x1a1612);cs.push(c.r,c.g,c.b)}
@@ -3528,7 +3528,7 @@ function mkVig(){var st=document.getElementById('stage');if(!st)return;
 /* --- Settings UI --- */
 function mkUI(){var p=document.getElementById('setG');if(!p||document.getElementById('gqSec'))return;
  var d=document.createElement('div');d.id='gqSec';
- d.innerHTML='<div class="sec">کیفیت گرافیک (برای گوشی‌های ضعیف «کم» را بزن؛ تغییر خودکار انجام نمی‌شود)</div><div style="display:flex;gap:8px;margin:6px 0 10px"><button type="button" id="gqH" class="pr" style="flex:1">بالا (مه و ذرات)</button><button type="button" id="gqL" class="pr" style="flex:1">کم (سبک)</button></div>';
+ d.innerHTML='<div class="sec">کیفیت گرافیک (برای گوشی‌های ضعیف «کم» را بزن؛ تغییر خودکار انجام نمی‌شود)</div><div style="display:flex;gap:8px;margin:6px 0 10px"><button type="button" id="gqH" class="pr" style="flex:1">بالا</button><button type="button" id="gqL" class="pr" style="flex:1">کم (سبک)</button></div>';
  
  d.querySelector('#gqH').onclick=function(){setQ('high',true)};
  d.querySelector('#gqL').onclick=function(){setQ('low',true)};
@@ -3620,7 +3620,7 @@ function frame(){
 function install(){
  if(inst)return;if(typeof renderer==='undefined'||!renderer||typeof scene==='undefined'||!scene||typeof camera==='undefined'||!camera||typeof CTR==='undefined')return;
  inst=true;_r=renderer.render;
- try{addScene()}catch(e){console.warn('gfx',e)}
+ 
  renderer.render=function(s,c){
   if(s!==scene||c!==camera)return _r.call(renderer,s,c);
   try{frame()}catch(e){}
@@ -3629,8 +3629,8 @@ function install(){
    catch(e){bloomOK=false;console.warn('bloom off',e);renderer.setRenderTarget(null);renderer.autoClear=true}}
   c.layers.mask=3;return _r.call(renderer,s,c)};
  var pc=placeCamera;
- placeCamera=function(){pc();if(HQ){var t=performance.now()/1000;camera.position.x+=Math.sin(t*.35)*.07;camera.position.y+=Math.sin(t*.27)*.05;camera.lookAt(CTR.x,0,CTR.z+.3)}};
- mkVig();mkUI();apply()}
+ placeCamera=function(){pc();if(false){var t=performance.now()/1000;camera.position.x+=Math.sin(t*.35)*.07;camera.position.y+=Math.sin(t*.27)*.05;camera.lookAt(CTR.x,0,CTR.z+.3)}};
+ mkUI();apply()}
 
 /* --- صدا + پنل «گرافیک و صدا» --- */
 var VOL=80,MUTE=false;
