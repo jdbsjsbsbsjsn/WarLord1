@@ -3517,7 +3517,7 @@ connect();
 'use strict';
 var GQ='high';try{GQ=localStorage.getItem('jt_gq')||'high'}catch(e){}
 if(GQ!=='low')GQ='high';
-var HQ=GQ==='high',bloomOK=true,inst=false;
+var HQ=GQ==='high',bloomOK=false,inst=false;
 var _r,fbTex,rtA,rtB,qScene,qCam,mP,mBlur,mComp,dust,dustPos,dustVel,mist=[],lights=[],vig;
 function sv(v){try{localStorage.setItem('jt_gq',v)}catch(e){}}
 /* --- Vignette --- */
@@ -3528,14 +3528,14 @@ function mkVig(){var st=document.getElementById('stage');if(!st)return;
 /* --- Settings UI --- */
 function mkUI(){var p=document.getElementById('setG');if(!p||document.getElementById('gqSec'))return;
  var d=document.createElement('div');d.id='gqSec';
- d.innerHTML='<div class="sec">کیفیت گرافیک (برای گوشی‌های ضعیف «کم» را بزن؛ تغییر خودکار انجام نمی‌شود)</div><div style="display:flex;gap:8px;margin:6px 0 10px"><button type="button" id="gqH" class="pr" style="flex:1">بالا (درخشش و مه)</button><button type="button" id="gqL" class="pr" style="flex:1">کم (سبک)</button></div>';
+ d.innerHTML='<div class="sec">کیفیت گرافیک (برای گوشی‌های ضعیف «کم» را بزن؛ تغییر خودکار انجام نمی‌شود)</div><div style="display:flex;gap:8px;margin:6px 0 10px"><button type="button" id="gqH" class="pr" style="flex:1">بالا (مه و ذرات)</button><button type="button" id="gqL" class="pr" style="flex:1">کم (سبک)</button></div>';
  
  d.querySelector('#gqH').onclick=function(){setQ('high',true)};
  d.querySelector('#gqL').onclick=function(){setQ('low',true)};
  paintUI();p.insertBefore(d,p.querySelector('.sec:nth-of-type(1)')||p.firstChild);}
 function paintUI(){var h=document.getElementById('gqH'),l=document.getElementById('gqL');if(!h)return;
  h.style.opacity=HQ?1:.45;l.style.opacity=HQ?.45:1;h.style.outline=HQ?'2px solid #e8a33d':'none';l.style.outline=HQ?'none':'2px solid #e8a33d'}
-function setQ(q,msg){GQ=q;HQ=q==='high';sv(q);if(HQ)bloomOK=true;apply();paintUI();
+function setQ(q,msg){GQ=q;HQ=q==='high';sv(q);apply();paintUI();
  if(msg&&typeof toast==='function')toast(HQ?'کیفیت گرافیک: بالا':'کیفیت گرافیک: کم')}
 function apply(){
  if(typeof renderer==='undefined'||!renderer)return;
@@ -3620,7 +3620,7 @@ function frame(){
 function install(){
  if(inst)return;if(typeof renderer==='undefined'||!renderer||typeof scene==='undefined'||!scene||typeof camera==='undefined'||!camera||typeof CTR==='undefined')return;
  inst=true;_r=renderer.render;
- try{mkBloom();addScene()}catch(e){bloomOK=false;console.warn('gfx',e)}
+ try{addScene()}catch(e){console.warn('gfx',e)}
  renderer.render=function(s,c){
   if(s!==scene||c!==camera)return _r.call(renderer,s,c);
   try{frame()}catch(e){}
@@ -3944,9 +3944,14 @@ function loadAlice(){var im=q('tutImg'),fb=q('tutFb'),L=['data:image/webp;base64
 /* ---------- دیالوگ ---------- */
 function say(pages,cb){Z.pg=pages;Z.pi=0;Z.done=cb||null;Z.stage='wait';
  var d=q('tutDlg');d.hidden=false;void d.offsetWidth;d.classList.add('on');Z.tapOK=Date.now()+650;showPg()}
-function showPg(){clearInterval(Z.tmr);var t=Z.pg[Z.pi],el=q('tutTx'),i=0;el.textContent='';Z.typing=true;Z.tapOK=Math.max(Z.tapOK,Date.now()+250);q('tutNx').style.visibility='hidden';tone(SND.pop);
- Z.tmr=setInterval(function(){i++;el.textContent=t.slice(0,i);if(i>=t.length)endType()},24)}
-function endType(){clearInterval(Z.tmr);Z.typing=false;q('tutTx').textContent=Z.pg[Z.pi];q('tutNx').style.visibility='visible';Z.tapOK=Date.now()+200}
+function alignBub(){var im=q('tutImg'),fb=q('tutFb'),b=q('tutBub'),vis=im.style.display==='block'?im:fb,r=vis.getBoundingClientRect(),h=r.height,w=r.width;
+ if(!h)return;if(vis===im&&im.naturalHeight)w=Math.min(r.width,h*im.naturalWidth/im.naturalHeight);
+ var bh=b.offsetHeight||90,bot=h*.86-bh/2;b.style.left=(w+14)+'px';b.style.right='10px';b.style.bottom=Math.max(8,bot)+'px'}
+function showPg(){clearInterval(Z.tmr);setTimeout(alignBub,0);var t=Z.pg[Z.pi],el=q('tutTx'),i=0;el.textContent='';Z.typing=true;Z.tapOK=Math.max(Z.tapOK,Date.now()+250);q('tutNx').style.visibility='hidden';tone(SND.pop);
+ Z.tmr=setInterval(function(){i++;el.textContent=t.slice(0,i);if(i%12===0)alignBub();if(i>=t.length)endType()},24)}
+function endType(){alignBub();clearInterval(Z.tmr);Z.typing=false;q('tutTx').textContent=Z.pg[Z.pi];q('tutNx').style.visibility='visible';Z.tapOK=Date.now()+200}
+addEventListener('resize',function(){if(!q('tutDlg').hidden)alignBub()});
+q('tutImg').addEventListener('load',function(){setTimeout(alignBub,30)});
 function dlgTap(){if(Date.now()<Z.tapOK)return;
  if(Z.typing){endType();return}
  if(Z.pi<Z.pg.length-1){Z.pi++;showPg();return}
