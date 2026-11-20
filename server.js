@@ -390,7 +390,9 @@ function profileOf(viewer, k) {
   const c = myClan(u);
   const rel = k === viewer ? 'self' : me.friends.includes(k) ? 'friend' : me.out.includes(k) ? 'out' : me.inc.includes(k) ? 'inc' : 'none';
   return { name: u.name, id: u.id || '', w: u.ow | 0, tr: u.tr | 0, pc: u.pc | 0, av: avOf(u),
-    on: conns.has(k), busy: inMatch.has(k), rel, clan: c ? { name: c.name, tag: c.tag } : null };
+    l: u.ol | 0, d: u.od | 0,
+    on: conns.has(k), busy: inMatch.has(k), rel,
+    clan: c ? { name: c.name, tag: c.tag, sy: csyOf(c), n: c.members.length, mode: c.mode, owner: nameOf(c.owner), role: c.owner === k ? 'owner' : 'member' } : null };
 }
 function search(ws, m) {
   const me = ws.u, q = String(m.q || '').trim().slice(0, 40);
@@ -408,7 +410,7 @@ function findClan(q) {
   if (!ck && q[0] !== '#') ck = key(q.replace(/\s+/g, ' '));
   return (ck && db.clans[ck]) || null;
 }
-const clanCard = c => ({ name: c.name, tag: c.tag, n: c.members.length, mode: c.mode, owner: nameOf(c.owner) });
+const clanCard = c => ({ name: c.name, tag: c.tag, sy: csyOf(c), n: c.members.length, mode: c.mode, owner: nameOf(c.owner) });
 async function chPw(ws, m) {                  // تعویض رمز: رمز فعلی + رمز جدید (با همان قانون ثبت‌نام) + تکرار
   const me = ws.u, U = db.users[me];
   if (++ws.tries > 12) return ws.close();
@@ -501,7 +503,7 @@ const CMODES = new Set(['open', 'closed', 'invite']);
 const clanChat = new Map();   // کلید قبیله -> آخرین پیام‌های چت (در حافظه؛ ذخیرهٔ دائمی با saveChat)
 const CHATMAX = 50;
 const myClan = u => (u && u.clan && db.clans[u.clan]) || null;
-const clanInfo = (c, k) => ({ name: c.name, tag: c.tag, mode: c.mode, owner: nameOf(c.owner), mine: c.owner === k,
+const clanInfo = (c, k) => ({ name: c.name, tag: c.tag, sy: csyOf(c), mode: c.mode, owner: nameOf(c.owner), mine: c.owner === k,
   on: c.members.filter(m => conns.has(m)).length, members: c.members.map(m => ({ u: nameOf(m), on: conns.has(m) })) });
 function pushClanInfo(k) {                      // فقط مشخصات قبیله (برای به‌روز شدن تعداد آنلاین‌ها)
   const u = db.users[k]; if (!u || !conns.has(k)) return;
@@ -514,6 +516,7 @@ function pushClan(k) {
 }
 const pushClanLive = k => { const c = myClan(db.users[k]); if (c) c.members.forEach(pushClanInfo); };   // ورود/خروج یک عضو
 const CLAN_MAX = +process.env.CLAN_MAX || 50;
+const csyOf = c => (Number.isInteger(c.sy) && c.sy >= 0 && c.sy < NAV) ? c.sy : ((c.name || '').split('').reduce((a, ch) => a + ch.charCodeAt(0), 0) % NAV);   // نماد قبیله: ۰ تا ۵۹ (پیش‌فرض از روی نام)
 function sysSay(ck, kind, name, except) {          // اعلام ورود/خروج در چت قبیله (کادر طلایی/سیاه)؛ برای سازنده نامه‌ای نمی‌رود
   const c = db.clans[ck]; if (!c) return;
   const a = clanChat.get(ck) || [], msg = { sys: kind, u: name, tx: '', ts: Date.now() };
@@ -537,7 +540,8 @@ function clans(ws, m) {
     if (!CMODES.has(m.mode)) return;
     if (db.clans[ck]) return toast(ws, 'این نام قبلاً گرفته شده');
     const ctag = randTag(10, clanTags);
-    db.clans[ck] = { name, tag: ctag, owner: me, mode: m.mode, members: [me], ts: Date.now() };
+    const sy = Number.isInteger(m.sy) && m.sy >= 0 && m.sy < NAV ? m.sy : undefined;
+    db.clans[ck] = { name, tag: ctag, owner: me, mode: m.mode, members: [me], ts: Date.now(), ...(sy !== undefined ? { sy } : {}) };
     clanTags.set(ctag, ck);
     U.clan = ck; save(); pushClan(me); send(ws, { t: 'clmade' });
   } else if (m.t === 'clfind') {                 // جستجوی قبیله برای پیوستن: فقط با نام یا تگ
@@ -562,6 +566,13 @@ function clans(ws, m) {
     if ((T.mail || []).some(x => x.type === 'cinv' && key(x.clan) === key(c.name))) return toast(ws, 'قبلاً دعوت شده');
     sendMail(t, { type: 'cinv', from: U.name, clan: c.name, title: 'دعوت به قبیله', text: U.name + ' تو را به قبیلهٔ «' + c.name + '» دعوت کرده است.' });
     toast(ws, 'دعوت برای ' + nameOf(t) + ' فرستاده شد');
+  } else if (m.t === 'clsetsy') {                // تغییر نماد قبیله: فقط سازنده
+    const c = myClan(U); if (!c) return;
+    if (c.owner !== me) return toast(ws, 'فقط سازندهٔ قبیله می‌تواند نماد را عوض کند');
+    if (!Number.isInteger(m.sy) || m.sy < 0 || m.sy >= NAV) return;
+    if (!rl('cs:' + me, 20, 60000)) return toast(ws, 'کمی آهسته‌تر');
+    c.sy = m.sy; save();
+    c.members.forEach(pushClanInfo);
   } else if (m.t === 'clleave') {
     const c = myClan(U); if (!c) return;
     const ck = U.clan;
@@ -672,6 +683,8 @@ function record(mt, w, trusted) {                // w: ۰ یا ۱ = برنده،
   mt.p.forEach((k, i) => {
     const u = db.users[k]; if (!u) return;
     if (w === i) u.ow = (u.ow | 0) + 1;          // فقط بردِ مسابقهٔ رسمی
+    else if (w < 0) u.od = (u.od | 0) + 1;       // مساوی رسمی (برای درصد برد)
+    else u.ol = (u.ol | 0) + 1;                  // باخت رسمی (برای درصد برد)
   });
   save();
   mt.p.forEach(k => { pushFL(k); pushFriendsOf(k); });
@@ -849,7 +862,7 @@ function handleMsg(ws, raw) {
       case 'setav': return setAv(ws, m);
       case 'chpw': return chPw(ws, m);
       case 'pfget': { const k = resolveUser(m.u); if (k) send(ws, { t: 'pf', p: profileOf(me, k) }); return; }
-      case 'clcreate': case 'clfind': case 'cljoin': case 'clinv': case 'clacc': case 'cldec': case 'clsay': case 'clleave': return clans(ws, m);
+      case 'clcreate': case 'clsetsy': case 'clfind': case 'cljoin': case 'clinv': case 'clacc': case 'cldec': case 'clsay': case 'clleave': return clans(ws, m);
       case 'inv': return invite(ws, m);
       case 'invcancel': { const v = invOut.get(me); if (v) endInv(v, 'cancel'); return; }
       case 'invdec': { const v = invIn.get(me); if (v && v.from === key(m.u)) endInv(v, 'declined'); return; }
