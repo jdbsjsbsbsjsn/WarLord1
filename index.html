@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body class="mnu">
 <meta name="claude:viewport-fit-sides" content="cover">
 <title>جنگ‌سالار سه‌بعدی</title>
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700&display=swap" rel="stylesheet">
@@ -148,6 +148,7 @@ button em{font-style:normal;font-size:11px;font-weight:500;opacity:.8}
 #net button{font:inherit;font-size:11px;padding:0 8px;min-height:20px;border-radius:8px;border:1px solid var(--line);background:var(--panel2);color:var(--fg)}
 .scr{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;padding:16px;background:radial-gradient(ellipse at 50% 15%,#2b2233,#13151a 70%);overflow-y:auto}
 .scr[hidden]{display:none}
+body.mnu #app{visibility:hidden}
 .box{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:12px;width:min(92vw,380px);text-align:center;max-height:92vh;overflow-y:auto}
 .box h1{margin:0;font-size:28px;color:var(--gold)}.box h2{margin:0;font-size:18px}
 .box input{font:inherit;font-size:16px;padding:11px;border-radius:10px;border:1px solid var(--line);background:var(--panel2);color:var(--fg);text-align:center;min-width:0;width:100%}
@@ -2067,7 +2068,9 @@ function syncTiles(){
   if(phase!=='play'&&(P===0?r>=4:r<4))f=(ONLINE||!P)?0x5a1a15:0x12336a;const m=tiles[c][r].material;m.emissive.setHex(f);m.emissiveIntensity=f?.6:0;if(f)hlTiles.push(m)}
  if(sel){ringMesh.visible=true;ringMesh.position.set(CELL_X(sel.c),.03,CELL_Z(sel.c,sel.r))}else ringMesh.visible=false}
 function loop(){
- requestAnimationFrame(loop);const dt=Math.min(.05,clock.getDelta()),t=clock.elapsedTime;
+ requestAnimationFrame(loop);if(document.body.classList.contains('mnu'))return;try{loopStep()}catch(e){console.error('loop',e)}}
+function loopStep(){
+ const dt=Math.min(.05,clock.getDelta()),t=clock.elapsedTime;
  unitG.forEach((g,u)=>{const d=g.userData,k=1-Math.exp(-dt*10);
   g.position.x+=(d.tx-g.position.x)*k;g.position.z+=(d.tz-g.position.z)*k;
   g.position.y+=(d.ty+(u.fly>0?.12*Math.sin(t*3):0)-g.position.y)*k;
@@ -2886,9 +2889,9 @@ const ls=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k);v===null?lo
 const sendW=o=>{if(WS&&WS.readyState===1)WS.send(JSON.stringify(o))};
 function toast(t){const e=$('toast');e.textContent=t;e.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>e.hidden=true,2600)}
 function flash(t){flashMsg=t;flashT=Date.now()+1500;netUI()}
-function showScr(id){curScr=id;['scrAuth','scrMenu','scrFr','scrBt','scrPf','scrDev','scrClan','scrClanNew','scrClanJoin'].forEach(s=>$(s).hidden=s!==id);if(id==='scrFr'||id==='scrBt')renderFL();if(id==='scrClan')renderClan(true);if(id==='scrMenu')mnTitle();barUI()}
+function showScr(id){curScr=id;document.body.classList.add('mnu');['scrAuth','scrMenu','scrFr','scrBt','scrPf','scrDev','scrClan','scrClanNew','scrClanJoin'].forEach(s=>$(s).hidden=s!==id);if(id==='scrFr'||id==='scrBt')renderFL();if(id==='scrClan')renderClan(true);if(id==='scrMenu')mnTitle();barUI()}
 function mnTitle(){}
-function hideScr(){['scrAuth','scrMenu','scrFr','scrBt','scrPf','scrDev','scrClan','scrClanNew','scrClanJoin'].forEach(s=>$(s).hidden=true);curScr='';barUI()}
+function hideScr(){document.body.classList.remove('mnu');['scrAuth','scrMenu','scrFr','scrBt','scrPf','scrDev','scrClan','scrClanNew','scrClanJoin'].forEach(s=>$(s).hidden=true);curScr='';barUI()}
 /* --- نوار لودینگ پرشی (۱ تا ۱۰۰) و موزیک ورود --- */
 let LD_STEPS=[[0,1],[2000,97],[2300,98],[2550,99],[2800,100]];
 /* هر بار الگوی تصادفی: چند عدد شانسی، بعد همیشه ۹۷ و ۹۸ و ۹۹ و ۱۰۰ */
