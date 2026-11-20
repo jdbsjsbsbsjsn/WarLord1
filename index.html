@@ -137,10 +137,10 @@ button em{font-style:normal;font-size:11px;font-weight:500;opacity:.8}
   
   <section id="shop"></section>
   <section id="cb" hidden></section>
-  <section id="dr" hidden></section><div id="ctl"><section id="info" class="card empty"></section><div id="bar"><button id="ab" type="button"></button></div></div>
+  <section id="dr" hidden></section><div id="ctl"><section id="info" class="card empty"></section></div>
   <div id="end" hidden><div class="endbox"><h2 id="endt"></h2><button id="nw2" type="button">بازی جدید</button></div></div>
  </div>
- <div id="bb"><button id="bbL" type="button" aria-label="رخدادها">📜</button><button id="bbC" type="button"><i>🌀</i><span>کمبوهای فعال (<b id="bbCt">۰</b>)</span><span id="bbCa">▼</span></button><div id="bbR"><button id="shp" type="button" aria-label="فروشگاه">🛒 فروشگاه</button><button id="spb" type="button" hidden>✨ طلسم‌ها</button></div></div>
+ <div id="bb"><button id="bbL" type="button" aria-label="رخدادها">📜</button><button id="bbC" type="button"><span>کمبوها</span><b id="bbCt" hidden></b><span id="bbCa" hidden></span></button><div id="bbR"><button id="shp" type="button" aria-label="فروشگاه">🛒 فروشگاه</button><button id="spb" type="button" hidden>«طلسم‌ها»</button></div><button id="ab" type="button"></button></div>
  <div id="msg" aria-live="polite"></div>
 </main>
 <style>
@@ -307,17 +307,19 @@ html,body{background:#1a120c}
 .side .sn b{color:#fff}.ex{color:#fff;font-weight:700}
 .pips i{background:rgba(0,0,0,.4)}
 #turn{border:2px solid #b8893a;border-radius:14px;background:linear-gradient(180deg,#4a3320,#2b1e15);min-width:96px;box-shadow:0 2px 6px rgba(0,0,0,.5)}
-#turn::before{content:'⏳';font-size:20px;line-height:1}
+
 #sb{flex:none;display:flex;align-items:center;gap:8px;margin:0 10px 6px;padding:5px 10px;min-height:34px;border:1px solid #8a6a3a;border-radius:10px;background:linear-gradient(180deg,#32231a,#21160f);font-size:13px;cursor:pointer;box-shadow:inset 0 0 8px rgba(0,0,0,.5)}
 #sb .sbi{color:var(--gold)}#sbT{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #bb{flex:none;display:flex;direction:ltr;align-items:center;gap:8px;padding:8px 10px;background:linear-gradient(180deg,#3a281a,#1f150e);border-top:3px solid #8a6a3a}
 #bbL{width:54px;height:54px;min-height:0;padding:0;border-radius:12px;font-size:22px;border:2px solid #b8893a;background:linear-gradient(180deg,#4a3320,#2b1e15)}
-#bbC{flex:1;min-width:0;min-height:54px;flex-direction:row;gap:10px;direction:rtl;border-radius:14px;border:2px solid #b8893a;background:linear-gradient(180deg,#3d2b1c,#241810);font-size:15px}
+#bbC{flex:none;width:64px;height:54px;min-width:0;min-height:0;padding:2px;flex-direction:column;gap:1px;direction:rtl;text-align:center;line-height:1.25;border-radius:14px;border:2px solid #b8893a;background:linear-gradient(180deg,#3d2b1c,#241810);font-size:13px;font-weight:700}
 #bbC i{font-style:normal;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle,#8a4cd0,#3a1a66);border:2px solid #e0b24a;font-size:18px}
-#bbC span{white-space:nowrap}
-#bbR{display:flex;min-width:140px}
-#bbR button{position:static;transform:none;flex:1;width:auto;min-height:54px;padding:0 12px;font-size:17px;border-radius:14px;flex-direction:row;gap:6px;background:linear-gradient(180deg,#ffd466,#e0a62c);color:#3a2408;border:2px solid #fff0b0;box-shadow:0 3px 0 #8a5e12}
+#bbC span{white-space:normal}#bbCa{font-size:9px}
+#bbR{display:flex;flex:none;min-width:0}
+#bbR button{position:static;transform:none;flex:none;width:auto;min-height:54px;padding:0 12px;font-size:17px;border-radius:14px;flex-direction:row;gap:6px;background:linear-gradient(180deg,#ffd466,#e0a62c);color:#3a2408;border:2px solid #fff0b0;box-shadow:0 3px 0 #8a5e12}
 .cbHide #info,.cbHide #dc{display:none}
+#bb #ab{position:relative;flex:1;width:auto;height:54px;min-width:0;min-height:0;border-radius:14px;padding:0 10px;font-size:16px;font-weight:700;flex-direction:row;gap:6px}
+#bb #ab .bc{left:-4px;top:-8px}#bb #ab .bu{right:-4px;top:-8px}
 #evb{display:none!important}
 #evm{top:auto;bottom:8px}
 </style>
@@ -2230,10 +2232,10 @@ function spFrame(){const n=performance.now(),dt=Math.min(.05,(n-sT0)/1000);sT0=n
   if(u.wd)burst(p,3,0xc01020,{sp:.3,y:1.3,vy:-1,g:6,size:.18,life:.6,up:0,r:.4});if(u.cu>0)burst(p,3,0x0b2e1c,{sp:.5,y:.3,vy:1,g:-1,size:.5,life:.9,up:0,r:.7});
   if(u.is>0)burst(p,3,0xdff8ff,{sp:.6,y:.8,vy:1,g:-1,size:.2,life:.8,up:1});else if(u.fz>0)burst(p,2,0x7cc4ff,{sp:.4,y:.8,vy:.5,g:0,size:.2,life:.8,up:0});if(u.ra>0)burst(p,3,0xb44dff,{sp:.7,y:.4,vy:2,g:-2,size:.2,life:.7,up:1})})}
 {const _pc2=placeCamera;placeCamera=function(){_pc2();try{spFrame()}catch(e){}}}
-function shopRender(){const b=$('shop'),pre=phase!=='play';$('shp').hidden=!pre||over;$('spb').hidden=pre||over||(!SP[P].length&&!spl);$('spb').textContent=spl?'لغو طلسم':'✨ طلسم‌ها';
+function shopRender(){const b=$('shop'),pre=phase!=='play';$('shp').hidden=!pre||over;$('spb').hidden=pre||over||(!SP[P].length&&!spl);$('spb').textContent=spl?'لغو طلسم':'«طلسم‌ها»';
  b.classList.toggle('open',shopOpen);if(!shopOpen)return;const mine=SP[P],left=spLeft(P);
  let h='<div class="shh"><span>'+(pre?'فروشگاه — '+NM[P]:'طلسم‌های '+NM[P])+'</span><button type="button" data-x="1">✕</button></div>';
- if(pre&&shopTab===0)h+='<div class="sm"><button type="button" data-tab="1">✨ طلسم‌ها</button></div>';
+ if(pre&&shopTab===0)h+='<div class="sm"><button type="button" data-tab="1">طلسم‌ها</button></div>';
  else{if(pre)h+='<div class="shh"><button type="button" data-tab="0">→ بخش‌ها</button><span>💧 '+PX(left)+' · '+PX(mine.length)+'/۴</span></div>';
   const list=pre?Object.keys(SPELLS):mine;h+='<div class="sg">'+(list.length?list.map(k=>{const S=SPELLS[k],on=mine.includes(k),dis=pre&&!on&&(mine.length>=4||left<S.x);
    return '<button type="button" class="sc'+(on&&pre?' on':'')+'" data-s="'+k+'"'+(dis?' disabled':'')+'><b>'+S.n+'</b><span class="sx">💧 '+PX(S.x)+'</span></button>'}).join(''):'<div class="dp">طلسمی نمانده.</div>')+'</div>'}
