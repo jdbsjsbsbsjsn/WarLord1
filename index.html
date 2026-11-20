@@ -67,7 +67,7 @@ button em{font-style:normal;font-size:11px;font-weight:500;opacity:.8}
 #nw:hover:not(:disabled){opacity:1}
 #cf{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(8,9,12,.74)}
 #cf[hidden]{display:none}
-#tgo{position:fixed;inset:0;z-index:95;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(8,9,12,.86)}#tgo[hidden]{display:none}#tgo .cfbox{gap:10px}#tgo button{font:inherit;font-size:15px;min-height:44px;border-radius:12px;border:1px solid var(--line);background:var(--panel2);color:var(--fg);cursor:pointer}#tgo button.pr{background:var(--gold);color:var(--ink);border-color:var(--gold);font-weight:700}#tgo button:disabled{opacity:.45}#tgv{direction:ltr;unicode-bidi:isolate;font-size:22px;font-weight:700;letter-spacing:1px;color:var(--gold);background:var(--bg);border:1px dashed var(--gold);border-radius:12px;padding:12px 8px;user-select:all;-webkit-user-select:all;word-break:break-all}
+#tgo,#tuo{position:fixed;inset:0;z-index:95;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(8,9,12,.86)}#tgo[hidden],#tuo[hidden]{display:none}#tgo .cfbox,#tuo .cfbox{gap:10px}#tgo button,#tuo button{font:inherit;font-size:15px;min-height:44px;border-radius:12px;border:1px solid var(--line);background:var(--panel2);color:var(--fg);cursor:pointer}#tgo button.pr,#tuo button.pr{background:var(--gold);color:var(--ink);border-color:var(--gold);font-weight:700}#tgo button:disabled,#tuo button:disabled{opacity:.45}#tgv{direction:ltr;unicode-bidi:isolate;font-size:22px;font-weight:700;letter-spacing:1px;color:var(--gold);background:var(--bg);border:1px dashed var(--gold);border-radius:12px;padding:12px 8px;user-select:all;-webkit-user-select:all;word-break:break-all}
 .cfbox{width:min(340px,100%);background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px 16px 14px;display:flex;flex-direction:column;gap:8px;text-align:center}
 .cfbox h2{margin:0;font-size:18px}.cfbox p{margin:0;color:var(--mut);font-size:13px}
 .cfb{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
@@ -352,6 +352,7 @@ button em{font-style:normal;font-size:11px;font-weight:500;opacity:.8}
 <button id="pfInv" class="pr" type="button" hidden>🛡 دعوت به قبیله</button><button id="pfBack" type="button">بازگشت</button></div></div></div>
 <div id="invPop" hidden><b id="ipT"></b><div class="row"><button id="ipYes" class="pr" type="button">قبول</button><button id="ipNo" type="button">رد</button></div></div>
 <div class="scr" id="scrLoad" hidden><img id="ldImg" alt="" src="loading.jpg"><div id="ldBox"><b>در حال بارگذاری…</b><div id="ldBar"><i></i></div><b id="ldPct">1%</b></div></div>
+<div id="tuo" hidden role="dialog" aria-modal="true"><div class="cfbox"><h2>🎓 دورهٔ آموزشی</h2><p>می‌خوای یه دورهٔ آموزشی کوتاه بگذرونی؟ با حرکت، ضربه، کمبو و قابلیت‌ها آشنا می‌شی و بازی رو خیلی راحت‌تر شروع می‌کنی.</p><div style="display:flex;gap:8px"><button id="tuYes" class="pr" type="button" style="flex:1">بله</button><button id="tuNo" type="button" style="flex:1" disabled>خیر</button></div></div></div>
 <div id="tgo" hidden role="dialog" aria-modal="true"><div class="cfbox"><h2>✅ حساب ساخته شد</h2><p>قبل از هر کاری، این تگ را جایی ذخیره کن (اسکرین‌شات بگیر یا کپی کن). برای بازیابی حساب و ورود دوباره حتماً لازم است.</p><div id="tgv"></div><button id="tgc" type="button">📋 کپی تگ</button><button id="tgok" class="pr" type="button" disabled>تگ را ذخیره کردم</button></div></div>
 <div id="toast" hidden></div>
 <div id="cf" hidden role="dialog" aria-modal="true" aria-labelledby="cft"><div class="cfbox"><h2 id="cft"></h2><p id="cfp"></p><div class="cfb"><button id="cfn" type="button">انصراف</button><button id="cfy" type="button"></button></div></div></div>
@@ -3293,9 +3294,14 @@ function openProfile(name,preset){
     if(name===myName)p={name,id:myId,rel:'self',...(FL.me||{}),on:true,busy:false};
     else{const f=FL.friends.find(x=>x.u===name);p=f?{name,id:f.id,w:f.w,on:f.on,busy:f.busy,rel:'friend'}:{name,rel:'none'}}}
   showPf(p);showScr('scrPf');sendW({t:'pfget',u:p.name})}
-let tgT=0;
-function showTagBox(tag){$('tgv').textContent='#'+tag;$('tgok').disabled=true;$('tgo').hidden=false;clearTimeout(tgT);tgT=setTimeout(()=>{$('tgok').disabled=false},4000);
-  $('tgc').onclick=()=>copyTxt('#'+tag,'تگ کپی شد');$('tgok').onclick=()=>{$('tgo').hidden=true;if(window.TUT&&TUT.afterReg)TUT.afterReg()}}
+let tgT=0,tuT=0,tgStage=0;
+function showTagBox(tag,stage){tgStage=stage||1;$('tgv').textContent='#'+tag;$('tgok').disabled=true;$('tgo').hidden=false;clearTimeout(tgT);tgT=setTimeout(()=>{$('tgok').disabled=false},4000);
+  $('tgc').onclick=()=>copyTxt('#'+tag,'تگ کپی شد');
+  $('tgok').onclick=()=>{$('tgo').hidden=true;if(tgStage===1)showTutOffer(tag)}}
+/* بعد از ثبت‌نام: پیشنهاد آموزش. «خیر» بعد ۴ ثانیه فعال می‌شود تا متن خوانده شود */
+function showTutOffer(tag){const no=$('tuNo');no.disabled=true;$('tuo').hidden=false;clearTimeout(tuT);tuT=setTimeout(()=>{no.disabled=false},4000);
+  $('tuYes').onclick=()=>{$('tuo').hidden=true;clearTimeout(tuT);if(window.TUT&&TUT.afterReg)TUT.afterReg()};
+  no.onclick=()=>{if(no.disabled)return;$('tuo').hidden=true;clearTimeout(tuT);ls('jt_tut1','1');showTagBox(tag,2)}}
 function copyTxt(t,msg){try{navigator.clipboard.writeText(t).then(()=>toast(msg),()=>{})}catch(_){}}
 $('pfAdd').onclick=()=>{if(PF&&PF.name)sendW({t:'fadd',u:PF.name})};
 $('setTagCp').onclick=()=>{if(myTag)copyTxt('#'+myTag,'تگ کپی شد')};
