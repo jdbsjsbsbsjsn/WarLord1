@@ -414,12 +414,10 @@ async function chPw(ws, m) {                  // تعویض رمز: رمز فع�
   const me = ws.u, U = db.users[me];
   if (++ws.tries > 12) return ws.close();
   if (!rl('cp:' + me, 10, 900000)) return toast(ws, 'تلاش زیاد؛ کمی بعد امتحان کن');
-  const o = String(m.o || ''), n = String(m.n || '');
+  const n = String(m.n || '');
   try {
-    if (!o || o.length > 64 || !hashEq(U.hash, await hashPw(o, U.salt))) return toast(ws, 'رمز فعلی اشتباه است');
     const pe = pwErr(n); if (pe) return toast(ws, pe);
     if (n !== String(m.n2 || '')) return toast(ws, 'رمز جدید و تکرار آن یکسان نیست');
-    if (n === o) return toast(ws, 'رمز جدید باید با رمز فعلی فرق داشته باشد');
     const salt = crypto.randomBytes(16).toString('hex'), hash = await hashPw(n, salt);
     U.salt = salt; U.hash = hash;
   } catch (e) { return toast(ws, 'سرور شلوغ است؛ بعداً امتحان کن'); }
