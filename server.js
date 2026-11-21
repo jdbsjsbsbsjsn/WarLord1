@@ -1,10 +1,21 @@
 // سرور جنگ‌سالار: حساب کاربری، دوستی، دعوت به نبرد، و پخش دستورهای بازی بین دو نفر
-// (منطق خود بازی در مرورگرهاست؛ سرور فقط دستورها را مرتب می‌کند و پخش می‌کند)
+// (منطق بازی در مرورگرهاست، ولی «داور سرور» (referee.js) همان منطق را بدون گرافیک روی سرور هم اجرا می‌کند)
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { WebSocketServer } = require('ws');
+
+/* ---------- داور سرور ----------
+   REFEREE=off      : خاموش (رفتار قبلی)
+   REFEREE=enforce  : (پیش‌فرض) نتیجهٔ بازی را خود سرور از شبیه‌سازی خودش ثبت می‌کند و گزارش بازیکن‌ها تعیین‌کننده نیست.
+                      ایمنی: اگر در یک بازی هیچ‌کدام از مرورگرها با داور هماهنگ نبودند (یعنی احتمالاً خطا از داور است)،
+                      برای همان بازی روش قبلی (گزارش دو طرف) استفاده می‌شود
+   REFEREE=shadow   : داور فقط نگاه می‌کند و ناهماهنگی‌ها را در لاگ و پرچم‌ها ثبت می‌کند */
+let referee = null;
+try { referee = require('./referee'); } catch (e) { console.error('referee بارگذاری نشد:', e && e.message); }
+const REF_MODE = ['off', 'shadow', 'enforce'].includes(String(process.env.REFEREE || '').toLowerCase()) ? String(process.env.REFEREE).toLowerCase() : 'enforce';
+const REF_STATS = { games: 0, resOk: 0, resBad: 0, hashChecked: 0, hashBad: 0, stopped: 0, fallback: 0 };
 
 const PORT = process.env.PORT || 3000;
 const DATA = process.env.DATA_FILE || path.join(__dirname, 'data.json');
@@ -150,6 +161,10 @@ const server = http.createServer((req, res) => {
   if (p === '/' || p === '/index.html') {
     res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
     return res.end(fs.readFileSync(path.join(__dirname, 'index.html')));
+  }
+  if (p === '/referee') {                          // وضعیت داور (برای بررسی با مرورگر)
+    res.writeHead(200, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' });
+    return res.end(JSON.stringify({ mode: REF_MODE, loaded: !!referee, activeSims: referee ? referee.count() : 0, stats: REF_STATS }, null, 1));
   }
   const m = /^\/(loading|alice)(\.jpg|\.png|\.webp)$/.exec(p);   // عکس لودینگ و عکس کماندو آلیس (راهنمای توتریال)
   if (m) {
@@ -646,8 +661,54 @@ function push(mt, c) {
     mt.draftT = setTimeout(() => { if (mt.ended || mt.g !== g0) return; push(mt, { a: 'to', o: 0 }); push(mt, { a: 'to', o: 1 }); }, 165500); }
   if (mt.log.length > 6000) return;
   mt.log.push(c);
+  refFeed(mt, c, mt.log.length - 1);
   const m = { t: 'cmd', g: mt.g, n: mt.log.length - 1, c, now: Date.now(), t0: c.a === 'init' ? mt.t0 : undefined };
   mt.p.forEach(k => sendU(k, m));
+}
+function refFeed(mt, c, n) {
+  if (REF_MODE === 'off' || !referee) return;
+  try {
+    if (c.a === 'init') {
+      if (mt.sim) mt.sim.dispose();
+      mt.sim = referee.create(); mt.simDone = false; mt.simWin = undefined; mt.refOk = [0, 0]; mt.refBad = [0, 0];
+      if (mt.sim) REF_STATS.games++;
+    }
+    const sim = mt.sim; if (!sim || sim.broken) return;
+    sim.feed(c, n);
+    if (sim.broken) { REF_STATS.stopped++; console.log('referee: شبیه‌سازی این بازی متوقف شد:', sim.why); return; }
+    if (sim.over && !mt.simDone) {
+      mt.simDone = true; mt.simWin = sim.winner;
+      if (REF_MODE === 'enforce') {
+        // فقط وقتی حداقل یک مرورگر با داور هماهنگ بوده و هر دو مرورگر با داور اختلاف نداشته‌اند، نتیجه را خود سرور ثبت می‌کند
+        const ok = (mt.refOk[0] + mt.refOk[1]) > 0 && !(mt.refBad[0] > 0 && mt.refBad[1] > 0);
+        if (ok) record(mt, sim.winner, true);
+        else { REF_STATS.fallback++; console.log('referee: داور و مرورگرها هماهنگ نبودند؛ نتیجه با روش قبلی ثبت می‌شود'); }
+      }
+    }
+  } catch (e) {
+    console.error('referee error:', e && e.message);
+    if (mt.sim) { try { mt.sim.dispose(); } catch (_) {} }
+  }
+}
+// هش وضعیت هر مرورگر با هش وضعیت داور سرور مقایسه می‌شود (فقط فاز بازی)
+function refHash(mt, i, m) {
+  if (REF_MODE === 'off' || !mt.sim || mt.sim.broken || m.p !== 1 || m.g !== mt.g) return;
+  const sh = mt.sim.hs[m.n];
+  if (sh === undefined) return;
+  REF_STATS.hashChecked++;
+  if (sh === (m.h | 0)) { mt.refOk[i]++; return; }
+  mt.refBad[i]++;
+  REF_STATS.hashBad++;
+  console.log('referee: وضعیت مرورگر', nameOf(mt.p[i]), 'با داور فرق دارد - دستور', m.n);
+  // فقط وقتی حریفش با داور هماهنگ است مقصر دانسته می‌شود (وگرنه احتمال خطای داور هست)
+  flagMatch(mt, 'refdiff', { n: m.n, who: i }, (REF_MODE === 'enforce' && mt.refOk[1 - i] > 0) ? [i] : []);
+}
+function refCompare(mt, w) {
+  if (REF_MODE === 'off' || !mt.simDone) return;
+  if (mt.simWin === w) { REF_STATS.resOk++; return; }
+  REF_STATS.resBad++;
+  console.log('referee: نتیجهٔ داور (' + mt.simWin + ') با نتیجهٔ ثبت‌شده (' + w + ') فرق دارد:', nameOf(mt.p[0]), 'و', nameOf(mt.p[1]));
+  flagMatch(mt, 'refres', { sim: mt.simWin, rec: w }, []);
 }
 function resumeMatch(mt, k, ws) {
   const i = mt.p.indexOf(k); clearTimeout(mt.tmr[i]);
@@ -673,6 +734,7 @@ function abort(mt, winner, by, reason) {
 const RES = new Set(['win', 'loss', 'draw']);
 function record(mt, w, trusted) {                // w: ۰ یا ۱ = برنده، -۱ = مساوی ؛ trusted: نتیجه را خود سرور دیده (تسلیم/قطع اتصال)
   if (mt.counted) return;
+  refCompare(mt, w);
   mt.counted = true; clearTimeout(mt.resT);
   if (mt.noRec && !trusted) { console.log('بازی ناهمگام بود؛ نتیجه ثبت نشد:', nameOf(mt.p[0]), 'و', nameOf(mt.p[1]), '(دستور ' + (mt.desync && mt.desync.n) + ')'); return; }
   if (!mt.official) return;                      // نبرد دوستانه: هیچ اثری روی برد و جام ندارد
@@ -815,6 +877,7 @@ function inGame(ws, m) {
     if (!Number.isInteger(m.g) || !Number.isInteger(m.n) || !Number.isInteger(m.h)) return;
     sendU(mt.p[1 - i], { t: 'h', g: m.g, n: m.n, h: m.h });
     checkHash(mt, i, m);
+    refHash(mt, i, m);
   } else if (m.t === 'result') {
     report(mt, i, m);
   } else if (m.t === 'forfeit') {
