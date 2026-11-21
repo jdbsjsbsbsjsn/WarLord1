@@ -5134,5 +5134,159 @@ q('tmExit').onclick=function(){var b=q('tmExit');
  q('lsStar').setAttribute('points',pts.join(' '))})();
 })();
 </script>
+<script>
+/* ===== سبک کارتونی و رنگارنگ (لایهٔ جدا): خط دور کاراکترها، رنگ‌های شاد، صحنهٔ روشن =====
+   این بخش فقط ظاهر را عوض می‌کند و به منطق بازی/سرور دست نمی‌زند.
+   خاموش‌کردن: در تنظیمات > گرافیک، یا localStorage jt_toon = 0
+   اعداد قابل‌تنظیم در T: */
+(function(){
+'use strict';
+var T={
+  outline:0x16103a,   // رنگ خط دور
+  outlineW:.0055,     // ضخامت خط دور (نسبت به ارتفاع صفحه؛ ~۲٫۵ پیکسل)
+  minSize:.035,       // قطعه‌های کوچک‌تر از این خط دور نمی‌گیرند (چشم، دکمه، ...)
+  sky:0x3b72c4,       // پس‌زمینه
+  grassA:0x5fae45, grassB:0x69b94d, grid:0x2e6a28, floor:0x2f6f2a,
+  wood:0xb9783f, post:0xd9a24a,
+  hemi:.9, sun:.85, rim:.3, exposure:1.0,
+  css:'saturate(1.25) contrast(1.05)'
+};
+var ON=true;try{ON=localStorage.getItem('jt_toon')!=='0'}catch(e){}
+
+/* --- منوی تنظیمات --- */
+function setOn(v){try{localStorage.setItem('jt_toon',v?'1':'0')}catch(e){}ON=v;paintUI();
+  if(typeof toast==='function')toast('سبک گرافیک ذخیره شد؛ بعد از بستن و باز کردن دوبارهٔ بازی اعمال می‌شود')}
+function paintUI(){var a=document.getElementById('tnOn'),b=document.getElementById('tnOff');if(!a)return;
+  a.style.opacity=ON?1:.45;b.style.opacity=ON?.45:1;a.style.outline=ON?'2px solid #e8a33d':'none';b.style.outline=ON?'none':'2px solid #e8a33d'}
+function mkUI(){var p=document.getElementById('setG');if(!p||document.getElementById('tnSec'))return false;
+  var d=document.createElement('div');d.id='tnSec';
+  d.innerHTML='<div class="sec">سبک گرافیک</div><div style="display:flex;gap:8px;margin:6px 0 10px"><button type="button" id="tnOn" class="pr" style="flex:1">کارتونی</button><button type="button" id="tnOff" class="pr" style="flex:1">قبلی</button></div>';
+  var g=document.getElementById('gqSec');if(g&&g.nextSibling)p.insertBefore(d,g.nextSibling);else p.insertBefore(d,p.firstChild);
+  d.querySelector('#tnOn').onclick=function(){setOn(true)};d.querySelector('#tnOff').onclick=function(){setOn(false)};
+  paintUI();return true}
+
+if(!ON){var n0=0,iv0=setInterval(function(){try{if(mkUI()||++n0>40)clearInterval(iv0)}catch(e){clearInterval(iv0)}},500);return}
+
+/* --- خط دور (روش پوستهٔ وارونه، ضخامت ثابت روی صفحه) --- */
+var AR={value:1};
+var OLM=new THREE.ShaderMaterial({
+  uniforms:{ar:AR,w:{value:T.outlineW},c:{value:new THREE.Color(T.outline)}},
+  vertexShader:'uniform float ar;uniform float w;void main(){vec4 p=projectionMatrix*modelViewMatrix*vec4(position,1.0);vec3 n=normalize(normalMatrix*normal);vec2 d=(projectionMatrix*vec4(n,0.0)).xy;float l=length(d);if(l>1e-5){d/=l;p.xy+=d*vec2(1.0/ar,1.0)*w*p.w;}gl_Position=p;}',
+  fragmentShader:'uniform vec3 c;void main(){gl_FragColor=vec4(c,1.0);}',
+  side:THREE.BackSide,fog:false});
+
+/* نرمال‌های هموار (برای اینکه خط دور در لبه‌های تیز و درز بافت پاره نشود) */
+var SM=new WeakMap();
+function smooth(geo){
+  var c=SM.get(geo);if(c)return c;
+  var P=geo.attributes.position,N=geo.attributes.normal;if(!P||!N)return null;
+  var n=P.count,slot=new Map(),idx=new Int32Array(n),cnt=0,i,j,s;
+  for(i=0;i<n;i++){
+    var key=((Math.round(P.getX(i)*200)+65536)*131072+(Math.round(P.getY(i)*200)+65536))*131072+(Math.round(P.getZ(i)*200)+65536);
+    s=slot.get(key);if(s===undefined){s=cnt++;slot.set(key,s)}idx[i]=s}
+  var sum=new Float32Array(cnt*3);
+  for(i=0;i<n;i++){j=idx[i]*3;sum[j]+=N.getX(i);sum[j+1]+=N.getY(i);sum[j+2]+=N.getZ(i)}
+  var out=new Float32Array(n*3);
+  for(i=0;i<n;i++){j=idx[i]*3;var x=sum[j],y=sum[j+1],z=sum[j+2],l=Math.sqrt(x*x+y*y+z*z)||1;out[i*3]=x/l;out[i*3+1]=y/l;out[i*3+2]=z/l}
+  var g=new THREE.BufferGeometry();g.setAttribute('position',P);if(geo.index)g.setIndex(geo.index);
+  g.setAttribute('normal',new THREE.BufferAttribute(out,3));
+  SM.set(geo,g);return g}
+
+/* --- اصلاح جنس‌ها: کمتر فلزی/براق، رنگ شادتر و روشن‌تر --- */
+function tune(m){
+  if(!m||m.userData._tn)return;m.userData._tn=1;
+  var hadMap=!!m.map,metal=m.metalness||0;
+  if('metalness' in m)m.metalness=Math.min(metal,.3);
+  if('roughness' in m)m.roughness=Math.max(m.roughness,.55);
+  if(m.isMeshPhysicalMaterial){m.clearcoat=0;m.sheen=0}
+  if(m.bumpMap)m.bumpMap=null;
+  if('envMapIntensity' in m)m.envMapIntensity=.35;
+  if(!hadMap&&m.color&&m.color.isColor){
+    var h={};m.color.getHSL(h);
+    if(h.l<.93){
+      var s=Math.min(1,h.s*1.25+.03),l=Math.min(.92,.12+h.l*.9);
+      if(metal>.5){l=Math.max(l,.55);s*=.8}   // زره و سلاح فلزی: خاکستری-آبیِ روشن به‌جای سیاه
+      m.color.setHSL(h.h,s,l)}}
+  m.needsUpdate=true}
+
+function toonify(g){
+  if(!g||g.userData.ols)return;
+  var inner=g.children[0];if(!inner)return;
+  g.updateMatrixWorld(true);
+  var omat=OLM.clone();omat.uniforms.ar=AR;
+  var list=[],meshes=[];
+  inner.traverse(function(o){if(o.isMesh&&!o.userData.ol)meshes.push(o)});
+  meshes.forEach(function(o){
+    var ms=Array.isArray(o.material)?o.material:[o.material];
+    ms.forEach(tune);
+    var m=ms[0];
+    if(ms.length!==1||!m||m.visible===false||m.transparent||m.opacity<1||m.side===THREE.DoubleSide||m.wireframe||m.blending!==THREE.NormalBlending)return;
+    if(o.isSkinnedMesh||o.isInstancedMesh)return;
+    var geo=o.geometry;if(!geo||!geo.attributes||!geo.attributes.normal)return;
+    var gt=geo.type;if(gt==='PlaneGeometry'||gt==='CircleGeometry'||gt==='RingGeometry'||gt==='ShapeGeometry')return;
+    if(geo.attributes.position.count>6000)return;
+    if(!geo.boundingSphere)geo.computeBoundingSphere();
+    var e=o.matrixWorld.elements,sc=Math.max(Math.hypot(e[0],e[1],e[2]),Math.hypot(e[4],e[5],e[6]),Math.hypot(e[8],e[9],e[10]));
+    if(geo.boundingSphere.radius*sc<T.minSize)return;
+    var sg=smooth(geo);if(!sg)return;
+    var ol=new THREE.Mesh(sg,omat);
+    ol.userData.ol=1;ol.castShadow=false;ol.receiveShadow=false;ol.raycast=function(){};
+    ol.renderOrder=o.renderOrder;ol.frustumCulled=o.frustumCulled;
+    o.add(ol);list.push(ol)});
+  g.userData.ols=list}
+
+/* هر واحدی که ساخته شود، همان لحظه کارتونی می‌شود */
+var _mk=mkUnit;
+mkUnit=function(u){var g=_mk(u);try{toonify(g)}catch(e){console.warn('toon',e)}return g};
+
+/* --- صحنه: آسمان، نور، زمین بازی، قاب چوبی --- */
+var hideList=[],inst=false;
+function styleScene(){
+  var GC=function(h){return(typeof GX!=='undefined'&&GX.c)?GX.c(h):new THREE.Color(h)};
+  scene.background=new THREE.Color(T.sky);
+  if(scene.fog){scene.fog.color.setHex(T.sky);scene.fog.near=34;scene.fog.far=70}
+  renderer.toneMappingExposure=T.exposure;
+  var sunDone=false;
+  scene.traverse(function(o){
+    if(o.isHemisphereLight){o.color.setHex(0xffffff);o.groundColor.setHex(0xa9c2ff);o.intensity=T.hemi}
+    else if(o.isDirectionalLight){if(o.castShadow&&!sunDone){sunDone=true;o.color.setHex(0xfff2d6);o.intensity=T.sun}else o.intensity=T.rim}
+    else if(o.isPointLight){o.intensity=0;o.visible=false}
+    else if(o.isPoints)hideList.push(o);                         // گرد و غبار
+    else if(o.isMesh&&o.userData&&o.userData.v)hideList.push(o); // مه
+    else if(o.isMesh&&o.geometry&&o.material){
+      var gp=o.geometry.parameters||{},gt=o.geometry.type,mt=o.material;
+      if(mt.isMeshStandardMaterial){
+        if(gt==='BoxGeometry'&&Math.abs(gp.width-12.2)<.01){mt.color.copy(GC(T.wood));mt.roughness=.8}
+        else if(gt==='BoxGeometry'&&Math.abs(gp.width-11.4)<.01){mt.color.copy(GC(T.floor));mt.roughness=1}
+        else if(gt==='CylinderGeometry'&&Math.abs(gp.radiusTop-.42)<.01){mt.color.copy(GC(T.post));mt.roughness=.6}}
+      else if(mt.isMeshBasicMaterial&&gt==='RingGeometry'&&mt.color.getHex()===0x5c5649)mt.color.copy(GC(T.grid))}});
+  for(var c=0;c<tiles.length;c++)for(var r=0;r<tiles[c].length;r++){
+    var tm=tiles[c][r].material;tm.color.copy(GC((c+r)%2?T.grassA:T.grassB));tm.roughness=1}
+  var cvs=document.getElementById('cv');if(cvs)cvs.style.filter=T.css;
+  var st=document.getElementById('stage');
+  if(st)[].forEach.call(st.children,function(d){if(d.tagName==='DIV'&&/radial-gradient/.test(d.style.cssText||''))d.style.display='none'})}
+
+function frame(){
+  AR.value=camera.aspect||1;
+  for(var i=0;i<hideList.length;i++)hideList[i].visible=false;
+  if(typeof unitG!=='undefined')unitG.forEach(function(g,u){
+    var l=g.userData&&g.userData.ols;if(!l)return;
+    var iv=u.inv>0?1:0;if(g.userData._iv!==iv){g.userData._iv=iv;l.forEach(function(m){m.visible=!iv})}})}
+
+function install(){
+  if(inst)return;
+  if(typeof renderer==='undefined'||!renderer||typeof scene==='undefined'||!scene||typeof camera==='undefined'||!camera||typeof tiles==='undefined'||!tiles.length||typeof CTR==='undefined')return;
+  inst=true;
+  styleScene();
+  if(typeof unitG!=='undefined')unitG.forEach(function(g){toonify(g)});
+  var _r=renderer.render;
+  renderer.render=function(s,c){if(s===scene&&c===camera){try{frame()}catch(e){}}return _r.call(renderer,s,c)};
+  mkUI()}
+
+var tries=0,iv=setInterval(function(){
+  try{install();if(inst&&!document.getElementById('tnSec'))mkUI()}catch(e){inst=true;console.warn('toon install',e)}
+  if((inst&&document.getElementById('tnSec'))||++tries>60)clearInterval(iv)},300);
+})();
+</script>
 
 </body></html>
