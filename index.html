@@ -804,13 +804,13 @@ function plate(x,name,num,frac,col,sel,barCol){
  x.direction='ltr';x.textAlign='right';x.font='700 56px '+FONT;x.fillStyle='#fff';x.fillText(num,px+pw-pad,cy+2)}
 
 function initScene(){
- renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true});
+ renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true,powerPreference:'high-performance'});
  renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
  renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.useLegacyLights=true;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=.9;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
  scene=new THREE.Scene();scene.background=new THREE.Color(0x2a1d13);scene.fog=new THREE.Fog(0x2a1d13,28,48);
  camera=new THREE.PerspectiveCamera(38,1,.5,100);clock=new THREE.Clock();raycaster=new THREE.Raycaster();
  scene.add(new THREE.HemisphereLight(0xfff1dc,0x3a3128,.7));
- const sun=new THREE.DirectionalLight(0xffeccc,.8);sun.position.set(-4,16,16);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);
+ const sun=new THREE.DirectionalLight(0xffeccc,.8);sun.position.set(-4,16,16);sun.castShadow=true;sun.shadow.mapSize.set(512,512);
  Object.assign(sun.shadow.camera,{left:-12,right:12,top:12,bottom:-12,near:1,far:50});sun.target.position.copy(CTR);scene.add(sun,sun.target);
  // قاب و کف صفحه
  const frame=new THREE.Mesh(new THREE.BoxGeometry(12.2,.5,17.2),new THREE.MeshStandardMaterial({color:0x3b3025,roughness:.9}));frame.position.set(CTR.x,-.55,CTR.z);frame.receiveShadow=true;scene.add(frame);
@@ -989,7 +989,7 @@ GX.reg=(k,fn,old)=>{FIG[k]=(M,t)=>{try{return fn(M,t)}catch(e){console.error('GX
 const _gxPC=placeCamera;placeCamera=function(){_gxPC();GX.tick(clock.elapsedTime)};
 const _gxIS=initScene;initScene=function(){_gxIS();try{GX.post()}catch(e){console.error('GX.post',e)}};
 GX.post=()=>{const sun=scene.children.find(o=>o.isDirectionalLight),hl=scene.children.find(o=>o.isHemisphereLight);
- if(sun){sun.shadow.mapSize.set(2048,2048);sun.shadow.bias=-.0003;sun.shadow.normalBias=.025;sun.intensity=.7}if(hl)hl.intensity=.5;
+ if(sun){sun.shadow.mapSize.set(1024,1024);sun.shadow.bias=-.0003;sun.shadow.normalBias=.025;sun.intensity=.7}if(hl)hl.intensity=.5;
  const rim=new THREE.DirectionalLight(0xfff1e0,.25),fill=new THREE.DirectionalLight(0xffc99a,.12);rim.position.set(CTR.x+6,9,CTR.z-12);fill.position.set(CTR.x-9,4,CTR.z+10);
  scene.add(rim,fill,rim.target,fill.target);rim.target.position.copy(CTR);fill.target.position.copy(CTR);
  const es=new THREE.Scene(),sg=new THREE.SphereGeometry(20,24,12),P=sg.attributes.position,cs=[];
@@ -4521,8 +4521,8 @@ connect();
 (function(){
 'use strict';
 var GQ='low';try{GQ=localStorage.getItem('jt_gq')||'low'}catch(e){}
-if(GQ!=='high')GQ='low';
-var HQ=GQ==='high',inst=false;
+if(GQ!=='high'&&GQ!=='mid')GQ='low';
+var HQ=GQ==='high',MQ=GQ==='mid',inst=false;
 var _r,dust,dustPos,dustVel,mist=[],lights=[],vig;
 function sv(v){try{localStorage.setItem('jt_gq',v)}catch(e){}}
 /* --- Vignette --- */
@@ -4533,22 +4533,26 @@ function mkVig(){var st=document.getElementById('stage');if(!st)return;
 /* --- Settings UI --- */
 function mkUI(){var p=document.getElementById('setG');if(!p||document.getElementById('gqSec'))return;
  var d=document.createElement('div');d.id='gqSec';
- d.innerHTML='<div class="sec">کیفیت گرافیک (برای گوشی‌های ضعیف «کم» را بزن؛ تغییر خودکار انجام نمی‌شود)</div><div style="display:flex;gap:8px;margin:6px 0 10px"><button type="button" id="gqH" class="pr" style="flex:1">بالا</button><button type="button" id="gqL" class="pr" style="flex:1">کم (سبک)</button></div>';
+ d.innerHTML='<div class="sec">کیفیت گرافیک (برای گوشی‌های ضعیف «کم» را بزن؛ تغییر خودکار انجام نمی‌شود)</div><div style="display:flex;gap:8px;margin:6px 0 10px"><button type="button" id="gqH" class="pr" style="flex:1">بالا</button><button type="button" id="gqM" class="pr" style="flex:1">متوسط</button><button type="button" id="gqL" class="pr" style="flex:1">کم (سبک)</button></div><div class="sec">نرخ فریم (حداکثر)؛ «حداکثر» یعنی هر چقدر صفحه‌نمایش و گوشی بتوانند (مثلاً ۹۰ یا ۱۲۰) ولی گوشی گرم‌تر می‌شود</div><div style="display:flex;gap:8px;margin:6px 0 10px"><button type="button" id="fpsB30" class="pr" style="flex:1">۳۰</button><button type="button" id="fpsB60" class="pr" style="flex:1">۶۰</button><button type="button" id="fpsBM" class="pr" style="flex:1">حداکثر</button></div>';
  
  d.querySelector('#gqH').onclick=function(){setQ('high',true)};
+ d.querySelector('#fpsB30').onclick=function(){window.setFPS&&window.setFPS(30)};
+ d.querySelector('#fpsB60').onclick=function(){window.setFPS&&window.setFPS(60)};
+ d.querySelector('#fpsBM').onclick=function(){window.setFPS&&window.setFPS(0)};
+ d.querySelector('#gqM').onclick=function(){setQ('mid',true)};
  d.querySelector('#gqL').onclick=function(){setQ('low',true)};
  paintUI();p.insertBefore(d,p.querySelector('.sec:nth-of-type(1)')||p.firstChild);}
-function paintUI(){var h=document.getElementById('gqH'),l=document.getElementById('gqL');if(!h)return;
- h.style.opacity=HQ?1:.45;l.style.opacity=HQ?.45:1;h.style.outline=HQ?'2px solid #e8a33d':'none';l.style.outline=HQ?'none':'2px solid #e8a33d'}
-function setQ(q,msg){GQ=q;HQ=q==='high';sv(q);apply();paintUI();
- if(msg&&typeof toast==='function')toast(HQ?'کیفیت گرافیک: بالا':'کیفیت گرافیک: کم')}
+function paintUI(){var h=document.getElementById('gqH'),m=document.getElementById('gqM'),l=document.getElementById('gqL');if(!h)return;
+ [[h,HQ],[m,MQ],[l,!HQ&&!MQ]].forEach(function(a){a[0].style.opacity=a[1]?1:.45;a[0].style.outline=a[1]?'2px solid #e8a33d':'none'});window.paintFPS&&window.paintFPS()}
+function setQ(q,msg){GQ=q;HQ=q==='high';MQ=q==='mid';sv(q);apply();paintUI();
+ if(msg&&typeof toast==='function')toast((HQ?'کیفیت گرافیک: بالا':MQ?'کیفیت گرافیک: متوسط':'کیفیت گرافیک: کم')+' (برای اعمال کامل بازی را ببند و دوباره باز کن)')}
 function apply(){
  if(typeof renderer==='undefined'||!renderer)return;
- renderer.setPixelRatio(Math.min(devicePixelRatio||1,HQ?2:1));
+ renderer.setPixelRatio(Math.min(devicePixelRatio||1,HQ?2:MQ?2:1));
  renderer.shadowMap.enabled=HQ;renderer.shadowMap.type=HQ?THREE.PCFSoftShadowMap:THREE.BasicShadowMap;
  try{resize()}catch(e){}
  if(dust)dust.visible=HQ;mist.forEach(function(m){m.visible=HQ});
- lights.forEach(function(l){l.intensity=HQ?.7:0});
+ lights.forEach(function(l){l.intensity=HQ?.7:0;l.visible=HQ});
  if(vig)vig.style.opacity=HQ?1:0}
 /* --- Scene additions --- */
 function softTex(){var c=document.createElement('canvas');c.width=c.height=64;var x=c.getContext('2d'),g=x.createRadialGradient(32,32,0,32,32,32);
@@ -5163,5 +5167,19 @@ q('tmExit').onclick=function(){var b=q('tmExit');
 /* جزئیات هندسه فقط هنگام ساخت مهره‌ها فعال است تا افکت‌ها سنگین نشوند */
 (function(){if(!window.__HQ||typeof mkUnit!=='function')return;
  var _b=mkUnit;mkUnit=function(u){window.__GD=true;try{return _b(u)}finally{window.__GD=false}}})();
+/* ===== محدودکردن / آزادکردن نرخ فریم (تنظیمات > گرافیک) ===== */
+(function(){
+ var FPS=0;try{var v=localStorage.getItem('jt_fps');if(v!==null)FPS=+v||0}catch(e){}
+ if(FPS!==30&&FPS!==60)FPS=0;
+ window.paintFPS=function(){[['fpsB30',30],['fpsB60',60],['fpsBM',0]].forEach(function(a){var b=document.getElementById(a[0]);if(!b)return;
+  b.style.opacity=FPS===a[1]?1:.45;b.style.outline=FPS===a[1]?'2px solid #e8a33d':'none'})};
+ window.setFPS=function(f){FPS=f;try{localStorage.setItem('jt_fps',String(f))}catch(e){}window.paintFPS();
+  if(typeof toast==='function')toast(f?('نرخ فریم: حداکثر '+f):'نرخ فریم: حداکثر (بدون محدودیت)')};
+ if(typeof loop!=='function')return;
+ var _lp=loop,last=0;
+ loop=function(){
+  if(FPS){var n=performance.now();if(n-last<1000/FPS-2){requestAnimationFrame(loop);return}last=n}
+  _lp()};
+})();
 </script>
 </body></html>
