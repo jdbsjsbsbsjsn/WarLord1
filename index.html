@@ -400,6 +400,7 @@ html,body{background:#0b0b0d}
 <div class="setp" id="setS" hidden><h2>امنیت</h2>
 <div class="sec">🔑 تگ ورود تو (برای ورود دوباره لازم است؛ به کسی نده)</div><div class="pftag"><button id="setTagCp" type="button">کپی</button><b id="setTag"></b></div>
 <div class="sec">🔒 تعویض رمز حساب (رمز جدید: حداقل ۸ کاراکتر، حرف انگلیسی و عدد، و حداقل یک حرف بزرگ)</div>
+<input id="pwOld" type="password" placeholder="رمز فعلی" maxlength="64" autocomplete="current-password">
 <input id="pwNew" type="password" placeholder="رمز جدید" maxlength="64" autocomplete="new-password">
 <input id="pwNew2" type="password" placeholder="تکرار رمز جدید" maxlength="64" autocomplete="new-password">
 <button id="pwSave" class="pr" type="button">تعویض رمز</button>
@@ -3837,7 +3838,7 @@ function onMsg(m){
    case 'kicked':AUTHED=false;barUI();toast('با دستگاه دیگری وارد شدی');if(!MATCH)showScr('scrAuth');break;
    case 'toast':toast(m.msg);break;
    case 'nameok':myName=m.u;ls('jt_u',m.u);$('nmPw').value='';$('nmIn').value=m.u;break;
-   case 'pwok':['pwNew','pwNew2'].forEach(i=>$(i).value='');toast('رمز حساب تغییر کرد');break;
+   case 'pwok':['pwOld','pwNew','pwNew2'].forEach(i=>$(i).value='');toast('رمز حساب تغییر کرد');break;
    case 'clan':CLAN=m.clan||null;if(!CLAN)CLCHAT=[];if(curScr==='scrClan')renderClan();if(curScr==='scrClanJoin'&&CLAN)showScr('scrClan');break;
    case 'clmade':showScr('scrClan');break;
    case 'clchat':CLCHAT=m.msgs||[];renderChat(!m.keep);break;
@@ -3862,12 +3863,10 @@ function onMsg(m){
 /* --- صفحه‌های منو --- */
 const pwErr=p=>p.length<8?'رمز باید حداقل ۸ کاراکتر باشد':p.length>64?'رمز نباید بیشتر از ۶۴ کاراکتر باشد':(!/[A-Za-z]/.test(p)||!/[0-9]/.test(p))?'رمز باید همزمان شامل حرف انگلیسی و عدد باشد':!/[A-Z]/.test(p)?'رمز باید حداقل یک حرف انگلیسی بزرگ داشته باشد':'';
 let REG=false;
-function regUI(on){const was=REG;REG=on;['auP2','auId','auHint'].forEach(i=>$(i).hidden=!on);$('auP').hidden=!on;$('auP').autocomplete=on?'new-password':'current-password';
-  $('auU').placeholder=on?'نام کاربری':'آیدی حساب';$('auU').maxLength=on?16:20;$('auU').autocapitalize='off';$('auU').style.direction='ltr';if(was!==on)$('auU').value='';
+function regUI(on){const was=REG;REG=on;['auP2','auId','auHint'].forEach(i=>$(i).hidden=!on);$('auP').autocomplete=on?'new-password':'current-password';
+  $('auU').placeholder=on?'نام کاربری':'تگ حساب (مثل #AB12CD34EF56)';$('auU').maxLength=on?16:14;$('auU').autocapitalize=on?'off':'characters';$('auU').style.direction=on?'':'ltr';if(was!==on)$('auU').value='';
   $('auLogin').textContent=on?'بازگشت':'ورود';$('auLogin').classList.toggle('pr',!on);$('auReg').classList.toggle('pr',on);$('auMsg').textContent=''}
-function auth(mode){let u=$('auU').value.trim();const p=$('auP').value;if(mode!=='register')u=u.replace(/^@/,'').toUpperCase();
-  if(mode==='register'){if(!u||!p){$('auMsg').textContent='نام کاربری و رمز را وارد کن';return}}
-  else{if(!u){$('auMsg').textContent='آیدی حساب را وارد کن';return}}
+function auth(mode){let u=$('auU').value.trim();const p=$('auP').value;if(mode!=='register')u=u.replace(/^#/,'').toUpperCase();if(!u||!p){$('auMsg').textContent=mode==='register'?'نام کاربری و رمز را وارد کن':'تگ حساب و رمز را وارد کن';return}
   const o={t:'auth',mode,u,p};
   if(mode==='register'){const p2=$('auP2').value,id=$('auId').value.trim().replace(/^@/,'').toUpperCase();
     const e=pwErr(p)||(p!==p2?'رمز عبور و تکرار آن یکسان نیست':'')||(!/^[A-Z0-9_]{4,20}$/.test(id)?'آیدی باید ۴ تا ۲۰ نویسه از حروف انگلیسی، عدد یا _ باشد':'');
@@ -4209,9 +4208,9 @@ function avSvg(i){i=i|0;return (i<0||i>=AVB.length)?'':'<svg viewBox="0 0 64 64"
 function renderAv(){const cur=(FL&&FL.me&&FL.me.av!=null&&FL.me.av>=0)?FL.me.av|0:defAv(myName);$('avSw').innerHTML=AVB.map((_,i)=>'<button type="button" class="sw av'+(i===cur?' on':'')+'" data-a="'+i+'" aria-label="'+AVN[i]+'">'+avSvg(i)+'</button>').join('')}
 $('avSw').onclick=e=>{const b=e.target.closest('button[data-a]');if(!b)return;const v=+b.dataset.a;if(FL.me)FL.me.av=v;renderAv();barUI();sendW({t:'setav',c:v})};
 function renderSw(){const cur=((FL.me&&FL.me.pc)|0)%12;$('pcSw').innerHTML=PCOLS.map((c,i)=>'<button type="button" class="sw'+(i===cur?' on':'')+'" data-c="'+i+'" style="background:'+c+'" aria-label="'+PCN[i]+'"></button>').join('')}
-$('pwSave').onclick=()=>{const n=$('pwNew').value,n2=$('pwNew2').value;
-  const e=pwErr(n)||(n!==n2?'رمز جدید و تکرار آن یکسان نیست':'');if(e)return toast(e);
-  sendW({t:'chpw',n,n2})};
+$('pwSave').onclick=()=>{const o=$('pwOld').value,n=$('pwNew').value,n2=$('pwNew2').value;
+  if(!o)return toast('رمز فعلی را وارد کن');const e=pwErr(n)||(n!==n2?'رمز جدید و تکرار آن یکسان نیست':'');if(e)return toast(e);
+  sendW({t:'chpw',o,n,n2})};
 $('pcSw').onclick=e=>{const b=e.target.closest('button[data-c]');if(!b)return;if(FL.me)FL.me.pc=+b.dataset.c;renderSw();sendW({t:'setcol',c:+b.dataset.c})};
 $('idSave2').onclick=()=>sendW({t:'setid',id:$('idIn2').value.trim().replace(/^@/,'').toUpperCase()});
 ['auId','idIn2'].forEach(i=>$(i).addEventListener('input',e=>{const el=e.target,a=el.selectionStart,b=el.selectionEnd,v=el.value.toUpperCase();if(v!==el.value){el.value=v;try{el.setSelectionRange(a,b)}catch(_){}}}));
@@ -4238,7 +4237,7 @@ $('pfClan').onclick=()=>{if(!PF||!PF.clan||!PF.clan.name)return;closeOv();const 
 $('tbMn').onclick=e=>{e.stopPropagation();const o=$('tbDrop').hidden;closeOv();$('tbDrop').hidden=!o};
 document.addEventListener('click',e=>{if(!$('tbDrop').hidden&&!e.target.closest('#tbDrop'))$('tbDrop').hidden=true});
 $('tbFr').onclick=()=>{const o=$('ovFr').hidden;closeOv();if(o){$('ovFr').hidden=false;renderTbFr()}};
-$('tbSet').onclick=()=>{closeOv();$('idIn2').value=myId;$('nmIn').value=myName;$('nmPw').value='';$('setTag').textContent=myTag?'#'+myTag:'';['pwNew','pwNew2'].forEach(i=>$(i).value='');showSetPane('setM');$('ovSet').hidden=false};
+$('tbSet').onclick=()=>{closeOv();$('idIn2').value=myId;$('nmIn').value=myName;$('nmPw').value='';$('setTag').textContent=myTag?'#'+myTag:'';['pwOld','pwNew','pwNew2'].forEach(i=>$(i).value='');showSetPane('setM');$('ovSet').hidden=false};
 $('tbMail').onclick=()=>{closeOv();$('ovMail').hidden=false;renderMail()};
 $('ovFrClose').onclick=closeOv;$('ovSetClose').onclick=closeOv;$('ovMailClose').onclick=closeOv;
 ['ovFr','ovMail','ovSet'].forEach(id=>$(id).addEventListener('click',e=>{if(e.target===$(id))closeOv()}));

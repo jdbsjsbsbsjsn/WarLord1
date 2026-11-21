@@ -285,7 +285,7 @@ async function auth2(ws, m, err) {
   }
   const pw = String(m.p || '');
   if (++ws.tries > 12) return ws.close();
-  if (m.mode === 'register' && (!pw || pw.length > 64)) return err('رمز عبور را درست وارد کن');
+  if (!pw || pw.length > 64) return err('رمز عبور را درست وارد کن');
   if (!rl('au:' + ws.ip, RL_AUTH_IP, 600000)) return err('تلاش‌های زیاد؛ ۱۰ دقیقه بعد دوباره امتحان کن');
   let k, reg = false;
   try {
@@ -308,13 +308,14 @@ async function auth2(ws, m, err) {
       userTags.set(tag, k); userIds.set(id, k); reg = true;
       sendMail(k, { from: 'جنگ‌سالار', title: 'خوش آمدی!', text: 'به جنگ‌سالار خوش آمدی ' + name + '. دوستانت را اضافه کن و با آن‌ها نبرد دوستانه بزن.' });
     } else {
-      // ورود فقط با «آیدی» (بدون رمز)
-      const id = normId(m.u);
-      if (!ID_RE.test(id)) return err(ID_MSG);
-      if (!rlPeek('tf:' + id, RL_TAG_FAIL)) return err('این حساب موقتاً قفل شده؛ ۱۵ دقیقه بعد امتحان کن');
-      k = userIds.get(id);
+      // ورود با «تگ» (نه نام کاربری) + رمز؛ چون تگ یکتاست، دقیقاً مشخص است وارد کدام حساب می‌شوی
+      const tag = normTag(m.u);
+      if (!TAG_RE.test(tag)) return err('تگ حساب را درست وارد کن (۱۲ نویسه از حروف انگلیسی و عدد)');
+      if (!rlPeek('tf:' + tag, RL_TAG_FAIL)) return err('این حساب موقتاً قفل شده؛ ۱۵ دقیقه بعد امتحان کن');
+      k = userTags.get(tag);
       const u = k && db.users[k];
-      if (!u) { rl('tf:' + id, RL_TAG_FAIL, 900000); return err('آیدی اشتباه است'); }
+      if (!u) { rl('tf:' + tag, RL_TAG_FAIL, 900000); return err('تگ یا رمز اشتباه است'); }
+      if (!hashEq(u.hash, await hashPw(pw, u.salt))) { rl('tf:' + tag, RL_TAG_FAIL, 900000); return err('تگ یا رمز اشتباه است'); }
     }
   } catch (e) { return err('سرور شلوغ است؛ کمی بعد دوباره امتحان کن'); }
   if (ws.readyState !== 1) return;
@@ -414,10 +415,12 @@ async function chPw(ws, m) {                  // تعویض رمز: رمز فع�
   const me = ws.u, U = db.users[me];
   if (++ws.tries > 12) return ws.close();
   if (!rl('cp:' + me, 10, 900000)) return toast(ws, 'تلاش زیاد؛ کمی بعد امتحان کن');
-  const n = String(m.n || '');
+  const o = String(m.o || ''), n = String(m.n || '');
   try {
+    if (!o || o.length > 64 || !hashEq(U.hash, await hashPw(o, U.salt))) return toast(ws, 'رمز فعلی اشتباه است');
     const pe = pwErr(n); if (pe) return toast(ws, pe);
     if (n !== String(m.n2 || '')) return toast(ws, 'رمز جدید و تکرار آن یکسان نیست');
+    if (n === o) return toast(ws, 'رمز جدید باید با رمز فعلی فرق داشته باشد');
     const salt = crypto.randomBytes(16).toString('hex'), hash = await hashPw(n, salt);
     U.salt = salt; U.hash = hash;
   } catch (e) { return toast(ws, 'سرور شلوغ است؛ بعداً امتحان کن'); }
