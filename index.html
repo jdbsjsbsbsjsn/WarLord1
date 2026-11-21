@@ -428,6 +428,7 @@ let RS=(Date.now()^0x5bd1e995)|0;
 function RL(){RS=RS+0x6D2B79F5|0;let t=Math.imul(RS^RS>>>15,1|RS);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}
 let offSince=0,oppOff=0,tryN=0,hidAt=0;
 let ONLINE=false,ME=2,LOBBY=true,CONN=false,tmSent=0,MATCH=false,OFFG=false,oppName='',oppOn=true,abortInfo=null,swapped=false;
+var BWdone=false;   /* نماد پیروزی برای این بازی نشان داده شده؟ */
 var BOTG=false;   /* حالت تمرین با هوش مصنوعی: بازیکن آبی (۱) را ربات بازی می‌کند */
 const mine=()=>(!ONLINE&&!(BOTG&&P===1))||(CONN&&!LOBBY&&ME===P);
 /* انتخاب و چیدن هم‌زمان (فقط آنلاین): برای هر بازیکن یک وضعیت جدا نگه می‌داریم و دستور هر کس روی وضعیت خودش اجرا می‌شود */
@@ -492,7 +493,7 @@ function synStart(){SY=[0,1].map(o=>{const m={};U.filter(u=>u.o===o).forEach(u=>
   if(SY[o]['اهریمن']>=2)shuf(foe.filter(u=>!sy(u,'مشکی',2))).slice(0,4).forEach(u=>u.bl=5)})}
 function add(k,o,c,r){const h=H[k],u={k,o,c,r,hp:h.hp,max:h.hp,mv:h.m,act:false,fly:0,weak:0,crit:0,ammo:6,ok:0,chg:0,bonus:0,used:false,sh2:2,fire:false,sn:0,kc:0,sc:0};U.push(u);return u}
 /* ===== مرحلهٔ انتخاب و چیدن قهرمان (۱۶۰ ثانیه برای هر بازیکن) ===== */
-function init(){NOGAME=false;clearTimeout(autoT);autoT=0;PK=[[],[]];SP=[[],[]];DX=[[],[]];zoneClear();smnGen++;LOCK=0;spl=null;shopOpen=false;U=[];P=0;T=0;E=[7,7];D=[0,0];ST=[];SC=[0,0];sel=null;mode='mv';over=false;MV=0;msg='';if(ONLINE)startDraftBoth();else startDraft(0)}
+function init(){NOGAME=false;clearTimeout(autoT);autoT=0;PK=[[],[]];SP=[[],[]];DX=[[],[]];zoneClear();smnGen++;LOCK=0;spl=null;shopOpen=false;U=[];P=0;T=0;E=[7,7];D=[0,0];ST=[];SC=[0,0];sel=null;mode='mv';over=false;MV=0;msg='';BWdone=false;try{if(window.hideBattleWin)hideBattleWin()}catch(_){}if(ONLINE)startDraftBoth();else startDraft(0)}
 const shuf=a=>{for(let i=a.length-1;i>0;i--){const j=RL()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a},rnd=a=>a[RL()*a.length|0];
 /* ===== اکسیر هیروها: هر هیرو هنگام انتخاب از همان ۴۲ اکسیرِ طلسم‌ها کم می‌کند؛ بدون اکسیر کافی خرید ممکن نیست ===== */
 const XC={acro:5,aka:6,cri:11,doj:5,pri:4,raf:5,bri:5,ali:5,mar:4,mak:6,and:4,zep:7,jack:6,blk:8,jal:5,ikh:4,col:6,ear:6,ik:4,iw:4,mus:9,ske:5,bud:3,que:4,fd:8,ft:8,mac:6,eld:6,spg:5,med:10,eli:7,ber:5,dk:6,gq:6,dn:4,dw:6},XT=42,
@@ -755,7 +756,7 @@ function ui(){if(DSW)return;cbRender();ecRender();
  // پیام‌ها
  if(msg!==lastMsg){if(msg.startsWith('بازی شروع شد')){LOG=[];EV=[]}if(msg){LOG.unshift(msg);EV.unshift(msg);EV=EV.slice(0,300)}LOG=LOG.slice(0,3);lastMsg=msg}
  $('msg').innerHTML=LOG.map((m,i)=>'<p'+(i?' class="old"':'')+'>'+esc(m)+'</p>').join('');
- evRender();const e=$('end');e.hidden=!over||(!abortInfo&&[...unitG.keys()].some(x=>x.vq&&x.vq.length));if(over)endText()}
+ evRender();const e=$('end');e.hidden=!over||(!abortInfo&&[...unitG.keys()].some(x=>x.vq&&x.vq.length));if(over){endText();if(!e.hidden)battleWin()}}
 /* ===== لایهٔ نمایش سه‌بعدی (Three.js) — منطق بازی بالاتر از این خط دست‌نخورده است ===== */
 const CELL_X=c=>1.5*c, CELL_Z=(c,r)=>SQ*(r+((c&1)?.5:0));
 const CTR=new THREE.Vector3(3.75,0,6.5);
@@ -2064,7 +2065,7 @@ function dojFX(a,t,d,ab){
   shk=Math.max(shk,ab?.6:.3)}catch(e){}},ms)}
 
 function mkUnit(u){
- const h=H[u.k],g=new THREE.Group(),s=['ali','mak','cri','doj','dk','fd','ft'].includes(u.k)?.85:.85+.3*Math.min(1,h.hp/4200),team=new THREE.Color(TEAM[u.o]),acc=team.clone(),pale=team.clone().lerp(new THREE.Color(0xffffff),.3),dark=team.clone().multiplyScalar(.7);
+ const h=H[u.k],g=new THREE.Group(),s=['ali','mak','cri','doj','dk','fd','ft','acro'].includes(u.k)?.85:.85+.3*Math.min(1,h.hp/4200),team=new THREE.Color(TEAM[u.o]),acc=team.clone(),pale=team.clone().lerp(new THREE.Color(0xffffff),.3),dark=team.clone().multiplyScalar(.7);
  const mats=[];const M=(c,o)=>{const m=new (o&&o.clearcoat!=null?THREE.MeshPhysicalMaterial:THREE.MeshStandardMaterial)(Object.assign({color:c,roughness:.6,emissive:0x000000},o||{}));mats.push(m);return m};
  const base=new THREE.Mesh(GEO.base,M(dark));base.position.y=.09;
  const ranged=h.r>1,body=new THREE.Mesh(ranged?GEO.cone:GEO.body,M(acc));body.position.y=ranged?.18+.62:.18+.45;
@@ -2091,7 +2092,7 @@ function popup(txt,pos,col){
 function vhp(u){const q=u.vq;if(!q||!q.length){u.vq=null;return u.hp}const n=performance.now();while(q.length&&q[0].at<=n){u.vb=q[0].hp;q.shift()}if(!q.length){u.vq=null;return u.hp}return u.vb}
 function queueVis(t,h0,dl){if(!(dl>0)&&!(t.vq&&t.vq.length))return;if(!t.vq||!t.vq.length){t.vb=h0;t.vq=[];t.vc=t.c;t.vr=t.r}
  t.vq.push({at:performance.now()+Math.max(0,dl),hp:t.hp});setTimeout(()=>{try{draw()}catch(e){}},Math.max(0,dl)+40)}
-function hitDelay(a,t){if(a.k==='acro'&&CX&&CX.a===a&&CX.ab){const n=CX.ai|0;CX.ai=n+1;return n*210+170}
+function hitDelay(a,t){if(a.k==='acro'&&CX&&CX.a===a&&CX.ab){const n=CX.ai|0;CX.ai=n+1;return n*210+170}if(a.k==='acro')return 270;
 const ga=unitG.get(a),gt=unitG.get(t),k=a.k,own=!!CX&&CX.a===a,ab=own&&CX.ab,i=own?(CX.i|0):0,D=ga&&gt?ga.position.distanceTo(gt.position):1,dc=Math.max(1,dist(a,t)),
  fl=(spd,mn)=>Math.max(mn||180,D*spd*1000);
  if(k==='cri')return ab?530:370;
@@ -2579,16 +2580,16 @@ const _ua=useAb;useAb=function(u,t){const k=u.k,mb=!!u.mb;if(FXI)try{const g=uni
  if(!pl)return _ua2(u,t);
  const pts=[[u.c,u.r],...pl.path.map(x=>[x.c,x.r]),pl.exit];g.userData.anim=1;
  try{return _ua2(u,t)}finally{try{acroAnim(g,pts)}catch(e){g.userData.anim=0}}}}
-function acroAnim(g,pts){const d=g.userData,inner=g.children[0],L=210,N=pts.length-1,P=pts.map(p=>V3(p[0],p[1])),t0=performance.now();let last=0;
+function acroAnim(g,pts){const af=acFig(g),d=g.userData,inner=g.children[0],L=210,N=pts.length-1,P=pts.map(p=>V3(p[0],p[1])),t0=performance.now();let last=0;
  const halo=new THREE.Sprite(new THREE.SpriteMaterial({map:GL,color:0xffeeb0,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,toneMapped:false,opacity:.9}));halo.scale.setScalar(3.2);halo.renderOrder=9;scene.add(halo);
  ring(P[0],0xffe9a0,2.2,.5,.15);SFX.wind&&SFX.wind(.7);LOCK++;
  (function f(){const e=performance.now()-t0,i=Math.min(N-1,Math.floor(e/L)),k=Math.min(1,(e-i*L)/L),a=P[i],b=P[i+1],x=a.x+(b.x-a.x)*k,z=a.z+(b.z-a.z)*k,y=Math.sin(k*Math.PI)*1.5,pp=new THREE.Vector3(x,y,z);
-  g.position.set(x,y,z);inner.rotation.x=-k*Math.PI*2;d.hf=1;d.fy=Math.atan2(b.x-a.x,b.z-a.z);d.ft=1;
+  g.position.set(x,y,z);if(af)af.userData.acro.flip(-k*Math.PI*2,k);else inner.rotation.x=-k*Math.PI*2;d.hf=1;d.fy=Math.atan2(b.x-a.x,b.z-a.z);d.ft=1;
   halo.position.set(x,y+.9,z);halo.material.opacity=.65+.25*Math.sin(e/35);halo.scale.setScalar(3+.5*Math.sin(e/50));
   burst(pp,4,0xcfe8ff,{sp:.3,size:.55,life:.45,g:0,vy:0,up:0,y:.5,r:.15,h:.6});
   if(i>last){last=i;const q=P[i];ring(q,0xfff0c0,1.6,.35,.15);burst(q,14,0xffe9a0,{sp:3,size:.3,life:.4,g:2,y:.6})}
   if(e<N*L)return requestAnimationFrame(f);
-  scene.remove(halo);halo.material.dispose();inner.rotation.x=0;d.anim=0;g.position.set(P[N].x,0,P[N].z);ring(P[N],0xffe9a0,2,.5,.15);LOCK--;draw()})()}
+  scene.remove(halo);halo.material.dispose();inner.rotation.x=0;if(af)af.userData.acro.flip(0,0);d.anim=0;g.position.set(P[N].x,0,P[N].z);ring(P[N],0xffe9a0,2,.5,.15);LOCK--;draw()})()}
 const _at=attack;attack=function(a,t){if(FXI&&phase==='play')try{CX={a,i:0,ab:false,snd:false,near:false,prev:null};CX.snd=!!atkSnd(a,t);if(a.k==='dk')dkStart(a,t,false)}catch(e){}
  const fl=U.filter(x=>x.o!==a.o&&x.hp>0&&x.hp>=x.max);try{return _at(a,t)}finally{if(CX&&CX.mk&&!CX.mkDone)try{makFX(a,t,0)}catch(e){}if(CX&&CX.cr&&!CX.crDone)try{criFX(a,t,0,false)}catch(e){}if(CX&&CX.al&&!CX.alDone)try{aliFX(a,t,0,false)}catch(e){}CX=null;if(a.k==='zep'&&fl.some(x=>x.hp<=0))say('One shot!',0,'zep')}};
 const _zp=zep;zep=function(u,t,DM){if(FXI&&phase==='play')try{zepFX(u,t,DM||[840,630,420,210])}catch(e){}return _zp(u,t,DM)};
@@ -2973,6 +2974,252 @@ function dkDie(u,g){const d=g.userData;d.dgDie=1;unitG.delete(u);d.pick.forEach(
  return _s()}})();
 
 
+/* ===== اسکین شوالیه آکروبات (acro) — مطابق تصویر مرجع =====
+   موی بلند نقره‌ای-یاسی با روبان آبی، چشم بنفش، زرهٔ سفید-طلایی با کرست مشکی، تابارد سرمه‌ای با زنبق طلایی،
+   چکمهٔ زره‌دار و شمشیر بلند. انیمیشن‌ها: بیکار (نفس، موها، شنل و تابارد) | ضربه (آماده‌سازی ← برش با رد نورانی ← برگشت)
+   | آسیب‌دیدن (عقب‌نشینی و شلاق خوردن موها) | مرگ (تلوتلو، زانو زدن، افتادن، محو شدن) | پرش و فلیپ (قابلیت). */
+GX.acFl=(x,cx,cy,s)=>{x.fillStyle='#e2b850';
+ x.beginPath();x.moveTo(cx,cy-20*s);x.bezierCurveTo(cx+9*s,cy-9*s,cx+7*s,cy+3*s,cx,cy+9*s);x.bezierCurveTo(cx-7*s,cy+3*s,cx-9*s,cy-9*s,cx,cy-20*s);x.fill();
+ [-1,1].forEach(q=>{x.save();x.translate(cx,cy);x.scale(q,1);x.beginPath();x.moveTo(4*s,0);x.bezierCurveTo(20*s,-10*s,26*s,8*s,12*s,16*s);x.bezierCurveTo(16*s,8*s,10*s,5*s,4*s,10*s);x.closePath();x.fill();x.restore()});
+ x.fillRect(cx-11*s,cy+8*s,22*s,4*s);x.beginPath();x.moveTo(cx-4*s,cy+12*s);x.lineTo(cx,cy+24*s);x.lineTo(cx+4*s,cy+12*s);x.fill()};
+GX.acTab=()=>GX._acT||(GX._acT=GX.tex(128,256,(x,w,h)=>{
+ const g=x.createLinearGradient(0,0,0,h);g.addColorStop(0,'#2e3da8');g.addColorStop(1,'#1b2268');x.fillStyle=g;x.fillRect(0,0,w,h);
+ for(let i=0;i<46;i++){x.strokeStyle=i%2?'rgba(8,10,50,.22)':'rgba(130,145,240,.12)';x.lineWidth=1+Math.random()*3;const X=Math.random()*w;x.beginPath();x.moveTo(X,0);x.bezierCurveTo(X+8,h*.3,X-8,h*.6,X+Math.random()*8-4,h);x.stroke()}
+ x.fillStyle='#dcb24a';x.fillRect(0,0,7,h);x.fillRect(w-7,0,7,h);x.fillRect(0,h-14,w,14);x.fillStyle='rgba(60,30,0,.45)';x.fillRect(7,0,2,h);x.fillRect(w-9,0,2,h);x.fillRect(0,h-16,w,2);
+ GX.acFl(x,w/2,h*.6,1.5)},1));
+GX.acFr=()=>GX._acF||(GX._acF=GX.tex(128,192,(x,w,h)=>{
+ const g=x.createLinearGradient(0,0,0,h);g.addColorStop(0,'#ffffff');g.addColorStop(1,'#e2dcef');x.fillStyle=g;x.fillRect(0,0,w,h);
+ for(let i=0;i<34;i++){x.fillStyle=i%2?'rgba(130,120,170,.10)':'rgba(220,180,80,.16)';x.beginPath();x.ellipse(Math.random()*w,Math.random()*h,1+Math.random()*3,1+Math.random()*2,Math.random()*3,0,7);x.fill()}
+ x.fillStyle='#dcb24a';x.fillRect(0,0,6,h);x.fillRect(w-6,0,6,h);x.fillRect(0,0,w,8);x.fillStyle='rgba(60,30,0,.4)';x.fillRect(6,0,2,h);x.fillRect(w-8,0,2,h);
+ GX.acFl(x,w/2,h*.4,1.45);x.fillStyle='#dcb24a';x.fillRect(w*.25,h*.74,w*.5,3);x.fillRect(w*.32,h*.8,w*.36,2)},1));
+GX.faceAc=o=>GX.tex(256,256,(x,w,h)=>{
+ const S='#'+new THREE.Color(o.skin).getHexString(),g=x.createRadialGradient(w/2,h*.55,8,w/2,h*.5,w*.6);
+ g.addColorStop(0,o.hi);g.addColorStop(.75,S);g.addColorStop(1,S);x.fillStyle=g;x.fillRect(0,0,w,h);x.lineCap='round';x.lineJoin='round';
+ [.16,.84].forEach(a=>{const r=x.createRadialGradient(a*w,h*.68,2,a*w,h*.68,34);r.addColorStop(0,'rgba(255,120,130,.28)');r.addColorStop(1,'rgba(255,120,130,0)');x.fillStyle=r;x.fillRect(a*w-36,h*.68-36,72,72)});
+ [-1,1].forEach(s=>{x.save();x.translate(w/2+s*o.ex,h*.5);x.scale(s,1);
+  const eye=()=>{x.beginPath();x.moveTo(-26,2);x.bezierCurveTo(-14,-14,14,-16,28,0);x.bezierCurveTo(14,13,-12,15,-26,2);x.closePath()};
+  eye();x.fillStyle='#f6f2f7';x.fill();x.save();eye();x.clip();
+  const ir=x.createRadialGradient(2,3,2,2,3,22);ir.addColorStop(0,'#cfc8ff');ir.addColorStop(.45,'#6f62e6');ir.addColorStop(1,'#2a2476');x.fillStyle=ir;x.beginPath();x.ellipse(2,2,15,19,0,0,7);x.fill();
+  x.fillStyle='#120e2c';x.beginPath();x.ellipse(2,3,6,10,0,0,7);x.fill();x.fillStyle='rgba(40,30,90,.4)';x.fillRect(-30,-22,60,15);
+  x.fillStyle='#fff';x.beginPath();x.arc(-4,-5,5,0,7);x.fill();x.beginPath();x.arc(8,10,2.6,0,7);x.fill();x.restore();
+  x.strokeStyle='#5d5683';x.lineWidth=6;x.beginPath();x.moveTo(-27,2);x.bezierCurveTo(-14,-14,14,-16,29,0);x.stroke();
+  x.lineWidth=4;x.beginPath();x.moveTo(26,-3);x.lineTo(40,-8);x.stroke();
+  x.strokeStyle='#aaa3d0';x.lineWidth=5;x.beginPath();x.moveTo(-24,-26);x.quadraticCurveTo(6,-37,34,-31);x.stroke();x.restore()});
+ x.strokeStyle='rgba(150,90,90,.35)';x.lineWidth=3;x.beginPath();x.moveTo(w/2-2,h*.66);x.lineTo(w/2+3,h*.69);x.stroke();
+ x.strokeStyle='#c4707e';x.lineWidth=3.5;x.beginPath();x.moveTo(w/2-15,h*.835);x.quadraticCurveTo(w/2,h*.83,w/2+15,h*.835);x.stroke();
+ x.fillStyle='rgba(220,130,150,.55)';x.beginPath();x.ellipse(w/2,h*.845,11,3.2,0,0,7);x.fill()},1);
+function gxAcro(M,team){
+ const G=new THREE.Group(),P=GX.pal(M),Y=.18,TAU=Math.PI*2,PV=new THREE.Group(),C=new THREE.Group(),
+  B=(g,m,x,y,z,Q)=>{const e=new THREE.Mesh(g,m);e.position.set(x||0,y||0,z||0);(Q||C).add(e);return e},
+  S=(r,a,b,c)=>new THREE.SphereGeometry(r,18,12).scale(a,b,c),
+  Cy=(r1,r2,l,s)=>new THREE.CylinderGeometry(r1,r2,l,s||14),Bx=(a,b,c)=>new THREE.BoxGeometry(a,b,c),
+  Cn=(r,l,s)=>new THREE.ConeGeometry(r,l,s||5),Oc=(r,a,b,c)=>new THREE.OctahedronGeometry(r).scale(a,b,c),
+  Tr=(r,t,s,arc)=>new THREE.TorusGeometry(r,t,8,s||24,arc),Ld=GX.lathe,
+  ez=x=>x<=0?0:x>=1?1:x*x*(3-2*x),cl=(v,a)=>v<-a?-a:v>a?a:v,mix=(a,b,k)=>a.map((v,i)=>v+(b[i]-v)*k),
+  ghost=m=>{m.raycast=()=>{};Object.defineProperty(m,'castShadow',{get:()=>false,set:()=>{}});return m};
+ /* محور چرخش وسط بدن (برای فلیپ قابلیت) */
+ PV.position.set(0,1.1,0);C.position.set(0,-1.1,0);PV.add(C);G.add(PV);
+ // ---- مواد ----
+ const Wm=M(GX.c(0xf3f0f8),{roughness:.28,metalness:.5,clearcoat:.7,clearcoatRoughness:.22,side:THREE.DoubleSide}),
+  Wc=P.cloth(0xf5f2f9),Au=P.metal(0xdcb04c,{roughness:.28}),Bk=P.leather(0x16141c),Bc=P.cloth(0x1b1a26,{roughness:.7}),
+  Nk=P.cloth(0x1f2776,{roughness:.72}),Sv=P.metal(0xeef1f8,{roughness:.14}),Sk=P.skin(0xf7dccf),
+  Hr=M(GX.c(0xcfc8ef),{roughness:.34,metalness:.12,clearcoat:.65,clearcoatRoughness:.22}),
+  Hr2=M(GX.c(0xebe7fc),{roughness:.34,metalness:.1,clearcoat:.6}),Hr3=M(GX.c(0xaaa2da),{roughness:.4,metalness:.1,clearcoat:.5}),
+  Rb=P.cloth(0x2b40bf,{roughness:.55}),Gm=M(GX.c(0x5f6dff),{roughness:.1,metalness:.3,clearcoat:1,emissive:new THREE.Color(.05,.07,.35)}),
+  Nb=M(GX.c(0x4a55a8),{roughness:.25,metalness:.6}),
+  TabF=P.cloth(0xffffff,{map:GX.acTab(),roughness:.85,side:THREE.FrontSide}),TabB=P.cloth(0xffffff,{map:GX.acTab(),roughness:.85,side:THREE.BackSide}),
+  LinF=P.cloth(0xf2eff8,{roughness:.9,side:THREE.FrontSide}),LinB=P.cloth(0xf2eff8,{roughness:.9,side:THREE.BackSide}),
+  FrF=P.cloth(0xffffff,{map:GX.acFr(),roughness:.85,side:THREE.FrontSide}),FrB=P.cloth(0xf2eff8,{roughness:.9,side:THREE.BackSide});
+ // ---- پاها: ران، چکمهٔ مشکی با زانوی خاردار، ساق‌بند سفید-طلایی، کفش پاشنه‌دار ----
+ const legs=[-1,1].map(s=>{const L=new THREE.Group();L.position.set(s*.13,Y+.95,0);C.add(L);
+  GX.strand(L,Sk,[[0,.02,0],[0,-.26,.01],[0,-.5,0]],.118,.092,8);
+  if(s<0){B(Cy(.114,.114,.07,16),Bk,0,-.27,0,L);B(Bx(.075,.06,.03),Au,0,-.27,.115,L);B(Bx(.03,.04,.034),Bk,0,-.27,.118,L)}
+  const K=new THREE.Group();K.position.set(0,-.5,0);L.add(K);
+  B(Ld([[.098,-.43],[.112,-.3],[.125,-.14],[.118,0],[.108,.06]],24),Bk,0,0,0,K);
+  B(Oc(.15,1,1.25,.6),Au,0,0,.1,K);B(Oc(.132,1,1.2,.5),Wm,0,0,.115,K);B(Tr(.125,.014,22),Au,0,-.07,0,K).rotation.x=Math.PI/2;
+  [-1,1].forEach(q=>B(Cn(.03,.15,4),Au,q*.135,-.02,.03,K).rotation.z=-q*1.25);B(Cn(.028,.12,4),Au,0,.12,.09,K);
+  B(Ld([[.116,-.46],[.132,-.38],[.138,-.3]],22),Wm,0,0,0,K);B(Tr(.137,.013,22),Au,0,-.3,0,K).rotation.x=Math.PI/2;B(Tr(.12,.012,22),Au,0,-.45,0,K).rotation.x=Math.PI/2;
+  B(Oc(.09,1,1.5,.5),Wm,0,-.4,.1,K);B(Bx(.05,.18,.02),Au,0,-.2,.12,K);
+  B(S(.115,1,.5,1.75),Wm,0,-.4,.075,K);B(Bx(.2,.03,.4),Bk,0,-.44,.06,K);B(Cn(.03,.12,6),Sv,0,-.4,-.115,K).rotation.x=Math.PI;
+  return{L,K}});
+ // ---- بالاتنه: کرست سفید با پنل مشکی و بند طلایی ----
+ const TG=new THREE.Group();TG.position.set(0,Y+.95,0);C.add(TG);
+ B(Ld([[.19,-.05],[.185,.08],[.165,.2],[.2,.3],[.235,.4],[.215,.52],[.14,.66]],32),Wc,0,0,0,TG).scale.set(1,1,.82);
+ B(Bx(.1,.34,.03),Bk,0,.2,.152,TG);for(let i=0;i<5;i++)B(Bx(.085,.012,.012),Au,0,.07+i*.062,.17,TG);
+ [-1,1].forEach(s=>{B(Bx(.035,.38,.03),Bk,s*.135,.21,.12,TG).rotation.z=s*.1;B(Bx(.06,.02,.034),Au,s*.135,.1,.13,TG);B(Bx(.06,.02,.034),Au,s*.135,.28,.12,TG)});
+ [-1,1].forEach(s=>{B(S(.15,1,.95,.95),Wc,s*.105,.44,.13,TG);B(Tr(.15,.011,26),Au,s*.105,.405,.13,TG).rotation.x=-.35});
+ B(Bx(.022,.1,.01),Au,0,.47,.265,TG);B(Bx(.06,.02,.01),Au,0,.49,.265,TG);
+ B(Ld([[.23,.3],[.25,.4],[.23,.52],[.14,.62]],30),Wc,0,0,0,TG).scale.set(1,.45,.7);
+ B(Ld([[.095,.62],[.112,.67],[.112,.78],[.095,.8]],20),Bk,0,0,0,TG);B(Tr(.112,.01,20),Au,0,.79,0,TG).rotation.x=Math.PI/2;B(Oc(.025,1,1.4,.6),Gm,0,.7,.118,TG);
+ B(Tr(.2,.006,24,Math.PI),Au,0,.62,.06,TG).rotation.z=Math.PI;
+ // ---- کمربند، ابزار طلایی و دامن چین‌دار سرمه‌ای ----
+ B(Tr(.215,.02,28),Bk,0,.04,0,TG).rotation.x=Math.PI/2;B(Bx(.07,.055,.03),Au,.11,.04,.218,TG);B(Bx(.07,.055,.03),Au,-.11,.04,.218,TG);
+ B(Oc(.045,1,1.4,.5),Au,0,.04,.228,TG);B(Bx(.02,.11,.01),Au,0,.03,.25,TG);B(Bx(.07,.02,.01),Au,0,.05,.25,TG);
+ B(Tr(.1,.006,16,Math.PI),Au,.1,-.02,.21,TG).rotation.z=Math.PI;
+ const sk=B(Ld([[.2,.04],[.27,-.06],[.33,-.2],[.36,-.27]],40,24,.05),Nk,0,0,0,TG);sk.scale.set(1,1,.92);
+ B(Tr(.362,.013,40),Au,0,-.27,0,TG).rotation.x=Math.PI/2;
+ // ---- پارچه‌ها: تابارد جلو، دو تابارد کناری بلند، شنل پشت و شال شانه ----
+ const cloths=[];
+ const mkCloth=(w,h,nu,nv,mf,mb,tip,x,y,z,Q,ph,kk)=>{const g=new THREE.PlaneGeometry(w,h,nu,nv);g.translate(0,-h/2,0);const p=g.attributes.position;
+  for(let i=0;i<p.count;i++){const px=p.getX(i),py=p.getY(i),v=-py/h;p.setY(i,py-tip*(1-Math.abs(px)/(w/2))*Math.pow(v,4))}
+  g.computeVertexNormals();const base=Float32Array.from(p.array),grp=new THREE.Group();grp.position.set(x,y,z);Q.add(grp);
+  const a=new THREE.Mesh(g,mf),b=new THREE.Mesh(g,mb);a.frustumCulled=false;b.frustumCulled=false;a.castShadow=true;grp.add(a,b);
+  const o={g,base,grp,h,ph:ph||0,k:kk||1};cloths.push(o);return o};
+ mkCloth(.34,.5,6,8,FrF,FrB,.1,.04,.02,.22,TG,.3,.5).grp.rotation.x=-.4;
+ [-1,1].forEach((s,i)=>{const c=mkCloth(.4,.98,6,11,TabF,LinB,.16,s*.3,.01,.02,TG,i*1.7+1,1);c.grp.rotation.set(0,s*.5,-s*.1)});
+ const cape=mkCloth(.86,1.45,10,14,LinF,TabB,.2,-.02,.64,-.2,TG,2.2,1.2);
+ const drape=mkCloth(.36,.58,5,6,TabF,LinB,.08,-.42,.6,-.03,TG,4.1,1);drape.grp.rotation.z=.16;
+ const clothAnim=(c,t,sx,sz)=>{const a=c.g.attributes.position.array,b=c.base,n=a.length/3;
+  for(let k=0;k<n;k++){const bx=b[k*3],by=b[k*3+1],v=Math.max(0,Math.min(1,-by/c.h)),d=Math.pow(v,1.3),sa=Math.sin(t*1.7+v*3.4+bx*3+c.ph),sb=Math.sin(t*3+v*6+bx*5+c.ph);
+   a[k*3]=bx*(1+d*.04*sa)+d*(sx*.7+.02*sb)*c.k;a[k*3+1]=by+d*.02*sb-d*Math.abs(sz)*.05;a[k*3+2]=b[k*3+2]+d*(.04+.04*sa+cl(sz,.55)*.9)*c.k}
+  c.g.attributes.position.needsUpdate=true;c.g.computeVertexNormals()};
+ // ---- سر ----
+ const HD=new THREE.Group();HD.position.set(0,.8,0);TG.add(HD);B(Cy(.075,.09,.2,12),Sk,0,0,0,HD);
+ const hr=.225,hy=.2;B(S(hr,1,1.08,1.02),Sk,0,hy,0,HD);
+ B(new THREE.SphereGeometry(hr*1.008,28,20,Math.PI/2-.5,1,1.07,1).scale(1,1.08,1.02),M(0xffffff,{map:GX.faceAc({skin:0xf7dccf,hi:'#fde8de',ex:50}),roughness:.6,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2}),0,hy,0,HD);
+ B(S(.17,1,.78,.92),Sk,0,hy-.12,.02,HD);B(S(.032,.85,1.5,1.2),Sk,0,hy-.03,hr*1.02,HD);
+ // موی نقره‌ای-یاسی: کلاهک، حجم پشت سر، چتری و رشته‌های کنار صورت
+ B(new THREE.SphereGeometry(hr*1.09,28,18,0,TAU,0,1.12).scale(1,1.08,1.05),Hr,0,hy+.01,-.012,HD);
+ B(S(.235,1,.95,.9),Hr3,0,hy-.04,-.08,HD);B(S(.2,1,.7,.7),Hr,0,hy+.1,-.04,HD);
+ [[-.14,.125,0],[-.07,.1,.02],[.0,.07,.03],[.07,.09,.02],[.15,.12,0],[.19,.06,-.01]].forEach((q,i)=>{const x0=q[0],ln=q[1];
+  GX.strand(HD,i%2?Hr2:Hr,[[x0*.8,hy+.19,.1],[x0*1.15,hy+.13,.2],[x0*1.35+(i<2?-.02:.03),hy-ln*.3,.236],[x0*1.4+(i<2?-.03:.04),hy-ln-.02,.222]],.05,.012,12)});
+ GX.strand(HD,Hr2,[[.0,hy+.2,.02],[.02,hy+.31,.03],[.07,hy+.38,.06]],.016,.006,8);
+ // روبان آبی با گره و دو دُم
+ const RBG=new THREE.Group();RBG.position.set(.14,hy+.2,-.04);HD.add(RBG);
+ B(Cn(.05,.13,4),Rb,.07,.01,0,RBG).rotation.z=-1.45;B(Cn(.05,.13,4),Rb,-.07,.01,0,RBG).rotation.z=1.45;B(S(.04,1,1,1),Rb,0,.01,0,RBG);B(Oc(.025,1,1.2,.5),Au,0,.01,.04,RBG);
+ const RT=[0,1].map(i=>{const pg=new THREE.Group();RBG.add(pg);GX.strand(pg,Rb,[[0,0,0],[.04+i*.03,-.22,-.04],[.07+i*.05,-.5-i*.1,-.08],[.07+i*.07,-.8-i*.15,-.05]],.035,.012,14);return pg});
+ // رشته‌های بلند پشت سر (هر رشته دو مفصل: ریشه و میانه)
+ const HG=[];
+ const strand2=(Q,m,root,up,lo,r0,r1,r2,ph,k)=>{const pg=new THREE.Group();pg.position.set(root[0],root[1],root[2]);Q.add(pg);
+  GX.strand(pg,m,up,r0,r1,10);const mid=up[up.length-1],pg2=new THREE.Group();pg2.position.set(mid[0],mid[1],mid[2]);pg.add(pg2);
+  GX.strand(pg2,m,lo,r1,r2,12);HG.push({pg,pg2,ph,k:k||1});return pg};
+ for(let i=0;i<16;i++){const a=(i-7.5)/7.5*1.25,ph=i*1.37,L=.85+.3*((i*.618)%1),ox=Math.sin(a),
+   root=[ox*.16,hy-.01,-Math.cos(a)*.15-.03],m=i%3===0?Hr2:i%3===1?Hr:Hr3;
+  strand2(HD,m,root,[[0,0,0],[ox*.06,-.2*L,-.07],[ox*.12+Math.sin(ph)*.03,-.42*L,-.13]],
+   [[0,0,0],[ox*.07+Math.sin(ph*1.3)*.06,-.38*L,-.04],[ox*.12+Math.sin(ph*2)*.1,-.78*L,-.03],[ox*.1+Math.sin(ph*2.7)*.13,-1.1*L,.0]],.09,.055,.016,ph,1)}
+ // رشته‌های پرنده و موهای رها
+ for(let i=0;i<6;i++){const s=i%2?1:-1,ph=i*2.1+.5;
+  strand2(HD,Hr2,[s*(.14+i*.012),hy+.02-i*.02,-.1],[[0,0,0],[s*.1,-.1,-.1],[s*.18,-.25,-.14]],[[0,0,0],[s*.1,-.2,-.06],[s*.12+Math.sin(ph)*.1,-.45,.0]],.022,.014,.006,ph,2.4)}
+ // دو رشتهٔ بلند کنار صورت روی سینه
+ [-1,1].forEach((s,i)=>{strand2(HD,i?Hr:Hr2,[s*.2,hy-.01,.06],[[0,0,0],[s*.05,-.2,.06],[s*.08,-.42,.13]],[[0,0,0],[s*.03,-.2,.08],[s*.03,-.42,.05]],.05,.035,.012,i*2.3+.7,.7);
+  strand2(HD,Hr,[s*.17,hy+.03,.1],[[0,0,0],[s*.04,-.18,.07],[s*.06,-.36,.13]],[[0,0,0],[s*.02,-.16,.06],[s*.01,-.32,.02]],.04,.028,.01,i*1.9+2,.7)});
+ // ---- بازوها ----
+ const mkArm=s=>{const A=new THREE.Group();A.position.set(s*.4,.62,0);TG.add(A);
+  GX.strand(A,s<0?Bc:Bk,[[0,0,0],[0,-.2,0],[0,-.4,0]],.085,.075,8);
+  if(s>0){B(Cy(.1,.092,.1,16),Wc,0,-.1,0,A);B(Tr(.097,.012,22),Au,0,-.05,0,A).rotation.x=Math.PI/2}
+  const E=new THREE.Group();E.position.set(0,-.4,0);A.add(E);B(S(.085,1,1,1),s<0?Wm:Bk,0,0,0,E);
+  GX.strand(E,Bk,[[0,0,0],[0,-.2,0],[0,-.42,0]],.075,.065,8);
+  B(Cy(.09,.1,.3,16),Wm,0,-.2,0,E);B(Tr(.094,.013,22),Au,0,-.08,0,E).rotation.x=Math.PI/2;B(Tr(.102,.013,22),Au,0,-.33,0,E).rotation.x=Math.PI/2;
+  B(Bx(.045,.2,.016),Au,0,-.2,.095,E);B(Oc(.05,1,1.3,.5),Au,0,-.04,.085,E);
+  B(S(.075,1,1.1,1),Bk,0,-.5,0,E);B(S(.03,1,1.4,.8),Bk,s*.05,-.46,.045,E);
+  if(s<0){const rb=new THREE.Group();rb.position.set(0,-.33,0);E.add(rb);B(Tr(.108,.015,18),Rb,0,0,0,rb).rotation.x=Math.PI/2;
+   [0,1].forEach(q=>GX.strand(rb,Rb,[[.05,0,.07],[.1+q*.04,-.12,.1],[.12+q*.06,-.26-q*.06,.08]],.026,.01,8))}
+  return{A,E}};
+ const RA=mkArm(-1),LA=mkArm(1);
+ // سردوشی بزرگ سفید-طلایی روی شانهٔ شمشیر؛ سردوشی کوچک مشکی روی شانهٔ دیگر
+ B(S(.2,1.1,.8,1.05),Wm,-.4,.63,0,TG);B(Tr(.19,.016,26),Au,-.4,.56,0,TG).rotation.x=Math.PI/2;B(S(.17,1,.5,.95),Wm,-.41,.52,0,TG);B(Tr(.165,.012,26),Au,-.41,.48,0,TG).rotation.x=Math.PI/2;
+ for(let i=0;i<3;i++)B(Cn(.022,.13,4),Au,-.4-i*.03,.8-i*.02,(i-1)*.08,TG).rotation.z=.3+i*.15;B(Oc(.03,1,1.3,.5),Gm,-.4,.72,.12,TG);
+ B(S(.13,1,.75,1),Bk,.4,.62,0,TG);B(Tr(.12,.011,22),Au,.4,.57,0,TG).rotation.x=Math.PI/2;
+ // ---- شمشیر بلند: تیغهٔ نقره‌ای با شیار آبی و گاردِ طلایی منحنی ----
+ const bs=new THREE.Shape();bs.moveTo(-.05,-.18);bs.lineTo(.05,-.18);bs.lineTo(.058,-.4);bs.lineTo(.058,-.96);bs.lineTo(0,-1.1);bs.lineTo(-.058,-.96);bs.lineTo(-.058,-.4);bs.lineTo(-.05,-.18);
+ const bi=new THREE.Shape();bi.moveTo(-.014,-.24);bi.lineTo(.014,-.24);bi.lineTo(.014,-.94);bi.lineTo(0,-1.0);bi.lineTo(-.014,-.94);bi.lineTo(-.014,-.24);
+ const bgO=new THREE.ExtrudeGeometry(bs,{depth:.03,bevelEnabled:false});bgO.translate(0,0,-.015);const bgI=new THREE.ExtrudeGeometry(bi,{depth:.04,bevelEnabled:false});bgI.translate(0,0,-.02);
+ const SWD=new THREE.Group();SWD.position.set(0,-.5,0);RA.E.add(SWD);
+ B(Cy(.028,.028,.3,10),Bk,0,.02,0,SWD);for(let i=0;i<4;i++)B(Tr(.03,.006,10),Au,0,-.06+i*.07,0,SWD).rotation.x=Math.PI/2;
+ B(S(.05,1,1,1),Au,0,.2,0,SWD);B(S(.026,1,1,1),Gm,0,.2,.045,SWD);
+ B(Bx(.36,.045,.055),Au,0,-.15,0,SWD);
+ [-1,1].forEach(q=>{B(Bx(.1,.04,.05),Au,q*.2,-.13,0,SWD).rotation.z=q*.45;B(Cn(.028,.12,4),Au,q*.27,-.07,0,SWD).rotation.z=-q*.8;B(S(.03,1,1,1),Au,q*.2,-.2,0,SWD);B(Tr(.04,.01,12,Math.PI*1.4),Au,q*.17,-.21,0,SWD).rotation.z=q*1.2});
+ B(Oc(.05,1,1.2,.8),Au,0,-.15,.035,SWD);B(Oc(.03,1,1.3,.7),Gm,0,-.15,.065,SWD);
+ B(bgO,Sv,0,0,0,SWD);B(bgI,Nb,0,0,0,SWD);B(Bx(.024,.12,.06),Au,0,-.22,0,SWD);
+ // ---- رد برش نورانی (هلال) ----
+ const trG=(()=>{const N=22,pos=[],idx=[],p0=[-.7,1.05],p1=[.2,1.15],p2=[1.2,-.5];for(let i=0;i<=N;i++){const s=i/N,x=(1-s)*(1-s)*p0[0]+2*(1-s)*s*p1[0]+s*s*p2[0],y=(1-s)*(1-s)*p0[1]+2*(1-s)*s*p1[1]+s*s*p2[1],
+  tx=2*(1-s)*(p1[0]-p0[0])+2*s*(p2[0]-p1[0]),ty=2*(1-s)*(p1[1]-p0[1])+2*s*(p2[1]-p1[1]),l=Math.hypot(tx,ty)||1,nx=-ty/l,ny=tx/l,w=.2*Math.pow(Math.sin(Math.PI*s),.7);
+  pos.push(x+nx*w,y+ny*w,0,x-nx*w,y-ny*w,0);if(i<N)idx.push(2*i,2*i+1,2*i+2,2*i+1,2*i+3,2*i+2)}
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setIndex(idx);return g})();
+ const TRM=new THREE.MeshBasicMaterial({color:0xdfe6ff,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide,toneMapped:false}),
+  pvT=new THREE.Group(),TRL=new THREE.Mesh(trG,TRM);pvT.position.set(-.4,.62,0);pvT.rotation.z=-.55;TG.add(pvT);TRL.rotation.y=-Math.PI/2;TRL.visible=false;pvT.add(TRL);ghost(TRL);
+ // ---- انیمیشن ----
+ // ژست بازو: [شانه x، بازشدگی به بیرون، آرنج، شیب تیغه (مطلق)، چرخش تیغه به بیرون]
+ const IDLE=[-.25,.22,-.6,-.15,.42],WU=[-2.5,.55,-.9,-3.3,.3],SK=[-1.4,-.55,-.4,-1.0,-.3];
+ // ژست بدن: [چرخش تنه، پیشروی، خم]
+ const BI=[0,0,0],BW=[.55,-.07,-.1],BS=[-.5,.3,.2];
+ const TIM={n:{wu:.2,st:.14,ho:.04,rc:.42},q:{wu:.12,st:.1,ho:0,rc:.24}},TT=sl=>TIM[sl.q?'q':'n'];
+ const SL=[],SW={x:0,vx:0,z:0,vz:0,px:0,py:0,pz:0,lt:-1,ok:0},ST={h0:-1e9,d0:-1e9,dead:0,tuck:0};let dmats=null;
+ const armPose=(sl,e)=>{const T=TT(sl),a=ez(e/T.wu),b=ez((e-T.wu)/T.st),c=ez((e-T.wu-T.st-T.ho)/T.rc);return mix(mix(mix(IDLE,WU,a),SK,b),IDLE,c)};
+ const bodyPose=(sl,e)=>{const T=TT(sl),a=ez(e/T.wu),b=ez((e-T.wu)/T.st),c=ez((e-T.wu-T.st-T.ho)/T.rc);return mix(mix(mix(BI,BW,a),BS,b),BI,c)};
+ GX.anim(G,t=>{const now=performance.now(),dt=SW.lt<0?.016:Math.min(.05,Math.max(.001,t-SW.lt));SW.lt=t;
+  const br=Math.sin(t*1.5),el=G.matrixWorld.elements;
+  for(let i=SL.length-1;i>=0;i--){const T=TT(SL[i]);if((now-SL[i].t0)/1000>T.wu+T.st+T.ho+T.rc)SL.splice(i,1)}
+  let newest=null;SL.forEach(sl=>{const e=(now-sl.t0)/1000;if(e>=0&&(!newest||sl.t0>newest.sl.t0))newest={sl,e}});
+  const bp=newest?bodyPose(newest.sl,newest.e):BI;
+  let lx=0,lz=0;if(SW.ok){const vx=(el[12]-SW.px)/dt,vy=(el[13]-SW.py)/dt,vz=(el[14]-SW.pz)/dt,ax=el[0]*el[0]+el[1]*el[1]+el[2]*el[2]||1,az=el[8]*el[8]+el[9]*el[9]+el[10]*el[10]||1;lx=(vx*el[0]+vy*el[1]+vz*el[2])/ax;lz=(vx*el[8]+vy*el[9]+vz*el[10])/az}
+  SW.px=el[12];SW.py=el[13];SW.pz=el[14];SW.ok=1;
+  const eh=(now-ST.h0)/1000,hur=!ST.dead&&eh>=0&&eh<.6?Math.sin(Math.min(1,eh/.16)*Math.PI/2)*(1-ez((eh-.16)/.44)):0,tk=ST.tuck;
+  const tx=cl(-lx*.1-bp[0]*.25,.45),tz=cl(-lz*.1-Math.max(0,bp[1])*.9-hur*.5,.6);
+  SW.vx+=((tx-SW.x)*45-SW.vx*4.2)*dt;SW.x+=SW.vx*dt;SW.vz+=((tz-SW.z)*45-SW.vz*4.2)*dt;SW.z+=SW.vz*dt;
+  G.position.set(0,.01*Math.sin(t*2)-.05*Math.max(0,bp[1]),bp[1]-hur*.14);
+  legs.forEach((o,i)=>{o.L.rotation.x=(i?bp[1]*.6:-bp[1]*.9)-tk*(i?.9:1.1);o.K.rotation.x=tk*(i?1.5:1.7)+.02});
+  TG.rotation.set(bp[2]-hur*.4+tk*.5+.008*br,bp[0],.01*Math.sin(t*.6)+hur*.08);TG.scale.y=1+.006*br;
+  HD.rotation.set(-bp[2]*.4+hur*.55+.02*Math.sin(t*.5),-bp[0]*.5+.06*Math.sin(t*.37),.02*Math.sin(t*.43+2));
+  const p=newest?armPose(newest.sl,newest.e):IDLE;
+  RA.A.rotation.set(p[0]-hur*.3-tk*.6+.015*Math.sin(t*.9),0,-p[1]);RA.E.rotation.set(p[2],0,0);SWD.rotation.set(p[3]-(p[0]+p[2]),0,-p[4]);
+  LA.A.rotation.set(-.12-bp[0]*.5-hur*.2-tk*.5+.015*Math.sin(t*.9+1),0,.2+bp[0]*.1);LA.E.rotation.set(-.4-tk*.6,0,0);
+  // موها، روبان، تابارد و شنل
+  HG.forEach(o=>{const w=Math.sin(t*1.3+o.ph);o.pg.rotation.set((.04*w+SW.z*.3-bp[2]*.25-hur*.3)*o.k,0,(.035*Math.sin(t*1.1+o.ph*.7)+SW.x*.5+bp[0]*.2)*o.k);
+   o.pg2.rotation.set((.07*Math.sin(t*1.7+o.ph+1)+SW.z*.4)*o.k,0,(.06*Math.sin(t*1.4+o.ph*.6)+SW.x*.5)*o.k)});
+  RBG.rotation.set(.03*Math.sin(t*1.2),0,.04*Math.sin(t*.9));RT.forEach((pg,i)=>pg.rotation.set(.12*Math.sin(t*2.1+i*1.3)+SW.z*.6,0,.1*Math.sin(t*1.8+i)+SW.x*.8));
+  cloths.forEach(c=>clothAnim(c,t,SW.x,SW.z));
+  // رد برش
+  let op=0;if(newest&&!ST.dead){const T=TT(newest.sl),k=(newest.e-T.wu)/(T.st+.14);if(k>0&&k<1){op=Math.pow(Math.sin(k*Math.PI),.6)*(newest.sl.q?.7:.85);TRL.visible=true;TRM.opacity=op;TRL.scale.setScalar((newest.sl.q?.85:1)*(.85+.25*k))}}
+  if(!op){TRL.visible=false;TRM.opacity=0}
+  // مرگ: ضربهٔ آخر ← زانو زدن ← افتادن به عقب ← محو شدن
+  if(ST.dead){const e=(now-ST.d0)/1000,a=ez(e/.3),b=ez((e-.25)/.55),c=ez((e-.75)/.65);
+   G.position.set(0,-.62*b-.03*c,-.2*a-.3*c);
+   legs.forEach((o,i)=>{o.L.rotation.x=-1.0*b*(i?1:.9);o.K.rotation.x=2.4*b});
+   TG.rotation.set(-.4*a+.45*b-1.35*c,0,.14*a*(1-c));HD.rotation.set(.45*a-.3*b+.5*c,0,.18*a*(1-c));
+   RA.A.rotation.set(-.3*a+.2*b+.3*c,0,-(.5+.4*b+.5*c));RA.E.rotation.set(-.3-.3*b,0,0);SWD.rotation.set(.5*b,0,-(.5+.7*c));
+   LA.A.rotation.set(-.4*a+.2*c,0,.5+.7*c);LA.E.rotation.set(-.3*b,0,0);
+   if(e>1.35&&dmats){const o=Math.max(0,1-ez((e-1.35)/.9));dmats.forEach(m=>{m.transparent=true;m.opacity=o})}}});
+ // slash(q,تأخیر): ضربهٔ شمشیر؛ q=ضربهٔ سریع (قابلیت پرشی). مقدار برگشتی = میلی‌ثانیه تا لحظهٔ برخورد
+ G.userData.acro={slash:(q,delay)=>{const d=delay||0,T=TIM[q?'q':'n'];if(!ST.dead)SL.push({t0:performance.now()+d,q:!!q});return d+(T.wu+T.st*.5)*1000},
+  hurt:()=>{if(!ST.dead)ST.h0=performance.now()},
+  die:()=>{if(ST.dead)return;ST.dead=1;ST.d0=performance.now();dmats=new Set();G.traverse(o=>{if(o.material)[].concat(o.material).forEach(m=>dmats.add(m))})},
+  flip:(a,k)=>{PV.rotation.x=a;ST.tuck=Math.sin(Math.min(1,Math.max(0,k||0))*Math.PI)}};
+ return G}
+/* مدل ساده‌ی پشتیبان (فقط اگر ساخت مدل اصلی خطا بدهد) */
+function acSafe(M){const G=new THREE.Group(),a=(g,c,y,z)=>{const m=new THREE.Mesh(g,M(c,{roughness:.5}));m.position.set(0,y,z||0);G.add(m)};
+ a(new THREE.CylinderGeometry(.22,.3,1,16),0xf3f0f8,.8);a(new THREE.SphereGeometry(.22,18,14),0xf7dccf,1.55);a(new THREE.SphereGeometry(.26,18,14),0xcfc8ef,1.6,-.08);return G}
+FIG.acro=(M,t)=>{try{return gxAcro(M,t)}catch(e){console.error('acro skin',e);return acSafe(M)}};
+function acFig(g){const i=g&&g.children[0];return i&&i.children.find(o=>o.userData&&o.userData.acro)}
+SFX.acDie=()=>{os('sine',660,220,.9,.3,0);os('triangle',880,330,1.1,.2,.05);nz(.5,'lowpass',2200,300,1,.5,0);os('sine',200,70,.8,.5,.3)};
+/* ضربه: شمشیر آکروبات با رد نورانی، و واکنش آسیب‌دیدن */
+(function(){const _hf=hitFX;hitFX=function(a,t,d){
+ try{
+  if(a.k==='acro'&&a!==t){const ga=unitG.get(a),gt=unitG.get(t),f=acFig(ga);
+   if(f&&gt){const own=!!CX&&CX.a===a,ab=own&&CX.ab,i=own?(CX.ax|0):0;if(own)CX.ax=i+1;
+    if(!ab){const dx=gt.position.x-ga.position.x,dz=gt.position.z-ga.position.z;if(dx||dz){ga.userData.fy=Math.atan2(dx,dz);ga.userData.hf=1;ga.userData.ft=2}}
+    const ms=f.userData.acro.slash(ab,ab?i*210:0),P0=gt.position.clone();
+    setTimeout(()=>{try{const p=P0.clone().add(new THREE.Vector3(0,.95,0));
+     burst(p,ab?12:20,0xf4f1ff,{sp:4.2,size:.14,life:.28,g:3,y:0,r:.1,h:.1});burst(p,ab?9:14,0xa8b4ff,{sp:3.2,size:.2,life:.4,g:5,y:0,r:.12,h:.1});
+     if(d>0)ring(new THREE.Vector3(P0.x,0,P0.z),0xcfd6ff,ab?1.5:1.3,.35,.15);shk=Math.max(shk,ab?.35:.3)}catch(e){}},ms)}}
+  if(t.k==='acro'&&t.hp>0&&a!==t){const f=acFig(unitG.get(t));
+   if(f){const q=t.vq&&t.vq.length?t.vq[t.vq.length-1].at-performance.now():0;setTimeout(()=>{try{f.userData.acro.hurt()}catch(e){}},Math.max(0,q))}}
+ }catch(e){console.error('acroFX',e)}
+ return _hf(a,t,d)}})();
+/* مرگ: انیمیشن افتادن و محو شدن، سپس حذف مدل */
+function acDie(u,g){const d=g.userData;d.dgDie=1;unitG.delete(u);d.pick.forEach(m=>{const i=pickables.indexOf(m);if(i>=0)pickables.splice(i,1)});
+ if(d.last>0)popup('-'+PX(Math.round(d.last)),g.position,'#ff5a4d');
+ try{d.lb.sp.visible=false;d.shield.visible=false;d.cage.visible=false;d.hack.visible=false;if(d.aura)d.aura.visible=false;if(d.bm)d.bm.forEach(b=>b.visible=false)}catch(e){}
+ const f=acFig(g),m=f&&f.userData.acro,P0=g.position.clone(),T=(fn,ms)=>setTimeout(()=>{try{fn()}catch(e){}},ms);
+ if(m)m.die();try{SFX.acDie()}catch(e){}
+ if(FXI){T(()=>{shk=Math.max(shk,.4)},80);
+  [0,1,2,3,4,5].forEach(i=>T(()=>{burst(P0.clone().add(new THREE.Vector3((rd()-.5)*.7,.6+rd()*1.4,(rd()-.5)*.7)),8,i%2?0xcfd6ff:0xf4f1ff,{sp:1.6,vy:1.2,g:-.4,size:.3,life:.9,y:0,r:.3,up:1})},500+i*140));
+  T(()=>{const Z=new THREE.Vector3(P0.x,0,P0.z);ring(Z,0xcfd6ff,2.4,.7,.14);burst(P0,26,0xdfe6ff,{sp:2.6,vy:2.6,g:-.6,size:.35,life:1,y:.4,r:.5})},1500)}
+ setTimeout(()=>{try{scene.remove(g);g.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material){if(o.material.map)o.material.map.dispose();o.material.dispose()}})}catch(e){}},2500)}
+(function(){const _s=syncUnits;syncUnits=function(){
+ try{for(const [u,g] of [...unitG]){if(!U.includes(u)&&u.hp<=0&&u.k==='acro'&&!g.userData.dgDie&&(phase!=='play'||(vhp(u),!u.vq)))acDie(u,g)}}catch(e){console.error('acDie',e)}
+ return _s()}})();
+
 /* ===================== آنلاین =====================
    حساب کاربری/دوستی/دعوت: سرور. خود بازی: lockstep (سرور فقط دستورها را مرتب پخش می‌کند). */
 let RPT=false,CURG=0,WS=null,Q=[],HM={},OH={},desync=false,flashT=0,flashMsg='',retryT=0,AUTHED=false,myName='',myTag='',myId='',PF=null,SR=null,srQ='',FL={friends:[],inc:[],out:[]},invWait=null,invFrom=null,curScr='scrAuth',loadMode='',loadStart=0,wantAuth=null,toastT=0;
@@ -3033,6 +3280,24 @@ function forfeitAsk(){if(!MATCH||over)return;cfStep=3;cfRender();$('cf').hidden=
 function reportResult(w){      // پایان بازی: نتیجه خودکار و مستقیم به سرور می‌رود (دست بازیکن نیست)
   if(!MATCH||!ONLINE||RPT||abortInfo)return;RPT=true;
   sendW({t:'result',g:CURG,r:w===ME?'win':w<0?'draw':'loss'})}
+function battleWin(){   /* نماد پیروزی/شکست در همهٔ حالت‌های نبرد (به‌جز آموزش) */
+  if(BWdone||!window.showBattleWin||(window.TUT&&TUT.on))return;
+  let sub=null,lose=false,act;
+  const lo=[0,1].find(o=>!U.some(u=>u.o===o&&!(u.k in SMN))),w=lo===undefined?-1:1-lo;
+  if(MATCH){
+    act=()=>finishMatch();
+    if(abortInfo){const a=abortInfo;
+      if(a.winner===ME)sub=a.reason==='forfeit'?oppName+' تسلیم شد.':oppName+' از بازی خارج شد.';
+      else{lose=true;sub=a.reason==='forfeit'?'تسلیم شدی.':'اتصالت مدتی قطع بود.'}}
+    else if(w===ME)sub=oppName+' رو شکست دادی.';
+    else if(w>=0){lose=true;sub=oppName+' این دست رو برد.'}
+  }else{
+    act=()=>{$('end').hidden=true;$('netMenu').onclick()};
+    if(BOTG){if(w===0)sub='هوش مصنوعی رو شکست دادی.';else if(w===1){lose=true;sub='هوش مصنوعی این دست رو برد.'}}
+    else if(w>=0)sub='بازیکن '+NM[w]+' برنده شد.'
+  }
+  if(sub===null)return;
+  BWdone=true;showBattleWin(sub,act,lose)}
 function endText(){
   if(!MATCH){$('endt').textContent=msg.replace('🏆','').trim();$('nw2').textContent='بازی جدید';return}
   $('nw2').textContent='تایید پایان';
@@ -3936,8 +4201,8 @@ var _c=closeOv;closeOv=function(){_c();if(ov)ov.hidden=true};
 <!-- ===== توتریال بخش اول (آموزش حرکت، ضربه، کمبو و قابلیت) ===== -->
 <style id="tutCss">
 body.tut #hud,body.tut #nw,body.tut #cbtn,body.tut #shp,body.tut #spb,body.tut #dbtn,body.tut #msg,body.tut #net{display:none!important}
-#tutMis,#tutDlg,#tutWin,#tutEl,#tutBadge{direction:rtl;font-family:Vazirmatn,Tahoma,sans-serif}
-#tutMis[hidden],#tutDlg[hidden],#tutWin[hidden],#tutEl[hidden],#tutBadge[hidden]{display:none}
+#tutMis,#tutDlg,#tutWin,#tutLose,#tutEl,#tutBadge{direction:rtl;font-family:Vazirmatn,Tahoma,sans-serif}
+#tutMis[hidden],#tutDlg[hidden],#tutWin[hidden],#tutLose[hidden],#tutEl[hidden],#tutBadge[hidden]{display:none}
 /* --- ماموریت --- */
 #tutMis{position:fixed;z-index:66;top:calc(env(safe-area-inset-top,0px) + 8px);left:0;right:0;margin:0 auto;width:min(94vw,520px);background:linear-gradient(180deg,rgba(42,34,51,.94),rgba(23,26,33,.94));border:1px solid var(--gold);border-radius:14px;padding:8px 12px 10px;box-shadow:0 6px 24px rgba(0,0,0,.65);animation:tmIn .38s cubic-bezier(.2,1.3,.4,1)}
 @keyframes tmIn{from{opacity:0;transform:translateY(-16px) scale(.96)}to{opacity:1;transform:none}}
@@ -3993,6 +4258,20 @@ body.tut #hud,body.tut #nw,body.tut #cbtn,body.tut #shp,body.tut #spb,body.tut #
 #tutWin button{font:inherit;font-size:16px;font-weight:700;min-height:52px;border-radius:14px;cursor:pointer}
 #tutWin #twNext{background:linear-gradient(180deg,#ffd978,#e0a92c);color:var(--ink);border:1px solid #ffe9a8;box-shadow:0 4px 18px rgba(242,193,78,.4)}
 #tutWin #twMenu{background:#000;color:#fff;border:1px solid #555}
+/* --- نماد شکست --- */
+#tutLose{position:fixed;inset:0;z-index:70;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:20px;text-align:center;background:radial-gradient(ellipse at 50% 30%,rgba(60,14,14,.86),rgba(6,7,11,.97));animation:lsIn .5s ease-out}
+@keyframes lsIn{from{opacity:0}to{opacity:1}}
+#tutLose svg{width:min(62vw,250px);height:auto;animation:lsPop .8s cubic-bezier(.2,1.5,.4,1) both;filter:drop-shadow(0 0 22px rgba(229,72,60,.4))}
+@keyframes lsPop{from{transform:scale(.2) rotate(-25deg);opacity:0}to{transform:none;opacity:1}}
+#tutLose .ls-rays{transform-origin:120px 125px;animation:none}
+@keyframes lsSpin{to{transform:rotate(360deg)}}
+#tutLose h2{margin:4px 0 0;font-size:30px;color:#e5483c;text-shadow:0 2px 12px rgba(229,72,60,.5)}
+#tutLose p{margin:0;font-size:14px;color:var(--fg);line-height:1.8}
+#tutLose .ls-btns{display:flex;flex-direction:column;gap:10px;width:min(86vw,340px);margin-top:10px}
+#tutLose button{font:inherit;font-size:16px;font-weight:700;min-height:52px;border-radius:14px;cursor:pointer}
+#tutLose #lsMenu{background:#000;color:#fff;border:1px solid #555}
+@keyframes lsShake{0%,100%{transform:none}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-3px)}80%{transform:translateX(3px)}}
+#tutLose svg{animation:lsPop .8s cubic-bezier(.2,1.2,.4,1) both,lsShake .5s .8s}
 </style>
 
 <div id="tutMis" hidden>
@@ -4006,6 +4285,21 @@ body.tut #hud,body.tut #nw,body.tut #cbtn,body.tut #shp,body.tut #spb,body.tut #
 <div id="tutDlg" hidden>
  <div id="tutChar"><img id="tutImg" alt=""><div id="tutFb">🪖</div></div>
  <div id="tutBub"><span class="tb-n">کماندو آلیس</span><p id="tutTx"></p><em id="tutNx">لمس کن ▼</em></div>
+</div>
+<div id="tutLose" hidden>
+ <svg viewBox="0 0 240 250" aria-hidden="true">
+  <defs><linearGradient id="lsg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d7d9de"/><stop offset=".5" stop-color="#7d4a4a"/><stop offset="1" stop-color="#3a1616"/></linearGradient></defs>
+  <g opacity=".22"><polygon points="120,125 112,6 128,6" fill="#e5483c"/><polygon points="120,125 112,6 128,6" fill="#e5483c" transform="rotate(60 120 125)"/><polygon points="120,125 112,6 128,6" fill="#e5483c" transform="rotate(120 120 125)"/><polygon points="120,125 112,6 128,6" fill="#e5483c" transform="rotate(180 120 125)"/><polygon points="120,125 112,6 128,6" fill="#e5483c" transform="rotate(240 120 125)"/><polygon points="120,125 112,6 128,6" fill="#e5483c" transform="rotate(300 120 125)"/></g>
+  <circle cx="120" cy="125" r="88" fill="#120a0a" stroke="url(#lsg)" stroke-width="8"/>
+  <circle cx="120" cy="125" r="73" fill="none" stroke="#a45a5a" stroke-opacity=".4" stroke-width="2"/>
+  <g id="lsLaurel"></g>
+  <g transform="rotate(42 120 128)"><rect x="116" y="96" width="8" height="56" rx="3" fill="#7a808c"/><polygon points="116,92 124,84 121,96" fill="#7a808c"/><rect x="103" y="148" width="34" height="8" rx="3" fill="#8a6a3a"/><rect x="117" y="155" width="6" height="22" rx="2" fill="#4d3416"/></g>
+  <g transform="rotate(-42 120 128)"><rect x="116" y="66" width="8" height="40" rx="3" fill="#7a808c"/><rect x="116" y="116" width="8" height="36" rx="3" fill="#7a808c"/><rect x="103" y="148" width="34" height="8" rx="3" fill="#8a6a3a"/><rect x="117" y="155" width="6" height="22" rx="2" fill="#4d3416"/></g>
+  <polyline points="120,48 112,72 126,92 114,116 124,140 118,170 122,200" fill="none" stroke="#e5483c" stroke-opacity=".55" stroke-width="2.5" stroke-linejoin="round"/>
+  <polygon id="lsStar" fill="#555a63" stroke="#8a8f99" stroke-width="1.5" transform="rotate(25 120 58)"/>
+ </svg>
+ <h2>شکست!</h2>
+ <div class="ls-btns"><button id="lsMenu" type="button">بازگشت به منوی اصلی</button></div>
 </div>
 <div id="tutWin" hidden>
  <svg id="twSvg" viewBox="0 0 240 250" aria-hidden="true">
@@ -4022,7 +4316,7 @@ body.tut #hud,body.tut #nw,body.tut #cbtn,body.tut #shp,body.tut #spb,body.tut #
   <polygon id="twStar" fill="url(#twg)" stroke="#fff3b0" stroke-width="1.5"/>
  </svg>
  <h2>پیروزی!</h2>
- <p>بخش اول از سه تمرین رو کامل کردی.</p>
+ <p id="twP">بخش اول از سه تمرین رو کامل کردی.</p>
  <div class="tw-btns"><button id="twNext" type="button">رفتن به بخش تمرینی دوم</button><button id="twMenu" type="button">بازگشت به منوی اصلی</button></div>
 </div>
 
@@ -4050,7 +4344,7 @@ var TX={
 
 /* ---------- صدا (با همان موتور صدای بازی؛ اگر نبود بی‌صدا) ---------- */
 function tone(a){try{a.forEach(function(x){os('sine',x[0],x[1],x[2],x[3],x[4]||0)})}catch(e){}}
-var SND={pop:[[520,780,.09,.16,0]],step:[[300,360,.05,.1,0]],ok:[[523,523,.13,.2,0],[659,659,.13,.2,.12],[784,784,.24,.22,.24]]};
+var SND={pop:[[520,780,.09,.16,0]],step:[[300,360,.05,.1,0]],ok:[[523,523,.13,.2,0],[659,659,.13,.2,.12],[784,784,.24,.22,.24]],bad:[[392,392,.15,.2,0],[330,330,.15,.2,.14],[262,262,.3,.22,.28]]};
 function summonSnd(){try{os('sawtooth',80,380,.55,.2);nz(.45,'lowpass',1400,200,1,.45)}catch(e){}}
 
 /* ---------- شخصیت آلیس: عکس alice.png/.webp/.jpg کنار server.js؛ اگر نبود یک آیکن جایگزین ---------- */
@@ -4128,7 +4422,7 @@ function cluster(){var h=Z.hero,bd=function(c,r){return Math.hypot(c-2.5,r-3.5)}
 function startAbility(){Z.stage='ability';q('tutEl').hidden=false;elDraw();mis("قابلیت قهرمانت رو بزن",1)}
 function abilityDone(){misDone(function(){setTimeout(function(){q('tutEl').classList.add('hot');
  say(TX.G,function(){q('tutEl').classList.remove('hot');showWin()})},2000)})}
-function showWin(){q('tutWin').hidden=false;tone(SND.ok);Z.stage='wait'}
+function showWin(){q('twP').textContent='بخش اول از سه تمرین رو کامل کردی.';q('twNext').hidden=false;q('tutWin').hidden=false;tone(SND.ok);Z.stage='wait'}
 
 /* ---------- لمس صفحه در هر مرحله ---------- */
 var H0=handleCell0;
@@ -4223,7 +4517,11 @@ Z.afterReg=function(){ls('jt_tut1','1');Z.start()};
 
 q('mnTut').onclick=function(){var d=document.getElementById('tbDrop');if(d)d.hidden=true;Z.start()};
 q('twNext').onclick=function(){leave(true)};
-q('twMenu').onclick=function(){leave(false)};
+var BW=null;   /* کار دکمهٔ «بازگشت به منوی اصلی» در پیروزی نبردهای عادی */
+window.showBattleWin=function(sub,act,lose){if(Z.on)return;BW=act;if(lose){q('tutLose').hidden=false;try{tone(SND.bad||SND.ok)}catch(e){}return}q('twP').textContent='';q('twNext').hidden=true;q('tutWin').hidden=false;try{tone(SND.ok)}catch(e){}};
+window.hideBattleWin=function(){BW=null;q('tutLose').hidden=true;if(!Z.on)q('tutWin').hidden=true};
+q('lsMenu').onclick=function(){if(BW){var a=BW;BW=null;q('tutLose').hidden=true;a()}};
+q('twMenu').onclick=function(){if(BW){var a=BW;BW=null;q('tutWin').hidden=true;a();return}leave(false)};
 q('tmExit').onclick=function(){var b=q('tmExit');
  if(Z.exitT){clearTimeout(Z.exitT);Z.exitT=0;b.textContent='خروج از آموزش';leave(false);return}
  b.textContent='مطمئنی؟ دوباره بزن';Z.exitT=setTimeout(function(){Z.exitT=0;b.textContent='خروج از آموزش'},2500)};
@@ -4236,7 +4534,11 @@ q('tmExit').onclick=function(){var b=q('tmExit');
   L.appendChild(mk('ellipse',Object.assign({cx:x.toFixed(1),cy:y.toFixed(1),transform:'rotate('+ad+' '+x.toFixed(1)+' '+y.toFixed(1)+')'},at0)));
   L.appendChild(mk('ellipse',Object.assign({cx:x2.toFixed(1),cy:y.toFixed(1),transform:'rotate('+(-ad)+' '+x2.toFixed(1)+' '+y.toFixed(1)+')'},at0)))}
  var pts=[],k;for(k=0;k<10;k++){var rad=k%2?7:17,an=-Math.PI/2+k*Math.PI/5;pts.push((120+Math.cos(an)*rad).toFixed(1)+','+(58+Math.sin(an)*rad).toFixed(1))}
- q('twStar').setAttribute('points',pts.join(' '))})();
+ q('twStar').setAttribute('points',pts.join(' '));
+ var L2=q('lsLaurel'),m;for(m=0;m<9;m++){var bd=100+m*16,br=bd*Math.PI/180,bx=120+Math.cos(br)*64,by=125+Math.sin(br)*64,bx2=240-bx,bt={rx:4.2,ry:10,fill:'#6b6a3a',stroke:'#3a3a1c','stroke-width':.8,opacity:m%3===1?.35:.85};
+  L2.appendChild(mk('ellipse',Object.assign({cx:bx.toFixed(1),cy:by.toFixed(1),transform:'rotate('+bd+' '+bx.toFixed(1)+' '+by.toFixed(1)+')'},bt)));
+  L2.appendChild(mk('ellipse',Object.assign({cx:bx2.toFixed(1),cy:by.toFixed(1),transform:'rotate('+(-bd)+' '+bx2.toFixed(1)+' '+by.toFixed(1)+')'},bt)))}
+ q('lsStar').setAttribute('points',pts.join(' '))})();
 })();
 </script>
 
