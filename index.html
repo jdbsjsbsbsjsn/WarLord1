@@ -469,7 +469,7 @@ dk:{n:'پادشاه اهریمن',hp:2670,d:330,r:1,m:2,c:2},
 gq:{n:'ملکه‌ی باروت',hp:1600,d:450,r:1,m:2,c:3},
 dn:{n:'شوالیه‌ی اهریمن',hp:1600,d:350,r:1,m:2,c:1},
 dw:{n:'ساحره‌ی اهریمن',hp:820,d:240,r:4,m:2,c:3,o1:1},
-lich:{n:'الدرلیچ',i:'💀',hp:1500,d:300,r:1,m:1,c:0},pen:{n:'سارسار',i:'🐧',hp:900,d:130,r:1,m:2,c:0},mi:{n:'معدنچی',i:'⛏️',hp:1600,d:160,r:1,m:2,c:0}};const SMN={lich:1,pen:1,mi:1};
+lich:{n:'الدرلیچ',i:'💀',hp:1500,d:300,r:1,m:1,c:0},pen:{n:'سارسار',i:'🐧',hp:900,d:130,r:1,m:2,c:0},mi:{n:'معدنچی',i:'⛏️',hp:1600,d:160,r:1,m:2,c:0},skl:{n:'اسکلت',i:'💀',hp:300,d:150,r:1,m:2,c:0}};const SMN={lich:1,pen:1,mi:1,skl:1};
 const COLS=6,ROWS=8,SQ=Math.sqrt(3),DIR=[[1,0],[1,-1],[0,-1],[-1,0],[-1,1],[0,1]],NM=['قرمز','آبی'],CL=['#e5483c','#3a8cf0'];
 const toA=(c,r)=>[c,r-((c-(c&1))>>1)],toO=(q,r)=>[q,r+((q-(q&1))>>1)];
 const inb=(c,r)=>c>=0&&c<COLS&&r>=0&&r<ROWS;
@@ -2759,6 +2759,31 @@ const freeAny=()=>{for(let a=0;a<COLS;a++)for(let b=0;b<ROWS;b++)if(fr(a,b))retu
 function penFig(M){const g=new THREE.Group(),S=(r)=>new THREE.SphereGeometry(r,16,12),b=new THREE.Mesh(S(.4),M(0x15181e)),w=new THREE.Mesh(S(.33),M(0xf4f4f4)),h=new THREE.Mesh(S(.24),M(0x15181e)),k=new THREE.Mesh(new THREE.ConeGeometry(.07,.22,8),M(0xff9a1a));
  b.scale.set(1,1.35,.95);b.position.y=.8;w.scale.set(1,1.3,.8);w.position.set(0,.78,.16);h.position.y=1.5;k.rotation.x=Math.PI/2;k.position.set(0,1.48,.28);g.add(b,w,h,k);
  [-1,1].forEach(s=>{const f=new THREE.Mesh(S(.16),M(0x15181e));f.scale.set(.5,1.4,.9);f.position.set(s*.42,.85,0);f.rotation.z=s*.3;g.add(f)});return g}
+function skelFig(M){const g=new THREE.Group(),V=THREE.Vector3,B=M(GX.c(0xe9e3d0),{roughness:.7}),D=M(GX.c(0x2b2622),{roughness:.9}),Rs=M(GX.c(0x8a6a4a),{roughness:.6,metalness:.4}),Cl=M(GX.c(0x6a2a2a),{roughness:.9,side:THREE.DoubleSide}),Gl=new THREE.MeshBasicMaterial({color:0x8dffc0,toneMapped:false});
+ const S=(r,x,y,z)=>new THREE.SphereGeometry(r,10,8).scale(x||1,y||1,z||1);
+ const add=(geo,m,x,y,z,P)=>{const o=new THREE.Mesh(geo,m);o.position.set(x||0,y||0,z||0);(P||g).add(o);return o};
+ const rod=(a,b,r,m,P)=>{const A=new V(a[0],a[1],a[2]),C=new V(b[0],b[1],b[2]),d=C.clone().sub(A),L=d.length(),o=new THREE.Mesh(new THREE.CylinderGeometry(r,r*.85,L,7),m);o.position.copy(A).addScaledVector(d,.5);o.quaternion.setFromUnitVectors(new V(0,1,0),d.normalize());(P||g).add(o);return o};
+ add(new THREE.BoxGeometry(.34,.1,.18),B,0,.8,0);[-1,1].forEach(s=>add(S(.06),B,s*.16,.8,0));
+ add(new THREE.BoxGeometry(.3,.2,.02),Cl,0,.66,.1);
+ [-1,1].forEach(s=>{rod([s*.1,.78,0],[s*.11,.44,.02],.04,B);add(S(.05),B,s*.11,.44,.02);rod([s*.11,.44,.02],[s*.11,.07,0],.032,B);add(new THREE.BoxGeometry(.09,.05,.2),B,s*.11,.035,.06)});
+ rod([0,.82,-.02],[0,1.34,-.03],.03,B);[.9,1.0,1.1,1.2,1.3].forEach(y=>add(S(.042),B,0,y,-.03));
+ [1.05,1.13,1.21,1.29].forEach((y,i)=>{const t=add(new THREE.TorusGeometry(.16-.01*Math.abs(i-1.5),.014,5,14),B,0,y,0);t.rotation.x=Math.PI/2;t.scale.set(1,.7,1)});
+ add(new THREE.BoxGeometry(.04,.26,.025),B,0,1.17,.11);
+ rod([-.25,1.33,-.02],[.25,1.33,-.02],.025,B);
+ const AL=new THREE.Group();AL.position.set(-.25,1.33,0);g.add(AL);
+ rod([0,0,0],[-.06,-.29,.02],.028,B,AL);add(S(.04),B,-.06,-.29,.02,AL);rod([-.06,-.29,.02],[-.05,-.55,.14],.024,B,AL);add(S(.035),B,-.05,-.55,.14,AL);
+ const AR=new THREE.Group();AR.position.set(.25,1.33,0);g.add(AR);
+ rod([0,0,0],[.06,-.29,.02],.028,B,AR);add(S(.04),B,.06,-.29,.02,AR);rod([.06,-.29,.02],[.05,-.55,.14],.024,B,AR);add(S(.035),B,.05,-.55,.14,AR);
+ add(new THREE.BoxGeometry(.035,.62,.012),Rs,.05,-.28,.14,AR);add(new THREE.BoxGeometry(.16,.028,.03),D,.05,-.56,.14,AR);add(new THREE.ConeGeometry(.02,.08,4),Rs,.05,.05,.14,AR);
+ const HG=new THREE.Group();HG.position.set(0,1.54,0);g.add(HG);
+ add(S(.15,1,1.05,1.05),B,0,0,0,HG);add(new THREE.BoxGeometry(.17,.07,.13),B,0,-.12,.03,HG);
+ [-1,1].forEach(s=>{add(S(.045,1,1.15,.6),D,s*.06,.02,.12,HG);add(S(.02),Gl,s*.06,.02,.145,HG)});
+ const nz=add(new THREE.ConeGeometry(.022,.05,3),D,0,-.04,.15,HG);nz.rotation.x=Math.PI;
+ for(let i=-3;i<=3;i++)add(new THREE.BoxGeometry(.018,.03,.012),B,i*.022,-.085,.155,HG);
+ add(S(.035),B,0,1.4,-.02);add(S(.032),B,0,1.36,-.025);
+ GX.anim(g,t=>{HG.rotation.y=.28*Math.sin(t*.8);HG.rotation.x=.06*Math.sin(t*1.3);AR.rotation.x=-.12+.1*Math.sin(t*1.6);AL.rotation.x=.06*Math.sin(t*1.4+1)});
+ return g}
+FIG.skl=skelFig;
 function penSpawn(me,c){const E=me===0?0:ROWS-1;let best=null,bd=1e9;for(let a=0;a<COLS;a++)for(let b=0;b<ROWS;b++){if(!fr(a,b))continue;const d=dist({c,r:E},{c:a,r:b})*10+Math.abs(a-c)*.1+Math.abs(b-E)*.01;if(d<bd){bd=d;best=[a,b]}}
  if(!best)return;if(!FIG.pen)FIG.pen=penFig;const l=add('pen',me,best[0],best[1]);l.mv=0;l.act=true;const p=V3(best[0],best[1]);burst(p,40,0xdff4ff,{sp:3,vy:3,size:.4,life:.9});ring(p,0x9fd8ff,2.6,.8)}
 let smnGen=0;
@@ -3302,6 +3327,16 @@ function gxDragon(M,team,K){
   rod(S0,E,.1,.075,K.mid,.15,6,W);rod(E,Wr,.075,.05,K.mid,.15,6,W);mk(Ic(.09),K.hi,.2,E[0],E[1],E[2],W);
   [F1,F2,F3].forEach(F=>{rod(Wr,F,.035,.012,K.dark,.1,4,W);spike(F,[F[0]-Wr[0],F[1]-Wr[1],F[2]-Wr[2]],.03,.13,K.claw,W,4)});
   const cl=curve([[0,0,0],[.04,.17,-.03],[-.05,.35,-.1],[-.2,.45,-.2]],.075,.006,K.claw,W,8,5);cl.position.set(Wr[0],Wr[1],Wr[2]);
+  /* جزئیات بال: بند انگشت‌ها، رگه‌های پرده، خارهای بازو، چنگال‌ها */
+  [S0,E,Wr,F1,F2,F3].forEach((p,k)=>mk(Ic(k===2?.06:.045,1,1,1,0),k%2?K.hi:K.mid,.2,p[0],p[1],p[2],W));
+  [M12,M23,M3B].forEach(m=>rod(Wr,m,.02,.007,K.dark,.1,4,W));
+  [F1,F2,F3].forEach(F=>{const q=lp(Wr,F,.55);mk(Ic(.032,1,1,1,0),K.hi,.2,q[0],q[1],q[2],W)});
+  [.3,.55,.8].forEach(k=>{const q=lp(S0,E,k);spike(q,[0,1,.25],.03,.12,K.hi,W,4)});
+  [.35,.7].forEach(k=>{const q=lp(E,Wr,k);spike(q,[0,1,.25],.025,.1,K.dark,W,4)});
+  spike(Wr,[.45,.5,.3],.04,.15,K.claw,W,4);spike(Wr,[-.2,.7,.3],.035,.12,K.claw,W,4);
+  rod(F1,F2,.02,.015,K.dark,.1,4,W);rod(F2,F3,.02,.015,K.dark,.1,4,W);rod(F3,Bd,.02,.015,K.dark,.1,4,W);
+  [M12,M23,M3B].forEach(m=>spike(m,[m[0]-Wr[0],m[1]-Wr[1],m[2]-Wr[2]],.02,.09,K.claw,W,4));
+  mk(Ic(.11,1,.9,1,1),K.mid,.1,0,0,0,W);mk(Ic(.07,1.4,.8,1,0),K.dark,.1,.08,-.04,.02,W);
   WG.push({P,s})});
 
  /* ---- دم (روی زمین، کمی به بالا خمیده) ---- */
@@ -3313,6 +3348,73 @@ function gxDragon(M,team,K){
    spike([0,TRd[j]*.8,-L*.5],[0,1,-.8],TRd[j]*.4,TRd[j]*1.4,j%2?K.hi:K.dark,S);
    if(j===4)spike([0,0,-L],[0,.1,-1],.07,.24,K.hi,S);
    tail.push({S,yaw:YAW[j],pit:PIT[j]});par=S;prevL=L})}
+
+ /* ===== جزئیات بیشتر: فلس، زره، خار، دندان، سبیل، حلقه‌ی شاخ و ... ===== */
+ const SC=[K.mid,K.dark,K.hi,K.mid];
+ const rings=(pts,n,r0,r1,hex,Q)=>{const cv=new THREE.CatmullRomCurve3(pts.map(p=>new V(p[0],p[1],p[2])));
+  for(let i=0;i<n;i++){const u=.12+.73*(n>1?i/(n-1):0),p=cv.getPoint(u),tg=cv.getTangent(u),r=(r0+(r1-r0)*u)*1.18;
+   const m=mk(new THREE.TorusGeometry(r,r*.3,4,7),hex,.12,p.x,p.y,p.z,Q);m.quaternion.setFromUnitVectors(new V(0,0,1),tg)}};
+ /* فلس‌های پهلو و پشت */
+ for(let i=0;i<8;i++){const z=.5-i*.145,q=Math.sqrt(1-Math.min(.92,(z/.6)**2));
+  [-1,1].forEach(s=>[28,52,76,100].forEach((dg,j)=>{const th=dg*Math.PI/180*s;
+   const m=mk(Ic(.075,1.25,.38,1.1,0),SC[(i+j)%4],.14,.42*q*Math.sin(th),.38*q*Math.cos(th),z,BODY);m.rotation.z=-th}))}
+ /* خارهای ریز بین خارهای اصلی پشت */
+ for(let i=0;i<7;i++){const z=.43-i*.15,q=Math.sqrt(1-Math.min(.9,(z/.6)**2));spike([0,.36*q+.02,z],[0,1,-.35],.028,.08,K.claw,BODY,4)}
+ /* زرهٔ شانه و ران، خارهای کناری */
+ [-1,1].forEach(s=>{
+  [[.34,.18,.34],[.37,.06,.4],[.38,.2,-.28],[.41,.08,-.42],[.36,.26,-.05]].forEach((p,j)=>spike([s*p[0],p[1],p[2]],[s,.7,-.3],.05,.17+.03*(j%2),j%2?K.dark:K.hi,BODY));
+  mk(Ic(.16,1,.55,1.2,1),K.dark,.12,s*.3,.3,.32,BODY);mk(Ic(.17,1,.5,1.2,1),K.dark,.12,s*.34,.2,-.4,BODY);
+  /* پای عقب */
+  [[.5,-.02,-.42],[.48,-.12,-.32],[.46,.04,-.52]].forEach((p,j)=>{const m=mk(Ic(.06,.5,1,1.2,0),SC[j],.14,s*p[0],p[1],p[2],BODY);m.rotation.z=s*.3});
+  spike([s*.4,-.3,-.5],[s,.1,-.3],.04,.14,K.hi,BODY);spike([s*.34,-.45,-.46],[0,.2,-1],.03,.12,K.claw,BODY,4);
+  spike([s*.36,-.3,-.56],[0,.3,-1],.03,.09,K.dark,BODY,4);spike([s*.35,-.4,-.6],[0,.3,-1],.025,.08,K.dark,BODY,4);
+  [-1,0,1].forEach(j=>{mk(Ic(.035,1,1,1,0),K.mid,.1,s*.33+j*.06,-.575,-.18,BODY);mk(Ic(.03,1,.5,1.2,0),K.belly,.1,s*.33+j*.06,-.58,-.1,BODY)});
+  spike([s*.4,-.55,-.3],[s*.4,-.1,-1],.022,.08,K.claw,BODY,4)});
+ /* پای جلو */
+ AR.forEach((A,i)=>{const s=i*2-1;
+  mk(Ic(.05,.7,1,1.2,0),K.hi,.14,s*.14,-.1,.08,A);mk(Ic(.05,.7,1,1.2,0),K.dark,.14,s*.12,-.2,.1,A);
+  spike([s*.1,-.18,-.05],[s,.2,-.7],.035,.14,K.hi,A);spike([s*.05,-.4,-.05],[s*.3,.1,-1],.03,.1,K.dark,A,4);
+  [-1,0,1].forEach(j=>{mk(Ic(.03,1,1,1,0),K.mid,.1,s*.03+j*.06,-.495,.15,A);mk(Ic(.028,1,.5,1.2,0),K.belly,.1,s*.03+j*.06,-.5,.22,A)});
+  spike([s*.12,-.47,.03],[s*.5,-.1,-1],.02,.08,K.claw,A,4);
+  const br=mk(new THREE.TorusGeometry(.1,.025,4,8),K.dark,.1,s*.04,-.34,.02,A);br.rotation.x=Math.PI/2});
+ /* گردن */
+ [[.06,.08,.2],[.22,.17,.18],[.38,.27,.16]].forEach((q,i)=>{const y=q[0],z=q[1],r=q[2];
+  [-1,1].forEach(s=>mk(Ic(r*.5,.6,1,.8,0),SC[(i+(s>0?1:0))%4],.14,s*r*.9,y,z,NK));
+  spike([0,y+.06,z-r*.3],[0,.8,-.6],r*.16,r*.5,K.claw,NK,4)});
+ for(let k=-2;k<=2;k++)spike([k*.07,.14,.02],[k*.45,.6,-1],.035,.15-.02*Math.abs(k),k%2?K.dark:K.hi,NK);
+ /* سینه */
+ mk(Ic(.06,1,1.2,.8,1),K.eye,.1,0,.0,.72,BODY);mk(new THREE.TorusGeometry(.075,.02,4,8),K.dark,.1,0,0,.72,BODY);
+ [-1,1].forEach(s=>[.1,.24].forEach(y=>spike([s*.2,y-.1,.66],[s*.8,.5,.6],.04,.14,K.horn,BODY)));
+ /* سر */
+ const pupM=new THREE.MeshBasicMaterial({color:K.horn,toneMapped:false});
+ [-1,1].forEach(s=>{
+  [.02,.09,.16].forEach((z,k)=>spike([s*.15,-.04,z],[s,-.2,-.9],.03,.12-.015*k,K.hi,HD,4));
+  [[.09,.12,.2],[.12,.1,.06]].forEach(p=>{const m=mk(Ic(.045,1.6,.5,1,0),K.dark,.1,s*p[0],p[1],p[2],HD);m.rotation.z=s*.3});
+  const lid=mk(new THREE.BoxGeometry(.09,.015,.09),K.dark,.08,s*.1,.095,.14,HD);lid.rotation.z=s*.25;
+  const pu=ghost(new THREE.Mesh(new THREE.BoxGeometry(.012,.07,.01),pupM));pu.position.set(s*.115,.05,.19);HD.add(pu);
+  mk(Ic(.03,1,.7,1.2,0),K.dark,.1,s*.05,-.02,.42,HD);
+  spike([s*.055,-.085,.36],[0,-1,.2],.02,.09,0xfffaf0,HD,4);spike([s*.05,-.01,.06],[0,1,0],.02,.08,0xfffaf0,JW,4);
+  curve([[s*.1,-.06,.28],[s*.22,-.1,.34],[s*.34,-.04,.28],[s*.4,.06,.18]],.014,.004,K.claw,HD,8,4);
+  curve([[s*.09,-.07,.24],[s*.2,-.16,.26],[s*.3,-.2,.18]],.011,.003,K.claw,HD,6,4);
+  mk(Ic(.06,.2,.9,1.3,1),K.memA,.1,s*.2,.08,0,HD);mk(Ic(.05,.2,.8,1.2,1),K.memB,.1,s*.2,-.02,.02,HD);
+  /* حلقه‌های شاخ */
+  rings([[s*.08,.14,-.02],[s*.13,.28,-.12],[s*.16,.42,-.3],[s*.12,.5,-.52]],7,.06,.008,K.hi,HD);
+  rings([[s*.14,.04,-.02],[s*.2,.08,-.12],[s*.24,.05,-.26]],4,.035,.006,K.hi,HD);
+  spike([s*.12,.5,-.52],[0,.2,-1],.014,.1,K.claw,HD,4);spike([s*.24,.05,-.26],[s*.3,0,-1],.01,.08,K.claw,HD,4);
+  mk(Ic(.05),K.dark,.12,s*.08,.14,-.02,HD);mk(Ic(.035),K.dark,.12,s*.14,.04,-.02,HD)});
+ [.05,.15,.25].forEach(z=>mk(Ic(.028,1,.8,1.3,0),K.hi,.14,0,.17-z*.1,z,HD));
+ mk(Ic(.025,1,.8,1.3,0),K.dark,.1,.045,.04,.35,HD);mk(Ic(.025,1,.8,1.3,0),K.dark,.1,-.045,.04,.35,HD);
+ [0,1,2].forEach(k=>{spike([0,.15,.02-k*.06],[0,1,-.6],.03,.1+.03*(1-k*.5),k%2?K.dark:K.hi,HD);spike([0,-.06,.1+k*.08],[0,-1,-.3],.02,.09,K.dark,JW,4)});
+ curve([[0,-.02,.05],[0,-.02,.2],[0,-.015,.34]],.025,.008,K.memB,JW,6,4);
+ spike([0,-.015,.34],[-.3,0,1],.01,.06,K.memB,JW,4);spike([0,-.015,.34],[.3,0,1],.01,.06,K.memB,JW,4);
+ /* دم */
+ tail.forEach((q,j)=>{const L=TL[j],r=TRd[j];
+  [-1,1].forEach(s=>{const m=mk(Ic(r*.55,.5,1,1.2,0),K.dark,.14,s*r*.85,0,-L*.5,q.S);m.rotation.z=s*.3;
+   spike([s*r*.8,0,-L*.3],[s,.2,-.6],r*.22,r*.8,K.claw,q.S,4)});
+  mk(Ic(TRd[j+1]*1.15,1,1,1,0),K.mid,.1,0,0,-L,q.S);
+  spike([0,r*.8,-L*.15],[0,1,-.5],r*.3,r*1.0,j%2?K.dark:K.hi,q.S)});
+ {const S=tail[4].S;mk(Ic(.07,.3,1,2,1),K.hi,.14,0,.02,-.2,S);
+  [-1,1].forEach(s=>spike([s*.03,0,-.2],[s,0,-.5],.02,.1,K.dark,S,4))}
 
  /* ---- انیمیشن ---- */
  const ST={t0:-1e9,kind:0,ab:0,d0:-1e9,dead:0},wp=new V(),BASE=1;
@@ -4788,7 +4890,7 @@ var TX={
  A:["به بازی جنگ‌سالار خوش‌اومدی! 🎖️\nمن آلیسم؛ تا آخر آموزش کنارتم.",
     "اول یاد بگیر قهرمانت رو حرکت بدی.\nباید روش کلیک کنی و بعد از بین کاشی‌ها، اونی که می‌خوای رو انتخاب کنی."],
  B:["آفرین! 👏 حرکت دادن رو یاد گرفتی.\nحالا بریم سراغ سیستم ضربه‌زدن؛ باید تمرینش کنیم!"],
- C:["دو تا شوالیه آکروبات دشمن پیداشون شد! ⚔️\nقهرمانت رو انتخاب کن و بهشون ضربه بزن.",
+ C:["دو تا اژدهای آتشین دشمن پیداشون شد! 🐉🔥\nقهرمانت رو انتخاب کن و بهشون ضربه بزن.",
     "ولی حواست باشه: وقتی چند دشمن هم‌فاصله باشن، ضربه‌ها تصادفی به یکی‌شون می‌خوره 🎲"],
  D:["کارت خوب بود! 👊\nولی اگه از شانسی بودن ضربه‌ها خسته شدی، قهرمان تو یه ویژگی مخصوص داره... یه لحظه نگاه کن!"],
  E:["ناخدا کلمب به میدون اومد! 🏴‍☠️\nجون دشمن‌ها رو هم دوباره پر کردم تا راحت تمرین کنی.",
@@ -4855,20 +4957,34 @@ function arrive(){hlClear();misDone(function(){
  var h=Z.hero,ns=nb(h.c,h.r).filter(function(p){return free(p[0],p[1])}).sort(function(a,b){return a[1]-b[1]||Math.abs(a[0]-2.5)-Math.abs(b[0]-2.5)});
  var pick=[ns[0],ns[1]];
  for(var i=0;i<Math.min(4,ns.length);i++)for(var j=i+1;j<Math.min(4,ns.length);j++)if(dist({c:ns[i][0],r:ns[i][1]},{c:ns[j][0],r:ns[j][1]})===1){pick=[ns[i],ns[j]];i=9;break}
- pick.forEach(function(p){if(p)spawn('acro',1,p[0],p[1])});draw();
+ pick.forEach(function(p){if(p){var dg=spawn('fd',1,p[0],p[1]);dg.th=0}});draw();
  setTimeout(function(){say(TX.C,startHit)},1300)})}
-function startHit(){Z.stage='hit';mis("۴ بار ضربه بزن",4)}
+function startHit(){Z.stage='hit';Z.lastT=null;Z.run=0;mis("۸ بار ضربه بزن",8)}
 function hitDone(){misDone(function(){setTimeout(function(){say(TX.D,colSummon)},1000)})}
 function colSummon(){var h=Z.hero,c=[0,1,2,3,4,5].filter(function(x){return free(x,7)}).sort(function(a,b){return Math.abs(a-h.c)-Math.abs(b-h.c)})[0];
  if(c===undefined)c=[0,1,2,3,4,5].filter(function(x){return free(x,6)})[0];
  var r=free(c,7)?7:6;spawn('col',0,c,r);synMine();
  setTimeout(function(){U.forEach(function(u){if(u.o===1){u.hp=u.max;try{burst(V3(u.c,u.r),16,0x5dff8a,{sp:1.2,y:.4,vy:2.6,life:.9,g:-.4,size:.2})}catch(e){}}});badge("⚔️ کمبوی مبارز فعال شد!");tone(SND.ok);draw()},900);
  draw();setTimeout(function(){say(TX.E,startKill)},3000)}
-function startKill(){Z.stage='kill';Z.k0=DX[1].length;mis("دو تا قهرمان حریف رو بکش",2)}
+function startKill(){Z.stage='kill';Z.k0=DX[1].length;mis("اژدهاها رو بکش",2)}
 function killDone(){misDone(function(){
- var cl=cluster();if(!cl){[[3,4],[2,4],[3,3],[2,3],[2,5],[3,5]].some(function(p){if(free(p[0],p[1])){Z.hero.c=p[0];Z.hero.r=p[1];cl=cluster();return !!cl}return false})}
- (cl||[]).forEach(function(p){spawn('acro',1,p[0],p[1])});draw();
- setTimeout(function(){say(TX.F,startAbility)},1700)})}
+ U.forEach(function(u){if(u.o===0)u.hp=u.max});   /* انفجار مرگ اژدها نباید قهرمان‌ها را بکشد */
+ setTimeout(function(){   /* صبر تا انیمیشن مرگ اژدهاها تمام شود */
+  var ch=lichChain();
+  if(!ch){[[3,4],[2,4],[3,3],[2,3],[2,5],[3,5]].some(function(p){if(free(p[0],p[1])){Z.hero.c=p[0];Z.hero.r=p[1];ch=lichChain();return !!ch}return false})}
+  (ch||[]).forEach(function(p,i){setTimeout(function(){var u=spawn('skl',1,p[0],p[1]);u.hp=u.max=300;draw()},i*150)});
+  draw();
+  setTimeout(function(){say(TX.F,startAbility)},(ch?ch.length:0)*150+1700)},1500)})}
+/* ۶ اسکلت به‌صورت یک زنجیرهٔ فشردهٔ کنار قهرمان؛ قابلیت آکروبات (۳۹۰ آسیب) همهٔ زنجیره را می‌زند و هرکدام (۳۰۰ جان) می‌میرد */
+function lichChain(){var h=Z.hero,N=6,best=null,bd=function(p){return Math.hypot(p[0]-2.5,p[1]-3.5)};
+ function dfs(path,seen){
+  if(path.length===N){var last=path[N-1],ex=nb(last[0],last[1]).filter(function(p){return free(p[0],p[1])&&!seen[p[0]+','+p[1]]});if(!ex.length)return;
+   var pairs=0,sd=0,i,j;for(i=0;i<N;i++){sd+=bd(path[i]);for(j=i+1;j<N;j++)if(dist({c:path[i][0],r:path[i][1]},{c:path[j][0],r:path[j][1]})===1)pairs++}
+   var sc=pairs*10-sd;if(!best||sc>best.sc)best={sc:sc,p:path.slice()};return}
+  var cur=path[path.length-1];
+  nb(cur[0],cur[1]).forEach(function(p){var k=p[0]+','+p[1];if(seen[k]||!free(p[0],p[1]))return;seen[k]=1;path.push(p);dfs(path,seen);path.pop();delete seen[k]})}
+ nb(h.c,h.r).forEach(function(p){if(!free(p[0],p[1]))return;var seen={};seen[p[0]+','+p[1]]=1;dfs([p],seen)});
+ return best&&best.p}
 function cluster(){var h=Z.hero,bd=function(c,r){return Math.hypot(c-2.5,r-3.5)},best=null;
  nb(h.c,h.r).forEach(function(p){if(!free(p[0],p[1]))return;var cl=[p];
   while(cl.length<4){var cand=[];cl.forEach(function(a){nb(a[0],a[1]).forEach(function(x){
@@ -4887,6 +5003,12 @@ var H0=handleCell0;
 handleCell0=function(c,r){if(!Z.on)return H0(c,r);
  if(Z.stage==='wait'||over)return;
  var u=at(c,r),h=Z.hero,before=h.c+','+h.r;
+ /* ناخدا کلمب در این آموزش ثابت است: نه حرکت می‌کند و نه با کسی جا عوض می‌کند (ضربه‌زدنش آزاد است) */
+ var CB=U.find(function(x){return x.k==='col'&&x.o===0});
+ if(CB){
+  if(sel===CB&&u!==CB&&(!u||u.o===0)){toast("ناخدا کلمب توی این آموزش ثابته و از جاش تکون نمی‌خوره ⚓");return}
+  if(sel&&sel!==CB&&u===CB){sel=CB;mode='mv';draw();return}
+ }
  if(Z.stage==='move'||Z.stage==='goto'){H0(c,r);refill();
   if(h.c+','+h.r!==before){tone(SND.step);
    if(Z.stage==='move'){misSet(Z.cnt+1);if(Z.cnt>=Z.max){Z.stage='wait';moveDone()}}
@@ -4897,7 +5019,20 @@ handleCell0=function(c,r){if(!Z.on)return H0(c,r);
  if(Z.stage==='ability'){if(u&&u.o===0){H0(c,r);refill()}else toast("اول روی قهرمانت بزن، بعد دکمهٔ «قابلیت»");return}};
 
 var AT0=attack;
-attack=function(a,t){if(!Z.on)return AT0(a,t);var r=AT0(a,t);refill();
+/* انتخاب هدف تصادفی ولی کنترل‌شده: ۸ ضربه نباید همه به یک اژدها بخورد (۸×۳۹۰ از جان ۲۸۰۰ بیشتره و می‌کشدش) */
+function hitPick(w){var c=w.filter(function(x){return x.hp>450&&(x.th|0)<5});
+ if(!c.length)c=w.filter(function(x){return x.hp>450});if(!c.length)c=w;
+ if(Z.lastT&&Z.run>=3){var o=c.filter(function(x){return x!==Z.lastT});if(o.length)c=o}
+ return c[Math.random()*c.length|0]}
+attack=function(a,t){if(!Z.on)return AT0(a,t);
+ var oRL=null,tg=null;
+ if(Z.stage==='hit'&&a.o===0){
+  var w=U.filter(function(x){return x.hp>0&&x.o!==a.o&&canHit(a,x)});
+  if(w.length>1){tg=hitPick(w);var ix=w.indexOf(tg),used=false;oRL=RL;RL=function(){if(!used){used=true;return(ix+.5)/w.length}return oRL()}}
+  else if(w.length===1)tg=w[0]}
+ var r;try{r=AT0(a,t)}finally{if(oRL)RL=oRL}
+ refill();
+ if(tg){tg.th=(tg.th|0)+1;if(Z.lastT===tg)Z.run++;else{Z.lastT=tg;Z.run=1}}
  if(Z.stage==='hit'&&a.o===0){misSet(Z.cnt+1);if(Z.cnt>=Z.max){Z.stage='wait';hitDone()}}
  draw();return r};
 
@@ -4929,7 +5064,7 @@ function afterUI(){var ab=q('ab'),sp=ab.querySelector('span');
  switch(Z.stage){
   case 'move':s=sel?'عالیه! حالا یکی از کاشی‌های کنارش رو لمس کن 👆':'اول روی قهرمانت بزن تا انتخاب بشه 👇\nاینجا نوبت و سهمیهٔ حرکتی نداری؛ حرکت نامحدوده.';break;
   case 'goto':s=sel?'قدم‌به‌قدم برو سمت کاشی‌های طلایی ✨':'روی قهرمانت بزن تا انتخاب بشه 👇';break;
-  case 'hit':s=sel?'روی یکی از شوالیه‌های دشمن بزن 🎲 هدف ضربه تصادفیه':'روی قهرمانت بزن تا انتخاب بشه 👇';break;
+  case 'hit':s=sel?'روی یکی از اژدهاها بزن 🎲 هدف ضربه تصادفیه':'روی قهرمانت بزن تا انتخاب بشه 👇';break;
   case 'kill':s=sel?'روی دشمنی که می‌خوای بزن 🎯 (ناخدا کلمب رو هم می‌تونی انتخاب کنی)':'یکی از قهرمان‌هات رو انتخاب کن 👇';break;
   case 'ability':s=sel&&sel.k==='acro'?'حالا دکمهٔ «قابلیت» پایین صفحه رو بزن ⬇️':'روی قهرمانت بزن تا قابلیتش آماده بشه ✨';break}
  if(s&&s!==Z.lastSub){Z.lastSub=s;q('tmS').textContent=s}}
