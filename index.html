@@ -668,7 +668,7 @@ function attack0(a,t){
  if((a.k==='ik'||a.k==='iw')&&t.hp>0&&!sy(t,'سرخ',2))t.sl=1;
  if(sy(a,'انجماد',2)&&t.hp>0&&!sy(t,'سرخ',2)&&RL()<2/3)t.fr=1;
  if(a.k==='med'&&!sy(t,'مشکی',2)&&RL()<(a.sn|0)/6)t.ps=2;
- if(a.k==='dw')U.filter(x=>x.hp>0&&x.o!==a.o&&x!==t&&dist(t,x)===1).forEach(x=>hit(a,x,d));
+ if(a.k==='dw'){window.DWSPL=1;try{U.filter(x=>x.hp>0&&x.o!==a.o&&x!==t&&dist(t,x)===1).forEach(x=>hit(a,x,d))}finally{window.DWSPL=0}}
  if(a.k==='dn')a.sc=(a.sc|0)+1;
  if(a.k==='dk'){const f=(a.kc|0)>=3||RL()<.5;a.kc=f?0:(a.kc|0)+1;if(f&&t.hp>0){const[q1,r1]=toA(a.c,a.r),[q2,r2]=toA(t.c,t.r),[c,w]=toO(2*q2-q1,2*r2-r1);if(inb(c,w)&&fr(c,w)){t.c=c;t.r=w}else{try{dkBlocked(a,t)}catch(e){}}}}
  if(a.k==='ear'){const s=ST.filter(z=>z.o===a.o);s.forEach(z=>z.heal=Math.min(z.max,z.heal+H.ear.d/s.length))}
@@ -2615,6 +2615,7 @@ const ga=unitG.get(a),gt=unitG.get(t),k=a.k,own=!!CX&&CX.a===a,ab=own&&CX.ab,i=o
  if(k==='mak')return 280+Math.max(90,Math.min(280,D*34));
  if(k==='ali')return (ab?800:340)+Math.max(90,Math.min(280,D*34));
  if(k==='doj')return i*320+(ab?490:270);
+ if(k==='dw'){if(ab)return 260;if(window.DWSPL)return window.DWD||300;const dd=Math.max(180,D*50)+30;window.DWD=dd;return dd}
  if(k==='fd')return ab?(dc-1)*130+120:580;
  if(k==='ft')return 260+i*90;
  if(k==='zep')return 60+(dc-1)*40;
@@ -3026,6 +3027,19 @@ function abSnd(u,t){const k=u.k;
  if(['acro','doj','blk','eli','dk','jal','dn'].includes(k)){SFX.sword(1.1);return 1}
  return 0}
 function rafFX(a,t){const D=dist(a,t),[q1,r1]=toA(a.c,a.r),[q2,r2]=toA(t.c,t.r);[0,1].forEach(i=>{const f=(D+i+1)/D,[c,y]=toO(...cr(q1+(q2-q1)*f,r1+(r2-r1)*f));if(!inb(c,y)||at(c,y))return;const P3=new THREE.Vector3(CELL_X(c),0,CELL_Z(c,y));setTimeout(()=>{burst(P3,16,0xfff2a0,{sp:2.5,size:.28,life:.55,g:2,y:.4,r:.6});ring(P3,0xfff2a0,1.1,.4,.15)},(i+1)*140)})}
+function dwEruption(p){try{SFX.magic&&SFX.magic(1.4)}catch(e){}
+ const P=p.clone();P.y=0;
+ ring(P,0x6a1b9a,2.4,.7,.06);setTimeout(()=>ring(P,0xc040ff,3.2,.8,.08),120);
+ burst(P,30,0x8a2be2,{sp:1.2,vy:.3,g:-1,size:.5,life:.6,y:0,r:.9,h:.05});
+ const grp=new THREE.Group(),sp=[],mt=new THREE.MeshBasicMaterial({color:0xc040ff,transparent:true,opacity:.95}),mg=new THREE.MeshBasicMaterial({color:0xe9a8ff,transparent:true,opacity:.35,blending:THREE.AdditiveBlending,depthWrite:false});
+ for(let i=0;i<7;i++){const r=i?.6:0,h=i?1.7:2.8,an=i/6*Math.PI*2,m=new THREE.Mesh(new THREE.ConeGeometry(i?.2:.3,h,6),mt),w=new THREE.Mesh(new THREE.ConeGeometry(i?.34:.5,h*1.05,6),mg);m.add(w);m.position.set(Math.cos(an)*r,-h,Math.sin(an)*r);m.userData.h=h;m.rotation.z=i?(Math.random()-.5)*.35:0;grp.add(m);sp.push(m)}
+ grp.position.set(P.x,0,P.z);scene.add(grp);const t0=performance.now();let boom=0;
+ (function f(){const e=performance.now()-t0,k=Math.min(1,e/220),dn=e>700?Math.min(1,(e-700)/250):0;
+  sp.forEach(m=>{const h=m.userData.h;m.position.y=h/2-h*(1-k)-h*dn});mt.opacity=.95*(1-dn);mg.opacity=.35*(1-dn);
+  if(e<700&&Math.random()<.6)burst(P,2,0xd070ff,{sp:.9,vy:2.5,g:1,size:.28,life:.5,y:.2,r:.7});
+  if(!boom&&e>=200){boom=1;ring(P,0xffffff,2,.35,.12);burst(P,36,0xffffff,{sp:4,vy:3,g:3,size:.3,life:.6,y:.4,r:.5});shk=Math.max(shk,.5)}
+  if(e<950)return requestAnimationFrame(f);
+  scene.remove(grp);grp.traverse(q=>{if(q.geometry)q.geometry.dispose()});mt.dispose();mg.dispose()})()}
 function hitFX(a,t,d){const gt=unitG.get(t),ga=unitG.get(a);if(!gt)return;if(ga&&a!==t){const dx=gt.position.x-ga.position.x,dz=gt.position.z-ga.position.z;if(dx||dz){ga.userData.fy=Math.atan2(dx,dz);ga.userData.ft=1}}const k=a.k,tr=TR[k]||[],big=d>700,p=gt.position,own=!!CX&&CX.a===a,ab=own&&CX.ab,snd=own&&CX.snd,V=THREE.Vector3,
  eye=g=>g.position.clone().add(new V(0,1.1,0)),tgt=g=>g.position.clone().add(new V(0,.9,0)),
  dflt=()=>{if(!snd&&gok('ht',60))SFX.hit(big)};
@@ -3051,7 +3065,14 @@ function hitFX(a,t,d){const gt=unitG.get(t),ga=unitG.get(a);if(!gt)return;if(ga&
  if(k==='med'){burst(p,12,0x7dff6a,{sp:2,size:.22,life:.55});ring(p,0x7dff6a,1,.3,.15);return}
  if(k==='doj'){dojFX(a,t,d,ab);return}
  if(k==='raf'&&!ab&&own&&!CX.rf){CX.rf=1;rafFX(a,t)}
- if(MAGC[k]){shoot(a,t,{col:MAGC[k],glow:1,sz:ab?1.8:1,big:ab?1:0,spd:.05});return}
+ if(k==='dw'){
+   if(ab){dwEruption(p);if(ga)flash(ga,0xc040ff,12);return}
+   const dl=window.DWD||300;
+   if(window.DWSPL){setTimeout(()=>{burst(p,16,0xc040ff,{sp:3,size:.3,life:.6,vy:2,g:2,y:.2});ring(p,0xe080ff,1,.4,.15)},dl);return}
+   shoot(a,t,{col:0xc040ff,glow:1,sz:1.6,spd:.05});
+   setTimeout(()=>{ring(p,0xc040ff,2.6,.6,.12);ring(p,0xffffff,1.6,.4,.15);burst(p,40,0xc040ff,{sp:4.5,size:.4,life:.8,vy:2.5,g:2,y:.2,r:.6});burst(p,16,0xffffff,{sp:3,size:.25,life:.5,y:.3});shk=Math.max(shk,.45);try{SFX.boom&&SFX.boom()}catch(e){}},dl);
+   return}
+  if(MAGC[k]){shoot(a,t,{col:MAGC[k],glow:1,sz:ab?1.8:1,big:ab?1:0,spd:.05});return}
  if(tr.includes('انجماد')){if(gok('ic',90))SFX.ice();burst(p,16,0xbfe9ff,{sp:3,size:.2,life:.7,vy:1.5,g:8});burst(p,6,0xffffff,{sp:2,size:.3,life:.5});return}
  if(tr.includes('ساچمه')){
   if(ga){const A=eye(ga),B=tgt(gt);for(let i=0;i<3;i++){const b=B.clone();b.x+=(rd()-.5)*.8;b.z+=(rd()-.5)*.8;tracer(A,b,0xffc27a,.14,6)}}
@@ -5144,8 +5165,10 @@ var TX2={
 "کمبوی اهریمن می‌تونه برای چند راند قابلیت دشمن‌هاشو ببنده؛ پس دست ما برای مبارزه زیاد باز نیست.",
     {k:'dk',t:"هاهاها! نترس، بیا جنگ رو شروع کنیم!"}],
  M:["جنگ‌سالار، برای حرکت کردن توی هر نوبت محدودیت وجود داره؛ پس حرکت‌هات رو درست مصرف کن!",
-"هر قهرمان ظرفیت مشخصی برای حرکت داره و هرچی قهرمان‌های بیشتری توی میدون داشته باشی، حرکت‌های بیشتری هم داری"],
- K:["بدون من به جنگیدن ادامه بده و به هم‌رزم‌هام اعتماد کن، جنگ‌سالار..."],
+"هر قهرمان ظرفیت مشخصی برای حرکت داره و هرچی قهرمان‌های بیشتری توی میدون داشته باشی، حرکت‌های بیشتری هم داری",
+"یه نکتهٔ مهم دیگه: قهرمان‌ها بعد از ضربه زدن دیگه نمی‌تونن حرکت کنن؛ پس اول حرکتشون بده، بعد ضربه بزن."],
+ K:["ساحرهٔ اهریمن با قابلیتش من رو از میدان نبرد خارج کرد.",
+"بدون من به نبرد ادامه بده و به هم‌رزم‌هام اعتماد کن، جنگ‌سالار..."],
  W:[{k:'dk',t:"تو شایسته‌ی این هستی که من دوش‌به‌دوش تو بجنگم."}],
  L:[{k:'dk',t:"هاهاها بازیکن! تو شایستگیش رو نداری که به رسمیتت بشناسم."},{k:'dk',t:"تا بعد!"}]
 };
