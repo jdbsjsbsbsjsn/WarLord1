@@ -400,7 +400,6 @@ html,body{background:#0b0b0d}
 <div class="setp" id="setS" hidden><h2>امنیت</h2>
 <div class="sec">🔑 تگ ورود تو (برای ورود دوباره لازم است؛ به کسی نده)</div><div class="pftag"><button id="setTagCp" type="button">کپی</button><b id="setTag"></b></div>
 <div class="sec">🔒 تعویض رمز حساب (رمز جدید: حداقل ۸ کاراکتر، حرف انگلیسی و عدد، و حداقل یک حرف بزرگ)</div>
-<input id="pwOld" type="password" placeholder="رمز فعلی" maxlength="64" autocomplete="current-password">
 <input id="pwNew" type="password" placeholder="رمز جدید" maxlength="64" autocomplete="new-password">
 <input id="pwNew2" type="password" placeholder="تکرار رمز جدید" maxlength="64" autocomplete="new-password">
 <button id="pwSave" class="pr" type="button">تعویض رمز</button>
@@ -3838,7 +3837,7 @@ function onMsg(m){
    case 'kicked':AUTHED=false;barUI();toast('با دستگاه دیگری وارد شدی');if(!MATCH)showScr('scrAuth');break;
    case 'toast':toast(m.msg);break;
    case 'nameok':myName=m.u;ls('jt_u',m.u);$('nmPw').value='';$('nmIn').value=m.u;break;
-   case 'pwok':['pwOld','pwNew','pwNew2'].forEach(i=>$(i).value='');toast('رمز حساب تغییر کرد');break;
+   case 'pwok':['pwNew','pwNew2'].forEach(i=>$(i).value='');toast('رمز حساب تغییر کرد');break;
    case 'clan':CLAN=m.clan||null;if(!CLAN)CLCHAT=[];if(curScr==='scrClan')renderClan();if(curScr==='scrClanJoin'&&CLAN)showScr('scrClan');break;
    case 'clmade':showScr('scrClan');break;
    case 'clchat':CLCHAT=m.msgs||[];renderChat(!m.keep);break;
@@ -3863,10 +3862,12 @@ function onMsg(m){
 /* --- صفحه‌های منو --- */
 const pwErr=p=>p.length<8?'رمز باید حداقل ۸ کاراکتر باشد':p.length>64?'رمز نباید بیشتر از ۶۴ کاراکتر باشد':(!/[A-Za-z]/.test(p)||!/[0-9]/.test(p))?'رمز باید همزمان شامل حرف انگلیسی و عدد باشد':!/[A-Z]/.test(p)?'رمز باید حداقل یک حرف انگلیسی بزرگ داشته باشد':'';
 let REG=false;
-function regUI(on){const was=REG;REG=on;['auP2','auId','auHint'].forEach(i=>$(i).hidden=!on);$('auP').autocomplete=on?'new-password':'current-password';
-  $('auU').placeholder=on?'نام کاربری':'تگ حساب (مثل #AB12CD34EF56)';$('auU').maxLength=on?16:14;$('auU').autocapitalize=on?'off':'characters';$('auU').style.direction=on?'':'ltr';if(was!==on)$('auU').value='';
+function regUI(on){const was=REG;REG=on;['auP2','auId','auHint'].forEach(i=>$(i).hidden=!on);$('auP').hidden=!on;$('auP').autocomplete=on?'new-password':'current-password';
+  $('auU').placeholder=on?'نام کاربری':'آیدی حساب';$('auU').maxLength=on?16:20;$('auU').autocapitalize='off';$('auU').style.direction='ltr';if(was!==on)$('auU').value='';
   $('auLogin').textContent=on?'بازگشت':'ورود';$('auLogin').classList.toggle('pr',!on);$('auReg').classList.toggle('pr',on);$('auMsg').textContent=''}
-function auth(mode){let u=$('auU').value.trim();const p=$('auP').value;if(mode!=='register')u=u.replace(/^#/,'').toUpperCase();if(!u||!p){$('auMsg').textContent=mode==='register'?'نام کاربری و رمز را وارد کن':'تگ حساب و رمز را وارد کن';return}
+function auth(mode){let u=$('auU').value.trim();const p=$('auP').value;if(mode!=='register')u=u.replace(/^@/,'').toUpperCase();
+  if(mode==='register'){if(!u||!p){$('auMsg').textContent='نام کاربری و رمز را وارد کن';return}}
+  else{if(!u){$('auMsg').textContent='آیدی حساب را وارد کن';return}}
   const o={t:'auth',mode,u,p};
   if(mode==='register'){const p2=$('auP2').value,id=$('auId').value.trim().replace(/^@/,'').toUpperCase();
     const e=pwErr(p)||(p!==p2?'رمز عبور و تکرار آن یکسان نیست':'')||(!/^[A-Z0-9_]{4,20}$/.test(id)?'آیدی باید ۴ تا ۲۰ نویسه از حروف انگلیسی، عدد یا _ باشد':'');
@@ -4208,9 +4209,9 @@ function avSvg(i){i=i|0;return (i<0||i>=AVB.length)?'':'<svg viewBox="0 0 64 64"
 function renderAv(){const cur=(FL&&FL.me&&FL.me.av!=null&&FL.me.av>=0)?FL.me.av|0:defAv(myName);$('avSw').innerHTML=AVB.map((_,i)=>'<button type="button" class="sw av'+(i===cur?' on':'')+'" data-a="'+i+'" aria-label="'+AVN[i]+'">'+avSvg(i)+'</button>').join('')}
 $('avSw').onclick=e=>{const b=e.target.closest('button[data-a]');if(!b)return;const v=+b.dataset.a;if(FL.me)FL.me.av=v;renderAv();barUI();sendW({t:'setav',c:v})};
 function renderSw(){const cur=((FL.me&&FL.me.pc)|0)%12;$('pcSw').innerHTML=PCOLS.map((c,i)=>'<button type="button" class="sw'+(i===cur?' on':'')+'" data-c="'+i+'" style="background:'+c+'" aria-label="'+PCN[i]+'"></button>').join('')}
-$('pwSave').onclick=()=>{const o=$('pwOld').value,n=$('pwNew').value,n2=$('pwNew2').value;
-  if(!o)return toast('رمز فعلی را وارد کن');const e=pwErr(n)||(n!==n2?'رمز جدید و تکرار آن یکسان نیست':'');if(e)return toast(e);
-  sendW({t:'chpw',o,n,n2})};
+$('pwSave').onclick=()=>{const n=$('pwNew').value,n2=$('pwNew2').value;
+  const e=pwErr(n)||(n!==n2?'رمز جدید و تکرار آن یکسان نیست':'');if(e)return toast(e);
+  sendW({t:'chpw',n,n2})};
 $('pcSw').onclick=e=>{const b=e.target.closest('button[data-c]');if(!b)return;if(FL.me)FL.me.pc=+b.dataset.c;renderSw();sendW({t:'setcol',c:+b.dataset.c})};
 $('idSave2').onclick=()=>sendW({t:'setid',id:$('idIn2').value.trim().replace(/^@/,'').toUpperCase()});
 ['auId','idIn2'].forEach(i=>$(i).addEventListener('input',e=>{const el=e.target,a=el.selectionStart,b=el.selectionEnd,v=el.value.toUpperCase();if(v!==el.value){el.value=v;try{el.setSelectionRange(a,b)}catch(_){}}}));
@@ -4237,7 +4238,7 @@ $('pfClan').onclick=()=>{if(!PF||!PF.clan||!PF.clan.name)return;closeOv();const 
 $('tbMn').onclick=e=>{e.stopPropagation();const o=$('tbDrop').hidden;closeOv();$('tbDrop').hidden=!o};
 document.addEventListener('click',e=>{if(!$('tbDrop').hidden&&!e.target.closest('#tbDrop'))$('tbDrop').hidden=true});
 $('tbFr').onclick=()=>{const o=$('ovFr').hidden;closeOv();if(o){$('ovFr').hidden=false;renderTbFr()}};
-$('tbSet').onclick=()=>{closeOv();$('idIn2').value=myId;$('nmIn').value=myName;$('nmPw').value='';$('setTag').textContent=myTag?'#'+myTag:'';['pwOld','pwNew','pwNew2'].forEach(i=>$(i).value='');showSetPane('setM');$('ovSet').hidden=false};
+$('tbSet').onclick=()=>{closeOv();$('idIn2').value=myId;$('nmIn').value=myName;$('nmPw').value='';$('setTag').textContent=myTag?'#'+myTag:'';['pwNew','pwNew2'].forEach(i=>$(i).value='');showSetPane('setM');$('ovSet').hidden=false};
 $('tbMail').onclick=()=>{closeOv();$('ovMail').hidden=false;renderMail()};
 $('ovFrClose').onclick=closeOv;$('ovSetClose').onclick=closeOv;$('ovMailClose').onclick=closeOv;
 ['ovFr','ovMail','ovSet'].forEach(id=>$(id).addEventListener('click',e=>{if(e.target===$(id))closeOv()}));
@@ -4353,10 +4354,10 @@ connect();
 /* ===== ارتقای گرافیک: Bloom، مه، گرد و غبار، نور گوشه‌ها، تنظیم کیفیت ===== */
 (function(){
 'use strict';
-var GQ='high';try{GQ=localStorage.getItem('jt_gq')||'high'}catch(e){}
-if(GQ!=='low')GQ='high';
-var HQ=GQ==='high',bloomOK=false,inst=false;
-var _r,fbTex,rtA,rtB,qScene,qCam,mP,mBlur,mComp,dust,dustPos,dustVel,mist=[],lights=[],vig;
+var GQ='low';try{GQ=localStorage.getItem('jt_gq')||'low'}catch(e){}
+if(GQ!=='high')GQ='low';
+var HQ=GQ==='high',inst=false;
+var _r,dust,dustPos,dustVel,mist=[],lights=[],vig;
 function sv(v){try{localStorage.setItem('jt_gq',v)}catch(e){}}
 /* --- Vignette --- */
 function mkVig(){var st=document.getElementById('stage');if(!st)return;
@@ -4377,7 +4378,8 @@ function setQ(q,msg){GQ=q;HQ=q==='high';sv(q);apply();paintUI();
  if(msg&&typeof toast==='function')toast(HQ?'کیفیت گرافیک: بالا':'کیفیت گرافیک: کم')}
 function apply(){
  if(typeof renderer==='undefined'||!renderer)return;
- renderer.setPixelRatio(Math.min(devicePixelRatio||1,HQ?2:1.5));
+ renderer.setPixelRatio(Math.min(devicePixelRatio||1,HQ?2:1));
+ renderer.shadowMap.enabled=HQ;renderer.shadowMap.type=HQ?THREE.PCFSoftShadowMap:THREE.BasicShadowMap;
  try{resize()}catch(e){}
  if(dust)dust.visible=HQ;mist.forEach(function(m){m.visible=HQ});
  lights.forEach(function(l){l.intensity=HQ?.7:0});
@@ -4405,44 +4407,6 @@ function addScene(){
   m.position.set(C.x,a[0],C.z);m.renderOrder=2;m.userData.v=[a[2],a[3]];scene.add(m);mist.push(m)});
  [[-1,1],[1,1],[-1,-1],[1,-1]].forEach(function(s){
   var l=new THREE.PointLight(0xe8a33d,.7,8,2);l.position.set(C.x+s[0]*5.9,.9,C.z+s[1]*8.5);scene.add(l);lights.push(l)})}
-/* --- Bloom pipeline --- */
-var VS='varying vec2 vUv;void main(){vUv=uv;gl_Position=vec4(position.xy,0.,1.);}';
-function mkBloom(){
- qScene=new THREE.Scene();qCam=new THREE.OrthographicCamera(-1,1,1,-1,0,1);
- var geo=new THREE.PlaneGeometry(2,2);
- mP=new THREE.ShaderMaterial({uniforms:{t:{value:null},px:{value:new THREE.Vector2()},th:{value:.62}},vertexShader:VS,depthTest:false,depthWrite:false,
-  fragmentShader:'uniform sampler2D t;uniform vec2 px;uniform float th;varying vec2 vUv;vec3 f(vec2 o){vec3 c=texture2D(t,vUv+o*px).rgb;float l=max(c.r,max(c.g,c.b));return c*smoothstep(th,th+.3,l);}void main(){vec3 c=f(vec2(0.))*.4+f(vec2(1.5,1.5))*.15+f(vec2(-1.5,1.5))*.15+f(vec2(1.5,-1.5))*.15+f(vec2(-1.5,-1.5))*.15;gl_FragColor=vec4(c,1.);}'});
- mBlur=new THREE.ShaderMaterial({uniforms:{t:{value:null},d:{value:new THREE.Vector2()}},vertexShader:VS,depthTest:false,depthWrite:false,
-  fragmentShader:'uniform sampler2D t;uniform vec2 d;varying vec2 vUv;void main(){vec3 c=texture2D(t,vUv).rgb*.227;c+=(texture2D(t,vUv+d*1.385).rgb+texture2D(t,vUv-d*1.385).rgb)*.316;c+=(texture2D(t,vUv+d*3.23).rgb+texture2D(t,vUv-d*3.23).rgb)*.07;gl_FragColor=vec4(c,1.);}'});
- mComp=new THREE.ShaderMaterial({uniforms:{t:{value:null},k:{value:1.15}},vertexShader:VS,transparent:true,blending:THREE.AdditiveBlending,depthTest:false,depthWrite:false,
-  fragmentShader:'uniform sampler2D t;uniform float k;varying vec2 vUv;void main(){gl_FragColor=vec4(texture2D(t,vUv).rgb*k,1.);}'});
- var q=new THREE.Mesh(geo,mP);q.frustumCulled=false;qScene.add(q);qScene.userData.q=q}
-function sizes(){
- var s=new THREE.Vector2();renderer.getDrawingBufferSize(s);var w=Math.max(2,Math.floor(s.x)),h=Math.max(2,Math.floor(s.y));
- if(!fbTex||fbTex.image.width!==w||fbTex.image.height!==h){
-  if(fbTex)fbTex.dispose();fbTex=new THREE.FramebufferTexture(w,h);fbTex.minFilter=fbTex.magFilter=THREE.LinearFilter;fbTex.generateMipmaps=false;
-  var bw=Math.max(2,w>>2),bh=Math.max(2,h>>2);
-  if(rtA)rtA.dispose();if(rtB)rtB.dispose();
-  var o={depthBuffer:false,stencilBuffer:false};rtA=new THREE.WebGLRenderTarget(bw,bh,o);rtB=new THREE.WebGLRenderTarget(bw,bh,o)}
- return[w,h]}
-function pass(mat,target){qScene.userData.q.material=mat;renderer.setRenderTarget(target);_r.call(renderer,qScene,qCam)}
-var cp=new THREE.Vector2(0,0);
-function bloomRender(s,c){
- var wh=sizes();
- c.layers.set(0);_r.call(renderer,s,c);
- renderer.copyFramebufferToTexture(cp,fbTex);
- mP.uniforms.t.value=fbTex;mP.uniforms.px.value.set(1/wh[0],1/wh[1]);pass(mP,rtA);
- mBlur.uniforms.t.value=rtA.texture;mBlur.uniforms.d.value.set(1/rtA.width,0);pass(mBlur,rtB);
- mBlur.uniforms.t.value=rtB.texture;mBlur.uniforms.d.value.set(0,1/rtA.height);pass(mBlur,rtA);
- mBlur.uniforms.t.value=rtA.texture;mBlur.uniforms.d.value.set(2/rtA.width,0);pass(mBlur,rtB);
- mBlur.uniforms.t.value=rtB.texture;mBlur.uniforms.d.value.set(0,2/rtA.height);pass(mBlur,rtA);
- renderer.setRenderTarget(null);
- var ac=renderer.autoClear;renderer.autoClear=false;
- mComp.uniforms.t.value=rtA.texture;pass(mComp,null);
- c.layers.set(1);renderer.clearDepth();
- /* scene.background رنگی باعث پاک‌شدن کل تصویر (میدان) در این پاس می‌شد و فقط برچسب‌ها می‌ماندند */
- var bg0=s.background;s.background=null;
- try{_r.call(renderer,s,c)}finally{s.background=bg0;renderer.autoClear=ac}}
 /* --- Per-frame --- */
 var last=0,acc=0,n=0,t0=0,degraded=false;
 function frame(){
@@ -4462,9 +4426,6 @@ function install(){
  renderer.render=function(s,c){
   if(s!==scene||c!==camera)return _r.call(renderer,s,c);
   try{frame()}catch(e){}
-  if(HQ&&bloomOK){
-   try{bloomRender(s,c);c.layers.mask=3;return}
-   catch(e){bloomOK=false;console.warn('bloom off',e);renderer.setRenderTarget(null);renderer.autoClear=true}}
   c.layers.mask=3;return _r.call(renderer,s,c)};
  var pc=placeCamera;
  placeCamera=function(){pc();if(false){var t=performance.now()/1000;camera.position.x+=Math.sin(t*.35)*.07;camera.position.y+=Math.sin(t*.27)*.05;camera.lookAt(CTR.x,0,CTR.z+.3)}};
