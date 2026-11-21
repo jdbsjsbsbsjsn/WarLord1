@@ -15,6 +15,21 @@ const { WebSocketServer } = require('ws');
 let referee = null;
 try { referee = require('./referee'); } catch (e) { console.error('referee بارگذاری نشد:', e && e.message); }
 const REF_MODE = ['off', 'shadow', 'enforce'].includes(String(process.env.REFEREE || '').toLowerCase()) ? String(process.env.REFEREE).toLowerCase() : 'enforce';
+/* ---------- مرحله‌های ضدتقلب ----------
+   PREVALIDATE=enforce (پیش‌فرض) | shadow | off : دستورِ نامعتبر (خارج از نوبت/فاز، مختصات و کلید بد) را داور قبل از پخش بررسی می‌کند.
+                       enforce دستور را دور می‌اندازد؛ shadow فقط ثبت می‌کند.
+   HIDE_DRAFT=0       : خاموش‌کردن «پنهان‌بودن انتخاب و چیدمان حریف تا پایان فاز چیدن»
+   SERVER_RNG=0       : خاموش‌کردن «شانس فقط روی سرور» (اعداد تصادفی همراه هر دستور از سرور می‌آیند)
+   هر دو ویژگیِ آخر فقط وقتی فعال‌اند که مرورگرِ هر دو بازیکن نسخهٔ جدید باشد (cap>=2) و داور سالم کار کند. */
+const PRE_MODE = ['off', 'shadow', 'enforce'].includes(String(process.env.PREVALIDATE || '').toLowerCase()) ? String(process.env.PREVALIDATE).toLowerCase() : 'enforce';
+const HIDE_DRAFT = process.env.HIDE_DRAFT !== '0';
+const SERVER_RNG = process.env.SERVER_RNG !== '0';
+/* STRICT=0 : برگشت به رفتار قبلی (اعتماد به گزارش مرورگرها وقتی داور خراب شد).
+   پیش‌فرض (STRICT روشن): سرور تنها مرجع است؛ نتیجه فقط از شبیه‌سازی خود سرور می‌آید، گزارش «نتیجه»ٔ مرورگرها نادیده گرفته می‌شود،
+   پایان خودکار نوبت را خود سرور اعمال می‌کند، و اگر داور وسط بازی خراب شود بازی بدون ثبت نتیجه باطل می‌شود (نه اعتماد به مرورگر).
+ */
+const STRICT = process.env.STRICT !== '0';
+const PRE_STATS = { checked: 0, bad: 0, dropped: 0, reasons: {} };
 const REF_STATS = { games: 0, resOk: 0, resBad: 0, hashChecked: 0, hashBad: 0, stopped: 0, fallback: 0 };
 
 const PORT = process.env.PORT || 3000;
@@ -164,7 +179,7 @@ const server = http.createServer((req, res) => {
   }
   if (p === '/referee') {                          // وضعیت داور (برای بررسی با مرورگر)
     res.writeHead(200, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' });
-    return res.end(JSON.stringify({ mode: REF_MODE, loaded: !!referee, activeSims: referee ? referee.count() : 0, stats: REF_STATS }, null, 1));
+    return res.end(JSON.stringify({ mode: REF_MODE, loaded: !!referee, activeSims: referee ? referee.count() : 0, stats: REF_STATS, prevalidate: { mode: PRE_MODE, ...PRE_STATS }, hideDraft: HIDE_DRAFT, serverRng: SERVER_RNG }, null, 1));
   }
   const m = /^\/(loading|alice)(\.jpg|\.png|\.webp)$/.exec(p);   // عکس لودینگ و عکس کماندو آلیس (راهنمای توتریال)
   if (m) {
@@ -647,48 +662,97 @@ function invite(ws, m) {
 
 /* ---------- نبرد ---------- */
 function newMatch(a, b, official = false) {   // official فقط برای مسابقات رسمی true می‌شود؛ نبردهای دوستانه (دعوت از دوستان) همیشه false
-  const mt = { official, p: [a, b], log: [], g: 0, ended: false, abort: null, tmr: [null, null], res: [null, null], counted: false, resT: null, hs: new Map(), desync: null, noRec: false, rl: [{ t: 0, n: 0 }, { t: 0, n: 0 }], cnt: [0, 0], flagged: new Set(), rlen: 0 };
+  const mt = { official, p: [a, b], log: [], g: 0, ended: false, abort: null, tmr: [null, null], res: [null, null], counted: false, resT: null, hs: new Map(), desync: null, noRec: false, rl: [{ t: 0, n: 0 }, { t: 0, n: 0 }], cnt: [0, 0], flagged: new Set(), rlen: 0, pre: [0, 0], v2: false, hide: false, hideEnd: 0, rng: false };
+  { const wa = conns.get(a), wb = conns.get(b); mt.v2 = !!(wa && wb && (wa.cap | 0) >= 2 && (wb.cap | 0) >= 2); }   // هر دو مرورگر نسخهٔ جدید؟
   if (official) [a, b].forEach(k => { const u = db.users[k]; if (u) u.mg = (u.mg | 0) + 1; });
   inMatch.set(a, mt); inMatch.set(b, mt);
   [a, b].forEach((k, i) => sendU(k, { t: 'match', me: i, opp: nameOf(i ? a : b) }));
   push(mt, { a: 'init', seed: seed() });
   [a, b].forEach(k => { pushFL(k); pushFriendsOf(k); });
 }
+const DRAFTC = new Set(['cell', 'shop', 'dr', 'to']);
+const isDraftCmd = c => DRAFTC.has(c.a) && (c.o === 0 || c.o === 1);
+// در فاز چیدن، هر بازیکن فقط دستورهای خودش را می‌بیند؛ اگر بازیکنی وسط فاز وصل شود، دستورهای حریف از لاگش حذف می‌شود
+const logFor = (mt, i) => mt.hide ? mt.log.filter(c => !(isDraftCmd(c) && c.o !== i)) : mt.log;
+// پایان فاز چیدن (یا خرابی داور): کل لاگ به هر دو نفر داده می‌شود تا از ابتدا با ترتیب یکسان بازپخش کنند
+function endHide(mt) {
+  mt.hide = false; mt.hideEnd = mt.log.length;
+  const r = { t: 'redo', g: mt.g, log: mt.log, t0: mt.t0, now: Date.now() };
+  mt.p.forEach(k => sendU(k, r));
+}
 function push(mt, c) {
-  if (c.a === 'init') { mt.g++; mt.log = []; mt.res = [null, null]; mt.counted = false; clearTimeout(mt.resT); mt.resT = null; mt.t0 = Date.now(); mt.hs = new Map(); mt.desync = null; mt.noRec = false; mt.rl = [{ t: 0, n: 0 }, { t: 0, n: 0 }]; mt.cnt = [0, 0]; mt.flagged = new Set();
+  if (c.a === 'init') { mt.g++; mt.log = []; mt.res = [null, null]; mt.counted = false; clearTimeout(mt.resT); mt.resT = null; mt.t0 = Date.now(); mt.hs = new Map(); mt.desync = null; mt.noRec = false; mt.rl = [{ t: 0, n: 0 }, { t: 0, n: 0 }]; mt.cnt = [0, 0]; mt.flagged = new Set(); mt.pre = [0, 0]; mt.hide = false; mt.hideEnd = 0; mt.rng = !!(mt.v2 && SERVER_RNG && referee && REF_MODE !== 'off');
     // پایان زمان انتخاب/چیدن را خود سرور هم اعلام می‌کند (۱۶۰ ثانیه + ۳ ثانیه لودینگ + کمی مهلت)؛ اگر مرورگر بازیکنی بسته باشد هم بازی گیر نمی‌کند
     clearTimeout(mt.draftT); const g0 = mt.g;
     mt.draftT = setTimeout(() => { if (mt.ended || mt.g !== g0) return; push(mt, { a: 'to', o: 0 }); push(mt, { a: 'to', o: 1 }); }, 165500); }
   if (mt.log.length > 6000) return;
   mt.log.push(c);
-  refFeed(mt, c, mt.log.length - 1);
-  const m = { t: 'cmd', g: mt.g, n: mt.log.length - 1, c, now: Date.now(), t0: c.a === 'init' ? mt.t0 : undefined };
+  const n = mt.log.length - 1;
+  const rn = refFeed(mt, c, n);
+  const simOk = !!(mt.sim && !mt.sim.broken && REF_MODE !== 'off');
+  if (c.a === 'init') {
+    if (!simOk) mt.rng = false;
+    mt.hide = !!(mt.v2 && HIDE_DRAFT && simOk);
+    mt.hideEnd = mt.hide ? Infinity : 0;
+  }
+  if (mt.rng && Array.isArray(rn)) c.rn = rn;      // اعداد تصادفیِ همین دستور؛ فقط از سرور می‌آید
+  if (mt.hide) {
+    if (!simOk || mt.sim.ph === 'play') return endHide(mt);       // فاز چیدن تمام شد (یا داور خراب شد): همه‌چیز آشکار
+    if (isDraftCmd(c)) { sendU(mt.p[c.o], { t: 'cmd', g: mt.g, n, c, now: Date.now() }); return; }   // فقط صاحبِ دستور
+  }
+  const m = { t: 'cmd', g: mt.g, n, c, now: Date.now(), t0: c.a === 'init' ? mt.t0 : undefined };
   mt.p.forEach(k => sendU(k, m));
 }
 function refFeed(mt, c, n) {
-  if (REF_MODE === 'off' || !referee) return;
+  if (REF_MODE === 'off' || !referee) return null;
   try {
     if (c.a === 'init') {
       if (mt.sim) mt.sim.dispose();
-      mt.sim = referee.create(); mt.simDone = false; mt.simWin = undefined; mt.refOk = [0, 0]; mt.refBad = [0, 0];
+      mt.sim = referee.create(!!mt.rng); mt.resync = [0, 0]; mt.simDone = false; mt.simWin = undefined; mt.refOk = [0, 0]; mt.refBad = [0, 0];
       if (mt.sim) REF_STATS.games++;
     }
-    const sim = mt.sim; if (!sim || sim.broken) return;
-    sim.feed(c, n);
-    if (sim.broken) { REF_STATS.stopped++; console.log('referee: شبیه‌سازی این بازی متوقف شد:', sim.why); return; }
+    const sim = mt.sim; if (!sim || sim.broken) return null;
+    const rn = sim.feed(c, n);
+    if (sim.broken) { REF_STATS.stopped++; console.log('referee: شبیه‌سازی این بازی متوقف شد:', sim.why); if (STRICT) voidMatch(mt, 'توقف شبیه‌ساز: ' + sim.why); return null; }
     if (sim.over && !mt.simDone) {
       mt.simDone = true; mt.simWin = sim.winner;
       if (REF_MODE === 'enforce') {
         // فقط وقتی حداقل یک مرورگر با داور هماهنگ بوده و هر دو مرورگر با داور اختلاف نداشته‌اند، نتیجه را خود سرور ثبت می‌کند
-        const ok = (mt.refOk[0] + mt.refOk[1]) > 0 && !(mt.refBad[0] > 0 && mt.refBad[1] > 0);
+        const bothBad = mt.refBad[0] > 0 && mt.refBad[1] > 0;
+        const ok = STRICT ? !bothBad : ((mt.refOk[0] + mt.refOk[1]) > 0 && !bothBad);
         if (ok) record(mt, sim.winner, true);
+        else if (STRICT) { mt.counted = true; REF_STATS.fallback++; console.log('referee: هر دو مرورگر با داور فرق داشتند؛ بازی بدون ثبت نتیجه باطل شد'); }
         else { REF_STATS.fallback++; console.log('referee: داور و مرورگرها هماهنگ نبودند؛ نتیجه با روش قبلی ثبت می‌شود'); }
       }
     }
+    if (sim.over && mt.simDone) { const sm = mt.sim; setTimeout(() => { try { sm.dispose(); } catch (_) {} }, 5000); }   // بازی تمام شد؛ حافظهٔ شبیه‌ساز آزاد می‌شود
+    if (STRICT) schedAuto(mt);
+    return rn;
   } catch (e) {
     console.error('referee error:', e && e.message);
     if (mt.sim) { try { mt.sim.dispose(); } catch (_) {} }
+    if (STRICT) voidMatch(mt, 'خطای داور');
+    return null;
   }
+}
+// بازیِ بدون داور سالم در حالت STRICT قابل اعتماد نیست: نتیجه‌اش ثبت نمی‌شود (به نفع هیچ‌کس تمام نمی‌شود)
+function voidMatch(mt, why) {
+  if (mt.counted || mt.ended) return;
+  mt.counted = true; clearTimeout(mt.resT); clearTimeout(mt.autoT);
+  console.log('referee: بازی باطل شد (' + why + '):', nameOf(mt.p[0]), 'و', nameOf(mt.p[1]));
+  mt.p.forEach(k => sendU(k, { t: 'toast', msg: 'نتیجهٔ این بازی به‌دلیل خطای سرور ثبت نخواهد شد' }));
+}
+// پایان خودکار نوبت: وقتی بازیکنِ نوبتی هیچ حرکتی ندارد، سرور خودش «end» را اعمال می‌کند (مرورگر دروغگو یا بسته‌شده بازی را گیر نمی‌اندازد)
+function schedAuto(mt) {
+  clearTimeout(mt.autoT);
+  const sim = mt.sim;
+  if (!sim || sim.broken || sim.over || sim.ph !== 'play' || mt.ended) return;
+  const n = mt.log.length, g0 = mt.g;
+  mt.autoT = setTimeout(() => {
+    if (mt.ended || mt.g !== g0 || mt.log.length !== n || !mt.sim || mt.sim.broken) return;
+    const who = mt.sim.autoEnd();
+    if (who >= 0) push(mt, { a: 'end', s: who });
+  }, 1600);
 }
 // هش وضعیت هر مرورگر با هش وضعیت داور سرور مقایسه می‌شود (فقط فاز بازی)
 function refHash(mt, i, m) {
@@ -699,6 +763,11 @@ function refHash(mt, i, m) {
   if (sh === (m.h | 0)) { mt.refOk[i]++; return; }
   mt.refBad[i]++;
   REF_STATS.hashBad++;
+  // سرور مرجع است: مرورگرِ ناهماهنگ کل تاریخچهٔ بازی را از ابتدا دوباره می‌گیرد و بازپخش می‌کند (حداکثر ۳ بار در هر بازی)
+  if (STRICT) {
+    mt.resync = mt.resync || [0, 0];
+    if (mt.resync[i] < 3) { mt.resync[i]++; sendU(mt.p[i], { t: 'redo', g: mt.g, log: logFor(mt, i), t0: mt.t0, now: Date.now() }); }
+  }
   console.log('referee: وضعیت مرورگر', nameOf(mt.p[i]), 'با داور فرق دارد - دستور', m.n);
   // فقط وقتی حریفش با داور هماهنگ است مقصر دانسته می‌شود (وگرنه احتمال خطای داور هست)
   flagMatch(mt, 'refdiff', { n: m.n, who: i }, (REF_MODE === 'enforce' && mt.refOk[1 - i] > 0) ? [i] : []);
@@ -713,7 +782,7 @@ function refCompare(mt, w) {
 function resumeMatch(mt, k, ws) {
   const i = mt.p.indexOf(k); clearTimeout(mt.tmr[i]);
   send(ws, { t: 'match', me: i, opp: nameOf(mt.p[1 - i]) });
-  send(ws, { t: 'hello', g: mt.g, log: mt.log, t0: mt.t0, now: Date.now() });
+  send(ws, { t: 'hello', g: mt.g, log: logFor(mt, i), t0: mt.t0, now: Date.now() });
   if (mt.abort) send(ws, mt.abort);
   send(ws, { t: 'opp', on: conns.has(mt.p[1 - i]) });
   sendU(mt.p[1 - i], { t: 'opp', on: true });
@@ -721,7 +790,8 @@ function resumeMatch(mt, k, ws) {
 function abort(mt, winner, by, reason) {
   if (mt.ended) return;
   mt.ended = true; mt.abort = { t: 'abort', winner, by, reason };
-  clearTimeout(mt.draftT);
+  clearTimeout(mt.draftT); clearTimeout(mt.autoT);
+  if (mt.sim) { try { mt.sim.dispose(); } catch (_) {} }
   clearTimeout(mt.resT);
   mt.p.forEach(k => sendU(k, mt.abort));
   if (!mt.counted) record(mt, winner, true);          // تسلیم یا قطع اتصال را خود سرور می‌بیند
@@ -758,6 +828,8 @@ function awardTrophy(k, n = 1) {
 }
 function report(mt, i, m) {
   if (mt.ended || mt.counted || !RES.has(m.r) || m.g !== mt.g) return;
+  // STRICT: وقتی داور سالم است نتیجه فقط از خود سرور می‌آید؛ ادعای مرورگر (حتی هماهنگ دو نفر) تأثیری ندارد
+  if (STRICT && REF_MODE === 'enforce' && mt.sim && !mt.sim.broken) return;
   mt.res[i] = m.r;
   const a = mt.res[0], b = mt.res[1];
   if (a && b) {
@@ -872,10 +944,25 @@ function inGame(ws, m) {
       return;
     }
     r.n++; mt.cnt[i]++;
+    // زمان‌سنجِ چیدن را سرور تعیین می‌کند: «to» از طرف مرورگر فقط بعد از پایان واقعی مهلت (۱۶۰ ثانیه از شروع) پذیرفته می‌شود
+    if (STRICT && m.c.a === 'to' && mt.sim && !mt.sim.broken && mt.sim.ph !== 'play' && Date.now() < mt.t0 + 160000) return;
+    if (PRE_MODE !== 'off' && mt.sim && !mt.sim.broken) {      // پیش‌اعتبارسنجی با داور، قبل از پخش
+      PRE_STATS.checked++;
+      const why = mt.sim.check(m.c, i);
+      if (why) {
+        PRE_STATS.bad++; PRE_STATS.reasons[why] = (PRE_STATS.reasons[why] | 0) + 1;
+        if (PRE_STATS.bad <= 50) console.log('prevalidate(' + PRE_MODE + '):', why, nameOf(me), JSON.stringify(m.c).slice(0, 160));
+        if (PRE_MODE === 'enforce') {
+          PRE_STATS.dropped++;
+          if (++mt.pre[i] >= 25 && !mt.flagged.has('prebad' + i)) flagMatch(mt, 'prebad', { who: i }, [i]);
+          return;
+        }
+      }
+    }
     push(mt, { ...m.c, s: i });                 // مُهر فرستنده را فقط سرور می‌زند؛ مرورگرها در فاز بازی دستور غیرِ بازیکنِ نوبتی را رد می‌کنند
   } else if (m.t === 'h') {
     if (!Number.isInteger(m.g) || !Number.isInteger(m.n) || !Number.isInteger(m.h)) return;
-    sendU(mt.p[1 - i], { t: 'h', g: m.g, n: m.n, h: m.h });
+    if (!mt.v2 || m.n >= mt.hideEnd) sendU(mt.p[1 - i], { t: 'h', g: m.g, n: m.n, h: m.h });   // هش‌های فاز پنهانِ چیدن رد و بدل نمی‌شود
     checkHash(mt, i, m);
     refHash(mt, i, m);
   } else if (m.t === 'result') {
@@ -885,6 +972,7 @@ function inGame(ws, m) {
   } else if (m.t === 'leave') {
     clearTimeout(mt.tmr[i]); inMatch.delete(me);
     const o = mt.p[1 - i]; if (inMatch.get(o) === mt) sendU(o, { t: 'opp', on: false });
+    else if (mt.sim) { try { mt.sim.dispose(); } catch (_) {} }     // هر دو رفته‌اند: شبیه‌ساز دیگر لازم نیست
     pushFL(me); pushFriendsOf(me);
   }
 }
@@ -936,6 +1024,7 @@ function handleMsg(ws, raw) {
         return newMatch(v.from, me);
       }
       case 'logout': delete db.sessions[ws.tok]; save(); return leaveSession(ws);
+      case 'cap': ws.cap = Math.min(9, m.v | 0); return;      // نسخهٔ قابلیت‌های مرورگر (۲ = شانس سروری + چیدن پنهان)
       case 'cmd': case 'h': case 'result': case 'forfeit': case 'leave': return inGame(ws, m);
     }
 }
