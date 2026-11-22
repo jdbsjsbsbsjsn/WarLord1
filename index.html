@@ -9,8 +9,8 @@
 <script>
 /* ===== جزئیات بیشتر قطعات مهره‌ها (فقط در کیفیت «بالا») =====
    تعداد سگمنت کره/استوانه/مخروط/لاثه/تورس/کپسول موقع ساخت مهره‌ها بیشتر می‌شود. */
-window.__HQ=false;window.__MS=false;window.__UL=false;try{var _q0=localStorage.getItem('jt_gq');window.__HQ=_q0==='high'||_q0==='master'||_q0==='ultra';window.__MS=_q0==='master'||_q0==='ultra';window.__UL=_q0==='ultra'}catch(e){}
-window.__BDK=function(){return window.__UL?.3:window.__MS?.45:window.__HQ?.6:.8};window.__GD=false;window.__FXQ=1;try{var _q=localStorage.getItem('jt_gq');window.__FXQ=_q==='ultra'?2:_q==='master'?1.5:_q==='high'?1:_q==='mid'?.6:.3}catch(e){}
+window.__HQ=false;window.__MS=false;window.__UL=false;window.__GQN='low';try{var _q0=localStorage.getItem('jt_gq');window.__GQN=_q0;window.__HQ=_q0==='high'||_q0==='vhigh'||_q0==='master'||_q0==='ultra';window.__MS=_q0==='vhigh'||_q0==='master'||_q0==='ultra';window.__UL=_q0==='master'||_q0==='ultra'}catch(e){}
+window.__BDK=function(){return window.__UL?.3:window.__MS?.45:window.__HQ?.6:.8};window.__GD=false;window.__FXQ=1;try{var _q=localStorage.getItem('jt_gq');window.__FXQ=(_q==='ultra'||_q==='master')?2:_q==='vhigh'?1.5:_q==='high'?1:.3}catch(e){}
 (function(){
  var D=function(v,d,k,c){var X=window.__UL?2:window.__MS?1.5:1;v=(v==null?d:v);return Math.min(Math.round(c*X),Math.max(v,Math.round(v*k*X)))};
  var wrap=function(name,fn){var B=THREE[name];if(!B)return;
@@ -960,7 +960,7 @@ const FIG={ali:buildAlice,mak:buildMakao};
  GX.head سر+صورت نقاشی‌شده | GX.anim(G,fn) انیمیشن بیکار | نور، محیط و سایه در GX.post برای همه مشترک است */
 const GX={A:[]};
 GX.c=h=>new THREE.Color(h).convertSRGBToLinear();
-GX.tex=(w,h,fn,s,rep)=>{const k=(window.__HQ&&w===256&&h===256)?4:1,c=document.createElement('canvas');c.width=w*k;c.height=h*k;const cx=c.getContext('2d');if(k>1)cx.scale(k,k);fn(cx,w,h);const t=new THREE.CanvasTexture(c);t.anisotropy=window.__HQ?8:4;if(s)t.colorSpace=THREE.SRGBColorSpace;if(rep){t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(rep[0],rep[1])}return t};
+GX.tex=(w,h,fn,s,rep)=>{const k=(window.__HQ&&w===256&&h===256)?(window.__GQN==='high'?2:4):1,c=document.createElement('canvas');c.width=w*k;c.height=h*k;const cx=c.getContext('2d');if(k>1)cx.scale(k,k);fn(cx,w,h);const t=new THREE.CanvasTexture(c);t.anisotropy=window.__HQ?8:4;if(s)t.colorSpace=THREE.SRGBColorSpace;if(rep){t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(rep[0],rep[1])}return t};
 GX.weave=()=>GX._w||(GX._w=GX.tex(64,64,x=>{for(let i=0;i<16;i++)for(let j=0;j<16;j++){x.fillStyle=(i+j)&1?'#b4b4b4':'#6a6a6a';x.fillRect(i*4,j*4,4,4)}},0,[10,6]));
 GX.wood=()=>GX._wd||(GX._wd=GX.tex(128,32,(x,w,h)=>{x.fillStyle='#2a2a2f';x.fillRect(0,0,w,h);for(let i=0;i<40;i++){x.strokeStyle=(i%2?'rgba(40,20,8,':'rgba(160,100,52,')+(.15+Math.random()*.2)+')';x.lineWidth=1+Math.random()*2;x.beginPath();x.moveTo(0,Math.random()*h);x.bezierCurveTo(w*.3,Math.random()*h,w*.6,Math.random()*h,w,Math.random()*h);x.stroke()}},1));
 GX.pal=M=>{const C=GX.c,D=THREE.DoubleSide;return{
@@ -4453,8 +4453,8 @@ connect();
 (function(){
 'use strict';
 var NODOTS=false;var GQ='low';try{GQ=localStorage.getItem('jt_gq')||'low'}catch(e){}
-if(['high','mid','master','ultra'].indexOf(GQ)<0)GQ='low';
-var HQ=GQ==='high'||GQ==='master'||GQ==='ultra',MQ=GQ==='mid',MS=GQ==='master'||GQ==='ultra',UL=GQ==='ultra',ulBuilt=false,sweep,bl,bctx,bfr=0,inst=false,built=false,ENV=null,emb,embPos,embVel,embSeed,lastKey='';
+if(['high','vhigh','mid','master','ultra'].indexOf(GQ)<0)GQ='low';
+var HQ=GQ==='high'||GQ==='vhigh'||GQ==='master'||GQ==='ultra',MQ=GQ==='mid',MS=GQ==='vhigh'||GQ==='master'||GQ==='ultra',UL=GQ==='master'||GQ==='ultra',XU=GQ==='ultra',XT=GQ==='ultra',ulBuilt=false,sweep,bl,bctx,bfr=0,inst=false,built=false,ENV=null,emb,embPos,embVel,embSeed,lastKey='';
 var _r,dust,dustPos,dustVel,mist=[],lights=[],vig;
 function sv(v){try{localStorage.setItem('jt_gq',v)}catch(e){}}
 /* --- Vignette --- */
@@ -4465,9 +4465,10 @@ function mkVig(){var st=document.getElementById('stage');if(!st)return;
 /* --- Settings UI --- */
 function mkUI(){var p=document.getElementById('setG');if(!p||document.getElementById('gqSec'))return;
  var d=document.createElement('div');d.id='gqSec';
- d.innerHTML='<div class="sec">کیفیت گرافیک</div><div style="display:flex;flex-direction:column;gap:6px;margin:6px 0 10px"><button type="button" id="gqL" class="pr" style="width:100%">کم</button><button type="button" id="gqM" class="pr" style="width:100%">متوسط</button><button type="button" id="gqH" class="pr" style="width:100%">بالا</button><button type="button" id="gqS" class="pr" style="width:100%">شاهکار</button><button type="button" id="gqU" class="pr" style="width:100%">فوق شاهکار</button></div><div class="sec" style="margin-top:12px">نرخ فریم</div><div style="display:flex;gap:6px;margin:6px 0 10px"><button type="button" id="fpsB30" class="pr" style="flex:1">۳۰</button><button type="button" id="fpsB60" class="pr" style="flex:1">۶۰</button><button type="button" id="fpsB90" class="pr" style="flex:1">۹۰</button><button type="button" id="fpsB120" class="pr" style="flex:1">۱۲۰</button></div><div class="sec" style="margin-top:12px">انیمیشن‌های بیشتر</div><div style="display:flex;gap:6px;margin:6px 0 10px"><button type="button" id="idOn" class="pr" style="flex:1">روشن</button><button type="button" id="idOff" class="pr" style="flex:1">خاموش</button></div>';
+ d.innerHTML='<div class="sec">کیفیت گرافیک</div><div style="display:flex;flex-direction:column;gap:6px;margin:6px 0 10px"><button type="button" id="gqL" class="pr" style="width:100%">پایین</button><button type="button" id="gqM" class="pr" style="width:100%">متوسط</button><button type="button" id="gqH" class="pr" style="width:100%">بالا</button><button type="button" id="gqV" class="pr" style="width:100%">خیلی بالا</button><button type="button" id="gqS" class="pr" style="width:100%">شاهکار</button><button type="button" id="gqU" class="pr" style="width:100%">فوق شاهکار</button></div><div class="sec" style="margin-top:12px">نرخ فریم</div><div style="display:flex;gap:6px;margin:6px 0 10px"><button type="button" id="fpsB30" class="pr" style="flex:1">۳۰</button><button type="button" id="fpsB60" class="pr" style="flex:1">۶۰</button><button type="button" id="fpsB90" class="pr" style="flex:1">۹۰</button><button type="button" id="fpsB120" class="pr" style="flex:1">۱۲۰</button></div><div class="sec" style="margin-top:12px">انیمیشن‌های بیشتر</div><div style="display:flex;gap:6px;margin:6px 0 10px"><button type="button" id="idOn" class="pr" style="flex:1">روشن</button><button type="button" id="idOff" class="pr" style="flex:1">خاموش</button></div>';
  
  d.querySelector('#gqH').onclick=function(){setQ('high',true)};
+ d.querySelector('#gqV').onclick=function(){setQ('vhigh',true)};
  d.querySelector('#gqM').onclick=function(){setQ('mid',true)};
  d.querySelector('#gqL').onclick=function(){setQ('low',true)};
  d.querySelector('#gqS').onclick=function(){setQ('master',true)};
@@ -4483,36 +4484,36 @@ window.paintIdle=function(){selStyle(document.getElementById('idOn'),GX.idle!==f
 function selStyle(b,on){if(!b)return;b.style.opacity=1;b.style.outline='none';b.style.background=on?'#f2c14e':'#000';b.style.color=on?'#1a1405':'#e9ecf1';b.style.borderColor=on?'#f2c14e':'#313744';b.style.fontWeight=on?'700':'400'}
 window.jtSel=selStyle;
 function paintUI(){var h=document.getElementById('gqH'),m=document.getElementById('gqM'),l=document.getElementById('gqL');if(!h)return;
- [[h,GQ==='high'],[m,MQ],[l,GQ==='low'],[document.getElementById('gqS'),GQ==='master'],[document.getElementById('gqU'),UL]].forEach(function(a){selStyle(a[0],a[1])});window.paintFPS&&window.paintFPS();window.paintIdle&&window.paintIdle()}
+ [[h,GQ==='high'],[m,MQ],[l,GQ==='low'],[document.getElementById('gqV'),GQ==='vhigh'],[document.getElementById('gqS'),GQ==='master'],[document.getElementById('gqU'),GQ==='ultra']].forEach(function(a){selStyle(a[0],a[1])});window.paintFPS&&window.paintFPS();window.paintIdle&&window.paintIdle()}
 function rebuildUnits(){try{
  Object.keys(GX).forEach(function(k){if(k.charAt(0)==='_'&&k.charAt(1)!=='_')delete GX[k]});
  for(const [u,g] of [...unitG]){scene.remove(g);g.traverse(o=>{if(o.geometry&&!o.userData.gxm)o.geometry.dispose();if(o.material){if(o.material.map)o.material.map.dispose();o.material.dispose()}});
   g.userData.pick.forEach(m=>{const i=pickables.indexOf(m);if(i>=0)pickables.splice(i,1)});unitG.delete(u)}
  if(typeof syncUnits==='function')syncUnits();
 }catch(e){console.warn('rebuildUnits',e)}}
-function setQ(q,msg){try{window.__UL=q==='ultra';window.__MS=q==='master'||q==='ultra';window.__HQ=q==='high'||q==='master'||q==='ultra'}catch(e){}GQ=q;HQ=q==='high'||q==='master'||q==='ultra';MQ=q==='mid';MS=q==='master'||q==='ultra';UL=q==='ultra';window.__FXQ=UL?2:MS?1.5:HQ?1:MQ?.6:.3;window.__HQ=HQ;window.__MS=MS;window.__UL=UL;RS=1;sv(q);apply();try{applyBoard();if(MS)tiles.forEach(function(c){c&&c.forEach(function(t){if(t&&t.material)t.material.envMapIntensity=0})})}catch(e){}rebuildUnits();try{resize()}catch(e){}paintUI();
- if(msg&&typeof toast==='function')toast((UL?'کیفیت گرافیک: فوق شاهکار':MS?'کیفیت گرافیک: شاهکار':HQ?'کیفیت گرافیک: بالا':MQ?'کیفیت گرافیک: متوسط':'کیفیت گرافیک: کم')+'')}
+function setQ(q,msg){window.__GQN=q;GQ=q;HQ=q==='high'||q==='vhigh'||q==='master'||q==='ultra';MQ=q==='mid';MS=q==='vhigh'||q==='master'||q==='ultra';UL=q==='master'||q==='ultra';XU=q==='ultra';XT=q==='ultra';window.__FXQ=XU||q==='master'?2:q==='vhigh'?1.5:q==='high'?1:.3;window.__HQ=HQ;window.__MS=MS;window.__UL=UL;RS=1;sv(q);apply();try{applyBoard();if(MS)tiles.forEach(function(c){c&&c.forEach(function(t){if(t&&t.material)t.material.envMapIntensity=0})})}catch(e){}rebuildUnits();try{resize()}catch(e){}paintUI();
+ if(msg&&typeof toast==='function')toast('کیفیت گرافیک: '+({low:'پایین',mid:'متوسط',high:'بالا',vhigh:'خیلی بالا',master:'شاهکار',ultra:'فوق شاهکار'})[q])}
 function lt(){var o={sun:null,hemi:null,dirs:[]};scene.traverse(function(x){if(x.isDirectionalLight){if(x.castShadow||x.userData.isSun){x.userData.isSun=true;o.sun=x}else o.dirs.push(x)}else if(x.isHemisphereLight)o.hemi=x});return o}
-var SHD=false,SHN=4,shf=0;var RS=1;function resTarget(){return Math.round((UL?1440:MS?1260:HQ?1080:MQ?1080:720)*RS)}
+var SHD=false,SHN=4,shf=0;var RS=1;function resTarget(){return Math.round((XU?1440:HQ?1080:MQ?1080:720)*RS)}
 function apply(){
  if(typeof renderer==='undefined'||!renderer)return;
-  SHD=HQ;SHN=UL?2:MS?3:4;renderer.shadowMap.enabled=HQ;renderer.shadowMap.type=MS?(THREE.PCFSoftShadowMap||THREE.PCFShadowMap):HQ?THREE.PCFShadowMap:THREE.BasicShadowMap;renderer.shadowMap.autoUpdate=false;renderer.shadowMap.needsUpdate=true;
+  SHD=XT;SHN=XU?2:4;renderer.shadowMap.enabled=XT;renderer.shadowMap.type=XU?(THREE.PCFSoftShadowMap||THREE.PCFShadowMap):THREE.PCFShadowMap;renderer.shadowMap.autoUpdate=false;renderer.shadowMap.needsUpdate=true;
  renderer.toneMappingExposure=UL?1.1:MS?1.05:.9;
  var L=lt();
- if(L.sun){L.sun.castShadow=HQ;L.sun.shadow.bias=-.0004;L.sun.shadow.normalBias=.03;var ms=UL?2048:MS?1536:1024;
+ if(L.sun){L.sun.castShadow=XT;L.sun.shadow.bias=-.0004;L.sun.shadow.normalBias=.03;var ms=XU?2048:1024;
   if(L.sun.shadow.mapSize.x!==ms){L.sun.shadow.mapSize.set(ms,ms);if(L.sun.shadow.map){L.sun.shadow.map.dispose();L.sun.shadow.map=null}}
   L.sun.intensity=MS?.85:HQ?.7:.8}
  if(L.hemi)L.hemi.intensity=MS?.55:HQ?.5:.7;
- L.dirs.forEach(function(l){if(l.userData.b0==null)l.userData.b0=l.intensity;l.visible=HQ;l.intensity=l.userData.b0*(MS?1.8:1)});
+ L.dirs.forEach(function(l){if(l.userData.b0==null)l.userData.b0=l.intensity;l.visible=HQ;l.intensity=l.userData.b0*(XU?2:MS?1.5:1)});
  if(!ENV&&scene.environment)ENV=scene.environment;
  scene.environment=HQ?ENV:null;
  if(HQ&&!built){built=true;try{addScene();mkVig()}catch(e){console.warn('gfx scene',e)}}
- if(MS&&!emb){try{addEmbers()}catch(e){console.warn('embers',e)}}
- if(dust)dust.visible=HQ&&!NODOTS;mist.forEach(function(m){m.visible=HQ});
+ if(XU&&!emb){try{addEmbers()}catch(e){console.warn('embers',e)}}
+ if(dust)dust.visible=XT&&!NODOTS;mist.forEach(function(m){m.visible=HQ});
  if(UL&&!ulBuilt){ulBuilt=true;try{addUltra()}catch(e){console.warn('ultra',e)}}
  if(sweep)sweep.visible=UL;if(bl)bl.style.display=UL?'block':'none';
- if(emb)emb.visible=MS&&!NODOTS;
- lights.forEach(function(l){l.visible=HQ;l.intensity=HQ?.7:0});
+ if(emb)emb.visible=XU&&!NODOTS;
+ lights.forEach(function(l){l.visible=XT;l.intensity=XT?.7:0});
  if(vig)vig.style.opacity=MS?1:HQ?.75:0;
  try{renderer.domElement.style.filter=''}catch(e){}
  try{var mx=Math.min(4,renderer.capabilities.getMaxAnisotropy());
@@ -4520,7 +4521,7 @@ function apply(){
    if(m&&m.isMeshStandardMaterial){if(m.userData.e0==null)m.userData.e0=m.envMapIntensity;m.envMapIntensity=UL?Math.max(m.userData.e0,.25)*2.2:m.userData.e0}});
   if(typeof tiles!=='undefined')tiles.forEach(function(col){col.forEach(function(t){var m=t.material;if(m&&m.roughness!==undefined){if(m.userData.r0==null)m.userData.r0=m.roughness;if(m.userData.m0==null)m.userData.m0=m.metalness;m.roughness=1;m.metalness=m.userData.m0;var e0=m.userData.e0!=null?m.userData.e0:m.envMapIntensity;m.envMapIntensity=0}})})}catch(e){}
  try{applyBoard();if(MS)tiles.forEach(function(c){c&&c.forEach(function(t){if(t&&t.material)t.material.envMapIntensity=0})})}catch(e){}
- var key=[HQ,MQ,MS,UL].join();
+ var key=[HQ,MQ,MS,UL,XT,XU].join();
  if(key!==lastKey){lastKey=key;scene.traverse(function(o){if(o.material){(Array.isArray(o.material)?o.material:[o.material]).forEach(function(m){m.needsUpdate=true})}})}
  try{resize()}catch(e){}}
 /* --- Scene additions --- */
@@ -4544,7 +4545,7 @@ function addScene(){
   var t=mt.clone();t.needsUpdate=true;t.repeat.set(a[4],a[4]*1.4);
   var m=new THREE.Mesh(new THREE.PlaneGeometry(13,18).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({map:t,transparent:true,opacity:a[1],depthWrite:false,blending:THREE.AdditiveBlending,fog:false}));
   m.position.set(C.x,a[0],C.z);m.renderOrder=2;m.userData.v=[a[2],a[3]];scene.add(m);mist.push(m)});
- [[-1,1],[1,1],[-1,-1],[1,-1]].forEach(function(s){
+ [].forEach(function(s){
   var l=new THREE.PointLight(0xe8a33d,.7,8,2);l.position.set(C.x+s[0]*5.9,.9,C.z+s[1]*8.5);scene.add(l);lights.push(l)})}
 function addEmbers(){var N=UL?140:80,C=CTR,g=new THREE.BufferGeometry();embPos=new Float32Array(N*3);embVel=new Float32Array(N);embSeed=new Float32Array(N);
  for(var i=0;i<N;i++){embSeed[i]=Math.random()*6.28;embVel[i]=.25+Math.random()*.35;embPos[i*3]=C.x+(Math.random()-.5)*12;embPos[i*3+1]=Math.random()*5;embPos[i*3+2]=C.z+(Math.random()-.5)*17}
@@ -4569,14 +4570,14 @@ function frame(){
  var now=performance.now()/1000,dt=Math.min(.05,now-last||.016);last=now;
  adapt(now);
  if(SHD&&(++shf%SHN)===0)renderer.shadowMap.needsUpdate=true;
- if(HQ)lights.forEach(function(l,i){l.intensity=(UL?1.3:MS?1:.8)*(.6+.14*Math.sin(now*7+i*2)+.07*Math.sin(now*13.3+i*5))});
- if(!NODOTS&&HQ&&dust&&((pf++)&1)===0){var d2=dt*2;
+ if(XT)lights.forEach(function(l,i){l.intensity=(XU?1.3:.8)*(.6+.14*Math.sin(now*7+i*2)+.07*Math.sin(now*13.3+i*5))});
+ if(!NODOTS&&XT&&dust&&((pf++)&1)===0){var d2=dt*2;
   for(var i=0;i<dustPos.length;i+=3){dustPos[i]+=dustVel[i]*d2;dustPos[i+1]+=dustVel[i+1]*d2;dustPos[i+2]+=dustVel[i+2]*d2;
    if(dustPos[i+1]>4.8){dustPos[i+1]=.1}}
   dust.geometry.attributes.position.needsUpdate=true;
   mist.forEach(function(m){var t=m.material.map;t.offset.x+=m.userData.v[0]*d2;t.offset.y+=m.userData.v[1]*d2})}
  if(MS){
-  if(emb&&!NODOTS){for(var j=0,e=0;j<embVel.length;j++,e+=3){embPos[e]+=Math.sin(now*.8+embSeed[j])*.25*dt;embPos[e+1]+=embVel[j]*dt;embPos[e+2]+=Math.cos(now*.6+embSeed[j])*.2*dt;if(embPos[e+1]>5.2)embPos[e+1]=.1}
+  if(emb&&emb.visible&&!NODOTS){for(var j=0,e=0;j<embVel.length;j++,e+=3){embPos[e]+=Math.sin(now*.8+embSeed[j])*.25*dt;embPos[e+1]+=embVel[j]*dt;embPos[e+2]+=Math.cos(now*.6+embSeed[j])*.2*dt;if(embPos[e+1]>5.2)embPos[e+1]=.1}
    emb.geometry.attributes.position.needsUpdate=true}
   
   if(UL&&sweep){sweep.position.set(CTR.x+Math.sin(now*.4)*5,1.2,CTR.z+Math.cos(now*.27)*7.5)}}
@@ -4593,7 +4594,7 @@ function install(){
   try{frame()}catch(e){}
   c.layers.mask=3;var rr=_r.call(renderer,s,c);if(UL){try{bloom()}catch(e){}}return rr};
  var pc=placeCamera;
- placeCamera=function(){pc();if(MS){var t=performance.now()/1000;camera.position.x+=Math.sin(t*.35)*.07;camera.position.y+=Math.sin(t*.27)*.05;camera.lookAt(CTR.x,0,CTR.z+.3)}};
+ placeCamera=function(){pc();if(false){var t=performance.now()/1000;camera.position.x+=Math.sin(t*.35)*.07;camera.position.y+=Math.sin(t*.27)*.05;camera.lookAt(CTR.x,0,CTR.z+.3)}};
  mkUI();apply()}
 
 /* --- صدا + پنل «گرافیک و صدا» --- */
