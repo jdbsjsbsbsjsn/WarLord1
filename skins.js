@@ -1576,10 +1576,10 @@ root.AF={draw,canvasFor,DEF,hex,mix,rgb};
      for(let y=0;y<256;y++)for(let x=0;x<256;x++){const d=Math.min(x,y,255-x,255-y);if(d>=F)continue;let w=d/F;w=w*w*(3-2*w);const i=(y*256+x)*4;
       a[i]=R+(a[i]-R)*w;a[i+1]=G+(a[i+1]-G)*w;a[i+2]=B+(a[i+2]-B)*w}
      cx.putImageData(D,0,0)}catch(e){}};
-   const t=new THREE.CanvasTexture(c);t.anisotropy=window.__HQ?8:4;t.colorSpace=THREE.SRGBColorSpace;
+   const t=new THREE.CanvasTexture(c);t.anisotropy=window.__MX?16:window.__HQ?8:4;t.colorSpace=THREE.SRGBColorSpace;
    if(img.complete&&img.naturalWidth){fill()}else{cx.drawImage(AFp.canvasFor(p,1),0,0,256,256);img.addEventListener('load',()=>{fill();t.needsUpdate=true})}
    return t}
-  const c=AFp.canvasFor(p,window.__HQ?4:3),t=new THREE.CanvasTexture(c);t.anisotropy=window.__HQ?8:4;t.colorSpace=THREE.SRGBColorSpace;return t};
+  const c=AFp.canvasFor(p,window.__HQ?4:3),t=new THREE.CanvasTexture(c);t.anisotropy=window.__MX?16:window.__HQ?8:4;t.colorSpace=THREE.SRGBColorSpace;return t};
  const by=id=>o=>mkTex(Object.assign({},PRE[id],{_id:id},o&&o.closed?{closed:1}:null));
  GX.faceAl=by('ali');GX.faceDj=by('doj');GX.faceAc=by('acro');GX.facePr=by('pri');GX.faceRf=by('raf');GX.faceCr=by('cri');
  GX.faceN=o=>{const id=o&&o.id||(o&&o.skin===0xe8b898?'aka':'mak');return mkTex(Object.assign({},PRE[id],{_id:id},o&&o.closed?{closed:1}:null))};
