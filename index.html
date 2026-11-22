@@ -2955,7 +2955,7 @@ function mkUnit(u){
  const head=new THREE.Mesh(GEO.head,M(pale));head.position.y=ranged?1.62:1.32;
  const band=new THREE.Mesh(GEO.band,M(0xf3ead8));band.rotation.x=Math.PI/2;band.position.y=.5;
  const inner=new THREE.Group();inner.add(body,head,band);inner.scale.setScalar(s);inner.rotation.y=u.o===0?Math.PI:0;
- let fig=null,figM=[];if(FIG[u.k]){const n0=mats.length;fig=FIG[u.k](M,team);mats.slice(n0).forEach(m=>{m.userData.nt=1});fig.traverse(o=>{if(o.isMesh){o.castShadow=true;o.userData.u=u;figM.push(o)}});[body,head,band].forEach(m=>{m.material.visible=false});inner.add(fig);try{GX.MG.add(fig,u.k)}catch(e){console.warn('GX.MG.add',e)}}
+ let fig=null,figM=[];if(FIG[u.k]){const n0=mats.length;fig=FIG[u.k](M,team);mats.slice(n0).forEach(m=>{m.userData.nt=1});fig.traverse(o=>{if(o.isMesh){o.castShadow=true;o.userData.u=u;figM.push(o)}});[body,head,band].forEach(m=>{m.material.visible=!figM.length});inner.add(fig);try{GX.MG.add(fig,u.k)}catch(e){console.warn('GX.MG.add',e)}}
  [base,body,head,band].forEach(m=>{m.castShadow=true;m.userData.u=u});pickables.push(base,body,head);figM.forEach(m=>pickables.push(m));
  const shield=new THREE.Mesh(GEO.shield,new THREE.MeshBasicMaterial({color:0xffd34d}));shield.rotation.x=Math.PI/2;shield.position.y=.9;
  const hack=new THREE.Mesh(GEO.shield,new THREE.MeshBasicMaterial({color:0x39ff88}));hack.rotation.x=Math.PI/2;hack.position.y=.12;hack.scale.setScalar(.95);
@@ -3006,7 +3006,7 @@ function syncUnits(){
  sel_=sel;
  for(const [u,g] of [...unitG]){if(!U.includes(u)){if(phase==='play'&&u.vq){const v0=vhp(u);if(u.vq){const d0=Math.round(v0)-Math.round(g.userData.last);if(d0<0){popup('-'+PX(-d0),g.position,'#ff5a4d');g.userData.flash=1}g.userData.last=v0;g.visible=true;paintLabel(u,g);continue}}
   if(u.hp<=0&&g.userData.last>0)popup('-'+PX(Math.round(g.userData.last)),g.position,'#ff5a4d');
-  scene.remove(g);g.traverse(o=>{if(o.material){if(o.material.map)o.material.map.dispose();o.material.dispose()}});g.userData.pick.forEach(m=>{const i=pickables.indexOf(m);if(i>=0)pickables.splice(i,1)});unitG.delete(u)}}
+  scene.remove(g);g.traverse(o=>{if(o.material&&!(window.__BLOB&&o.material===window.__BLOB.mat)){if(o.material.map)o.material.map.dispose();o.material.dispose()}});g.userData.pick.forEach(m=>{const i=pickables.indexOf(m);if(i>=0)pickables.splice(i,1)});unitG.delete(u)}}
  U.forEach(u=>{let g=unitG.get(u);if(!g){g=mkUnit(u);unitG.set(u,g)}const d=g.userData;g.visible=!hid(u);const vh=vhp(u),pc=u.vq?u.vc:u.c,pr=u.vq?u.vr:u.r;
   {const nx=CELL_X(pc),nz=CELL_Z(pc,pr),mx=nx-d.tx,mz=nz-d.tz;if(mx*mx+mz*mz>.04){d.fy=Math.atan2(mx,mz);d.hf=1}d.tx=nx;d.tz=nz}d.ty=u.fly>0?1.1:0;
   const df=Math.round(vh)-Math.round(d.last);if(df<0){popup((df<0?'-':'+')+PX(Math.abs(df)),g.position,'#ff5a4d');d.flash=1}else if(df>0)popup('+'+PX(df),g.position,'#5dff8a');d.last=vh;
@@ -4487,7 +4487,7 @@ function paintUI(){var h=document.getElementById('gqH'),m=document.getElementByI
  [[h,GQ==='high'],[m,MQ],[l,GQ==='low'],[document.getElementById('gqV'),GQ==='vhigh'],[document.getElementById('gqS'),GQ==='master'],[document.getElementById('gqU'),GQ==='ultra']].forEach(function(a){selStyle(a[0],a[1])});window.paintFPS&&window.paintFPS();window.paintIdle&&window.paintIdle()}
 function rebuildUnits(){try{
  Object.keys(GX).forEach(function(k){if(k.charAt(0)==='_'&&k.charAt(1)!=='_')delete GX[k]});
- for(const [u,g] of [...unitG]){scene.remove(g);g.traverse(o=>{if(o.geometry&&!o.userData.gxm)o.geometry.dispose();if(o.material){if(o.material.map)o.material.map.dispose();o.material.dispose()}});
+ for(const [u,g] of [...unitG]){scene.remove(g);g.traverse(o=>{if(o.geometry&&!o.userData.gxm&&!Object.values(GEO).includes(o.geometry))o.geometry.dispose();if(o.material&&!(window.__BLOB&&o.material===window.__BLOB.mat)){if(o.material.map)o.material.map.dispose();o.material.dispose()}});
   g.userData.pick.forEach(m=>{const i=pickables.indexOf(m);if(i>=0)pickables.splice(i,1)});unitG.delete(u)}
  if(typeof syncUnits==='function')syncUnits();
 }catch(e){console.warn('rebuildUnits',e)}}
