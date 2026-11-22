@@ -10,6 +10,7 @@
 /* ===== جزئیات بیشتر قطعات مهره‌ها (فقط در کیفیت «بالا») =====
    تعداد سگمنت کره/استوانه/مخروط/لاثه/تورس/کپسول موقع ساخت مهره‌ها بیشتر می‌شود. */
 window.__HQ=false;window.__MS=false;window.__UL=false;try{var _q0=localStorage.getItem('jt_gq');window.__HQ=_q0==='high'||_q0==='master'||_q0==='ultra';window.__MS=_q0==='high'||_q0==='master'||_q0==='ultra';window.__UL=_q0==='master'||_q0==='ultra'}catch(e){}
+window.__TXMAX=function(q){return q==='high'?2:(q==='master'||q==='ultra')?8:1};window.__TXDEF=function(q){return q==='high'?2:(q==='master'||q==='ultra')?4:1};window.__TEX=1;try{var _tq=localStorage.getItem('jt_gq'),_tv=(localStorage.getItem('jt_tx')||'').split(':'),_tn=+_tv[1];window.__TEX=(_tv[0]===_tq&&[1,2,4,8].indexOf(_tn)>=0&&_tn<=window.__TXMAX(_tq))?_tn:window.__TXDEF(_tq)}catch(e){}
 window.__BDK=function(){return window.__UL?.3:window.__MS?.45:window.__HQ?.6:.8};window.__GD=false;window.__FXQ=1;try{var _q=localStorage.getItem('jt_gq');window.__FXQ=(_q==='ultra'||_q==='master')?2:_q==='high'?1.5:.3}catch(e){}
 (function(){
  var D=function(v,d,k,c){var X=window.__UL?2:window.__MS?1.5:1;v=(v==null?d:v);return Math.min(Math.round(c*X),Math.max(v,Math.round(v*k*X)))};
@@ -960,7 +961,7 @@ const FIG={ali:buildAlice,mak:buildMakao};
  GX.head سر+صورت نقاشی‌شده | GX.anim(G,fn) انیمیشن بیکار | نور، محیط و سایه در GX.post برای همه مشترک است */
 const GX={A:[]};
 GX.c=h=>new THREE.Color(h).convertSRGBToLinear();
-GX.tex=(w,h,fn,s,rep)=>{const k=(window.__HQ&&w===256&&h===256)?4:1,c=document.createElement('canvas');c.width=w*k;c.height=h*k;const cx=c.getContext('2d');if(k>1)cx.scale(k,k);fn(cx,w,h);const t=new THREE.CanvasTexture(c);t.anisotropy=window.__HQ?8:4;if(s)t.colorSpace=THREE.SRGBColorSpace;if(rep){t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(rep[0],rep[1])}return t};
+GX.tex=(w,h,fn,s,rep)=>{const k=(window.__HQ&&w===256&&h===256)?(window.__TEX||1):1,c=document.createElement('canvas');c.width=w*k;c.height=h*k;const cx=c.getContext('2d');if(k>1)cx.scale(k,k);fn(cx,w,h);const t=new THREE.CanvasTexture(c);t.anisotropy=window.__HQ?8:4;if(s)t.colorSpace=THREE.SRGBColorSpace;if(rep){t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(rep[0],rep[1])}return t};
 GX.weave=()=>GX._w||(GX._w=GX.tex(64,64,x=>{for(let i=0;i<16;i++)for(let j=0;j<16;j++){x.fillStyle=(i+j)&1?'#b4b4b4':'#6a6a6a';x.fillRect(i*4,j*4,4,4)}},0,[10,6]));
 GX.wood=()=>GX._wd||(GX._wd=GX.tex(128,32,(x,w,h)=>{x.fillStyle='#2a2a2f';x.fillRect(0,0,w,h);for(let i=0;i<40;i++){x.strokeStyle=(i%2?'rgba(40,20,8,':'rgba(160,100,52,')+(.15+Math.random()*.2)+')';x.lineWidth=1+Math.random()*2;x.beginPath();x.moveTo(0,Math.random()*h);x.bezierCurveTo(w*.3,Math.random()*h,w*.6,Math.random()*h,w,Math.random()*h);x.stroke()}},1));
 GX.pal=M=>{const C=GX.c,D=THREE.DoubleSide;return{
@@ -4465,13 +4466,14 @@ function mkVig(){var st=document.getElementById('stage');if(!st)return;
 /* --- Settings UI --- */
 function mkUI(){var p=document.getElementById('setG');if(!p||document.getElementById('gqSec'))return;
  var d=document.createElement('div');d.id='gqSec';
- d.innerHTML='<div class="sec">کیفیت گرافیک</div><div style="display:flex;flex-direction:column;gap:6px;margin:6px 0 10px"><button type="button" id="gqL" class="pr" style="width:100%">کم</button><button type="button" id="gqM" class="pr" style="width:100%">متوسط</button><button type="button" id="gqH" class="pr" style="width:100%">بالا</button><button type="button" id="gqS" class="pr" style="width:100%">شاهکار</button><button type="button" id="gqU" class="pr" style="width:100%">فوق شاهکار</button></div><div class="sec" style="margin-top:12px">نرخ فریم</div><div style="display:flex;gap:6px;margin:6px 0 10px"><button type="button" id="fpsB30" class="pr" style="flex:1">۳۰</button><button type="button" id="fpsB60" class="pr" style="flex:1">۶۰</button><button type="button" id="fpsB90" class="pr" style="flex:1">۹۰</button><button type="button" id="fpsB120" class="pr" style="flex:1">۱۲۰</button></div><div class="sec" style="margin-top:12px">انیمیشن‌های بیشتر</div><div style="display:flex;gap:6px;margin:6px 0 10px"><button type="button" id="idOn" class="pr" style="flex:1">روشن</button><button type="button" id="idOff" class="pr" style="flex:1">خاموش</button></div>';
+ d.innerHTML='<div class="sec">کیفیت گرافیک</div><div style="display:flex;flex-direction:column;gap:6px;margin:6px 0 10px"><button type="button" id="gqL" class="pr" style="width:100%">کم</button><button type="button" id="gqM" class="pr" style="width:100%">متوسط</button><button type="button" id="gqH" class="pr" style="width:100%">بالا</button><button type="button" id="gqS" class="pr" style="width:100%">شاهکار</button><button type="button" id="gqU" class="pr" style="width:100%">فوق شاهکار</button></div><div class="sec" style="margin-top:12px">بافت</div><div style="display:flex;gap:6px;margin:6px 0 10px"><button type="button" id="txB1" class="pr" style="flex:1">۱</button><button type="button" id="txB2" class="pr" style="flex:1">۲</button><button type="button" id="txB4" class="pr" style="flex:1">۴</button><button type="button" id="txB8" class="pr" style="flex:1">۸</button></div><div class="sec" style="margin-top:12px">نرخ فریم</div><div style="display:flex;gap:6px;margin:6px 0 10px"><button type="button" id="fpsB30" class="pr" style="flex:1">۳۰</button><button type="button" id="fpsB60" class="pr" style="flex:1">۶۰</button><button type="button" id="fpsB90" class="pr" style="flex:1">۹۰</button><button type="button" id="fpsB120" class="pr" style="flex:1">۱۲۰</button></div><div class="sec" style="margin-top:12px">انیمیشن‌های بیشتر</div><div style="display:flex;gap:6px;margin:6px 0 10px"><button type="button" id="idOn" class="pr" style="flex:1">روشن</button><button type="button" id="idOff" class="pr" style="flex:1">خاموش</button></div>';
  
  d.querySelector('#gqH').onclick=function(){setQ('high',true)};
  d.querySelector('#gqM').onclick=function(){setQ('mid',true)};
  d.querySelector('#gqL').onclick=function(){setQ('low',true)};
  d.querySelector('#gqS').onclick=function(){setQ('master',true)};
  d.querySelector('#gqU').onclick=function(){setQ('ultra',true)};
+ [1,2,4,8].forEach(function(n){d.querySelector('#txB'+n).onclick=function(){setTX(n)}});
  d.querySelector('#fpsB30').onclick=function(){window.setFPS&&window.setFPS(30)};
  d.querySelector('#fpsB60').onclick=function(){window.setFPS&&window.setFPS(60)};
  d.querySelector('#fpsB90').onclick=function(){window.setFPS&&window.setFPS(90)};
@@ -4482,7 +4484,9 @@ function mkUI(){var p=document.getElementById('setG');if(!p||document.getElement
 window.paintIdle=function(){selStyle(document.getElementById('idOn'),GX.idle!==false);selStyle(document.getElementById('idOff'),GX.idle===false)};
 function selStyle(b,on){if(!b)return;b.style.opacity=1;b.style.outline='none';b.style.background=on?'#f2c14e':'#000';b.style.color=on?'#1a1405':'#e9ecf1';b.style.borderColor=on?'#f2c14e':'#313744';b.style.fontWeight=on?'700':'400'}
 window.jtSel=selStyle;
-function paintUI(){var h=document.getElementById('gqH'),m=document.getElementById('gqM'),l=document.getElementById('gqL');if(!h)return;
+function paintTX(){[1,2,4,8].forEach(function(n){var b=document.getElementById('txB'+n);if(!b)return;var ok=n<=window.__TXMAX(GQ);selStyle(b,window.__TEX===n);b.disabled=!ok;if(!ok)b.style.opacity=.3})}
+function setTX(n){if(n>window.__TXMAX(GQ)||n===window.__TEX)return;window.__TEX=n;try{localStorage.setItem('jt_tx',GQ+':'+n)}catch(e){}rebuildUnits();paintTX();if(typeof toast==='function')toast('بافت: '+n+'×')}
+function paintUI(){paintTX();var h=document.getElementById('gqH'),m=document.getElementById('gqM'),l=document.getElementById('gqL');if(!h)return;
  [[h,GQ==='high'],[m,MQ],[l,GQ==='low'],[document.getElementById('gqS'),GQ==='master'],[document.getElementById('gqU'),GQ==='ultra']].forEach(function(a){selStyle(a[0],a[1])});window.paintFPS&&window.paintFPS();window.paintIdle&&window.paintIdle()}
 function rebuildUnits(){try{
  Object.keys(GX).forEach(function(k){if(k.charAt(0)==='_'&&k.charAt(1)!=='_')delete GX[k]});
@@ -4490,7 +4494,7 @@ function rebuildUnits(){try{
   g.userData.pick.forEach(m=>{const i=pickables.indexOf(m);if(i>=0)pickables.splice(i,1)});unitG.delete(u)}
  if(typeof syncUnits==='function')syncUnits();
 }catch(e){console.warn('rebuildUnits',e)}}
-function setQ(q,msg){try{window.__UL=q==='master'||q==='ultra';window.__MS=q==='high'||q==='master'||q==='ultra';window.__HQ=window.__MS}catch(e){}GQ=q;HQ=q==='high'||q==='master'||q==='ultra';MQ=q==='mid';MS=HQ;UL=q==='master'||q==='ultra';XT=q==='ultra';window.__FXQ=UL?2:HQ?1.5:.3;window.__HQ=HQ;window.__MS=MS;window.__UL=UL;RS=1;sv(q);apply();try{applyBoard();if(MS)tiles.forEach(function(c){c&&c.forEach(function(t){if(t&&t.material)t.material.envMapIntensity=0})})}catch(e){}rebuildUnits();try{resize()}catch(e){}paintUI();
+function setQ(q,msg){try{window.__UL=q==='master'||q==='ultra';window.__MS=q==='high'||q==='master'||q==='ultra';window.__HQ=window.__MS}catch(e){}GQ=q;HQ=q==='high'||q==='master'||q==='ultra';MQ=q==='mid';MS=HQ;UL=q==='master'||q==='ultra';XT=q==='ultra';window.__FXQ=UL?2:HQ?1.5:.3;window.__HQ=HQ;window.__MS=MS;window.__UL=UL;RS=1;sv(q);window.__TEX=window.__TXDEF(q);try{localStorage.setItem('jt_tx',q+':'+window.__TEX)}catch(e){}apply();try{applyBoard();if(MS)tiles.forEach(function(c){c&&c.forEach(function(t){if(t&&t.material)t.material.envMapIntensity=0})})}catch(e){}rebuildUnits();try{resize()}catch(e){}paintUI();
  if(msg&&typeof toast==='function')toast('کیفیت گرافیک: '+({low:'کم',mid:'متوسط',high:'بالا',master:'شاهکار',ultra:'فوق شاهکار'})[q])}
 function lt(){var o={sun:null,hemi:null,dirs:[]};scene.traverse(function(x){if(x.isDirectionalLight){if(x.castShadow||x.userData.isSun){x.userData.isSun=true;o.sun=x}else o.dirs.push(x)}else if(x.isHemisphereLight)o.hemi=x});return o}
 var RS=1;function resTarget(){return Math.round(((HQ||MQ)?1080:720)*RS)}
