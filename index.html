@@ -4112,18 +4112,23 @@ function mkVig(){var st=document.getElementById('stage');if(!st)return;
 /* --- Settings UI --- */
 function mkUI(){var p=document.getElementById('setG');if(!p||document.getElementById('gqSec'))return;
  var d=document.createElement('div');d.id='gqSec';
- d.innerHTML='<div class="sec">کیفیت گرافیک (تغییر خودکار انجام نمی‌شود)</div><div style="display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 6px"><button type="button" id="gqL" class="pr" style="flex:1">کم</button><button type="button" id="gqM" class="pr" style="flex:1">متوسط</button><button type="button" id="gqH" class="pr" style="flex:1">بالا</button><button type="button" id="gqS" class="pr" style="flex:1">✨ شاهکار</button><button type="button" id="gqU" class="pr" style="flex:1 1 100%">فوق شاهکار</button></div><div class="sec" style="font-size:12px;line-height:1.7;margin-bottom:10px">کم: بدون هیچ جلوه، رزولوشن ۴۸۰ پیکسل، سبک‌ترین.<br>متوسط: همان «کم» با رزولوشن ۷۲۰ پیکسل.<br>بالا (۷۲۰ پیکسل): سایه، بازتاب محیط، نور تکمیلی، جزئیات بیشتر قطعات، گرد و غبار و مه.<br>شاهکار: همهٔ موارد «بالا» + رزولوشن ۱۰۸۰ پیکسل، سایهٔ ۲۰۴۸، هندسهٔ ریزتر، نور سوسوزن مشعل‌ها، جرقه‌های شناور، براقی کاشی‌ها، لرزش ملایم دوربین، رنگ‌بندی سینمایی و وینیت.<br>فوق شاهکار: همهٔ موارد «شاهکار» + رزولوشن ۱۴۴۰ پیکسل، سایهٔ ۴۰۹۶، هندسهٔ دو برابر ریزتر، بازتاب نور روی کاشی‌های آینه‌ای با نورهای متحرک و بازتاب محیطی قوی‌تر، درخشش (بلوم) روی بخش‌های روشن، گرد و غبار و جرقه‌های بیشتر (فقط برای گوشی‌های خیلی قوی).<br>برای اعمال کامل، بعد از تغییر بازی را ببند و دوباره باز کن.</div>';
+ d.innerHTML='<div class="sec">کیفیت گرافیک</div><div style="display:flex;flex-direction:column;gap:6px;margin:6px 0 10px"><button type="button" id="gqL" class="pr" style="width:100%">کم</button><button type="button" id="gqM" class="pr" style="width:100%">متوسط</button><button type="button" id="gqH" class="pr" style="width:100%">بالا</button><button type="button" id="gqS" class="pr" style="width:100%">شاهکار</button><button type="button" id="gqU" class="pr" style="width:100%">فوق شاهکار</button></div><div class="sec" style="margin-top:12px">نرخ فریم</div><div style="display:flex;gap:6px;margin:6px 0 10px"><button type="button" id="fpsB30" class="pr" style="flex:1">۳۰</button><button type="button" id="fpsB60" class="pr" style="flex:1">۶۰</button><button type="button" id="fpsB120" class="pr" style="flex:1">۱۲۰</button></div>';
  
  d.querySelector('#gqH').onclick=function(){setQ('high',true)};
  d.querySelector('#gqM').onclick=function(){setQ('mid',true)};
  d.querySelector('#gqL').onclick=function(){setQ('low',true)};
  d.querySelector('#gqS').onclick=function(){setQ('master',true)};
  d.querySelector('#gqU').onclick=function(){setQ('ultra',true)};
+ d.querySelector('#fpsB30').onclick=function(){window.setFPS&&window.setFPS(30)};
+ d.querySelector('#fpsB60').onclick=function(){window.setFPS&&window.setFPS(60)};
+ d.querySelector('#fpsB120').onclick=function(){window.setFPS&&window.setFPS(120)};
  paintUI();p.insertBefore(d,p.querySelector('.sec:nth-of-type(1)')||p.firstChild);}
+function selStyle(b,on){if(!b)return;b.style.opacity=1;b.style.outline='none';b.style.background=on?'#f2c14e':'#000';b.style.color=on?'#1a1405':'#e9ecf1';b.style.borderColor=on?'#f2c14e':'#313744';b.style.fontWeight=on?'700':'400'}
+window.jtSel=selStyle;
 function paintUI(){var h=document.getElementById('gqH'),m=document.getElementById('gqM'),l=document.getElementById('gqL');if(!h)return;
- [[h,GQ==='high'],[m,MQ],[l,GQ==='low'],[document.getElementById('gqS'),GQ==='master'],[document.getElementById('gqU'),UL]].forEach(function(a){a[0].style.opacity=a[1]?1:.45;a[0].style.outline=a[1]?'2px solid #e8a33d':'none'});window.paintFPS&&window.paintFPS()}
+ [[h,GQ==='high'],[m,MQ],[l,GQ==='low'],[document.getElementById('gqS'),GQ==='master'],[document.getElementById('gqU'),UL]].forEach(function(a){selStyle(a[0],a[1])});window.paintFPS&&window.paintFPS()}
 function setQ(q,msg){GQ=q;HQ=q==='high'||q==='master'||q==='ultra';MQ=q==='mid';MS=q==='master'||q==='ultra';UL=q==='ultra';window.__FXQ=UL?2:MS?1.5:HQ?1:.3;sv(q);apply();paintUI();
- if(msg&&typeof toast==='function')toast((UL?'کیفیت گرافیک: فوق شاهکار':MS?'کیفیت گرافیک: شاهکار ✨':HQ?'کیفیت گرافیک: بالا':MQ?'کیفیت گرافیک: متوسط':'کیفیت گرافیک: کم')+' (برای اعمال کامل بازی را ببند و دوباره باز کن)')}
+ if(msg&&typeof toast==='function')toast((UL?'کیفیت گرافیک: فوق شاهکار':MS?'کیفیت گرافیک: شاهکار':HQ?'کیفیت گرافیک: بالا':MQ?'کیفیت گرافیک: متوسط':'کیفیت گرافیک: کم')+' (برای اعمال کامل بازی را ببند و دوباره باز کن)')}
 function lt(){var o={sun:null,hemi:null,dirs:[]};scene.traverse(function(x){if(x.isDirectionalLight){if(x.castShadow)o.sun=x;else o.dirs.push(x)}else if(x.isHemisphereLight)o.hemi=x});return o}
 function resTarget(){return UL?1440:MS?1080:(MQ||HQ)?720:480}
 function apply(){
@@ -4892,10 +4897,15 @@ q('tmExit').onclick=function(){var b=q('tmExit');
  var _b=mkUnit;mkUnit=function(u){window.__GD=true;try{return _b(u)}finally{window.__GD=false}}})();
 /* ===== محدودکردن / آزادکردن نرخ فریم (تنظیمات > گرافیک) ===== */
 (function(){
- var FPS=0;try{localStorage.removeItem('jt_fps')}catch(e){}
- window.paintFPS=function(){[['fpsB30',30],['fpsB60',60],['fpsB90',90],['fpsBM',0]].forEach(function(a){var b=document.getElementById(a[0]);if(!b)return;
-  b.style.opacity=FPS===a[1]?1:.45;b.style.outline=FPS===a[1]?'2px solid #e8a33d':'none'})};
- window.setFPS=function(){};
+ var FPS=120;try{var v=+localStorage.getItem('jt_fps');if(v===30||v===60||v===120)FPS=v}catch(e){}
+ window.paintFPS=function(){[['fpsB30',30],['fpsB60',60],['fpsB120',120]].forEach(function(a){var b=document.getElementById(a[0]);if(!b)return;
+  window.jtSel&&window.jtSel(b,FPS===a[1])})};
+ window.setFPS=function(f){FPS=f;try{localStorage.setItem('jt_fps',String(f))}catch(e){}window.paintFPS()};
+ if(typeof loop!=='function')return;
+ var _lp=loop,last=0;
+ loop=function(){
+  if(FPS<120){var n=performance.now(),iv=1000/FPS,el=n-last;if(el<iv-1.5){requestAnimationFrame(loop);return}last=el>iv*3?n:n-(el%iv)}
+  _lp()};
 })();
 /* ===== کش پلاک نام/جان مهره‌ها: فقط وقتی چیزی عوض شد دوباره‌نقاشی و آپلود تکسچر ===== */
 (function(){if(typeof paintLabel!=='function')return;var _pl=paintLabel;
