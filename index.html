@@ -10,7 +10,7 @@
 /* ===== جزئیات بیشتر قطعات مهره‌ها (فقط در کیفیت «بالا») =====
    تعداد سگمنت کره/استوانه/مخروط/لاثه/تورس/کپسول موقع ساخت مهره‌ها بیشتر می‌شود. */
 window.__HQ=false;try{window.__HQ=localStorage.getItem('jt_gq')==='high'}catch(e){}
-window.__GD=false;window.__FXQ=1;try{var _q=localStorage.getItem('jt_gq');window.__FXQ=_q==='high'?1:_q==='mid'?.5:.3}catch(e){}
+window.__GD=false;window.__FXQ=1;try{var _q=localStorage.getItem('jt_gq');window.__FXQ=_q==='high'?1:_q==='mid'?.3:.3}catch(e){}
 (function(){
  if(!window.__HQ)return;
  var D=function(v,d,k,c){v=(v==null?d:v);return Math.min(c,Math.max(v,Math.round(v*k)))};
@@ -1221,7 +1221,7 @@ function gxMakao3(M,team){
  // ---- سر و صورت ----
 // ---- سر و صورت (طبیعی: چشم نیمه‌باز سبز-خاکستری، ابروی نازک، پلک‌زدن) ----
  const HY=Y+1.72,HD=new THREE.Group();HD.position.set(0,HY,0);G.add(HD);
- const fo2={skin:0xf6e5dc,hi:'#fff0ea',y:.23,r:.26,ex:55,i1:'#a8d6c6',i2:'#4f807a',i3:'#14302c',lash:'#120d14',brow:'#1a1216',sl:-1,lip:'#b8706c',sm:1,nat:1};
+ const fo2={skin:0xf6e5dc,hi:'#fff0ea',y:.23,r:.26,ex:55,i1:'#a8d6c6',i2:'#4f807a',i3:'#14302c',lash:'#120d14',brow:'#1a1216',sl:-1,lip:'#b8706c',sm:1,nat:1,id:'mak'};
  GX.head(HD,M,fo2);const faceM=HD.children[1].material,fOpen=faceM.map,fShut=GX.faceN(Object.assign({},fo2,{closed:1}));
  // ---- مو: مشکی، بلند، صاف؛ بنگ صاف و یکدست ----
  B(S(.285,1,.9,1),Hr,0,.28,-.06,HD);
@@ -1576,8 +1576,8 @@ function gxAlice4(M,team){
  const cape=t=>{const p=cg.attributes.position;for(let i=0;i<p.count;i++){const x=cb[i*3],y=cb[i*3+1],k=-y/1.12;p.setZ(i,.07*(x/.49)*(x/.49)*(1-k*.4)-.1*k*k+.035*Math.sin(y*7+t*2.2+x*3)*k)}p.needsUpdate=true;cg.computeVertexNormals()};cape(0);
  // ---- سر، چشم سرخ، موی بلند موج‌دار ----
   (()=>{const o={skin:0xf2bd9f,hi:'#f8cdb2',ex:58,i1:'#ff8a8a',i2:'#e0152b',i3:'#5a0814',lash:'#2a040c',brow:'#6a0e1c'},p=new V(0,Y+2,0),
-   h=new THREE.Mesh(new THREE.SphereGeometry(.27,36,28),M(GX.c(o.skin),{roughness:.6}));h.position.copy(p);G.add(h);
-   const f=new THREE.Mesh(new THREE.SphereGeometry(.27*1.004,32,24,Math.PI/2-.5,1,1.07,1),M(0xffffff,{map:GX.faceAl(o),roughness:.65,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2}));f.position.copy(p);G.add(f);
+   h=new THREE.Mesh(GX.ashape(new THREE.SphereGeometry(.27,48,36),.27),M(GX.c(o.skin),{roughness:.6}));h.position.copy(p);G.add(h);
+   const f=new THREE.Mesh(GX.ashape(new THREE.SphereGeometry(.27*1.004,40,28,Math.PI/2-.5,1,1.07,1),.27),M(0xffffff,{map:GX.faceAl(o),roughness:.65,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2}));f.position.copy(p);G.add(f);
    [-1,1].forEach(s=>{const e=new THREE.Mesh(new THREE.SphereGeometry(.05,10,8).scale(.5,1,.8),h.material);e.position.set(s*.27*.97,Y+1.98,0);G.add(e)})})();
   B(S(.3,1,.82,1),Hr,0,Y+2.07,-.05);B(S(.28,1,.7,.9),Hr2,0,Y+2.0,-.1);B(S(.16,1.5,.6,.6),Hr,0,Y+2.18,.2);[-1,1].forEach(s=>B(S(.12,.6,1.2,.5),Hr,s*.17,Y+2.02,.22).rotation.z=s*.35);
   [[-.17,.26],[-.1,.3],[-.04,.22],[.03,.28],[.1,.24],[.17,.27],[.22,.2]].forEach((q,i)=>GX.strand(G,i%2?Hr:Hr3,[[q[0]*.7,Y+2.27,.1],[q[0]*1.05,Y+2.22,.22],[q[0]*1.25+(i%2?.02:-.02),Y+2.14,.272],[q[0]*1.3+(i%2?.04:-.03),Y+2.12-q[1]*.28,.262]],.045,.01,12));
@@ -1767,11 +1767,10 @@ const furs=[];
  // ---- سر و صورت ----
  const HD=new THREE.Group();HD.position.set(0,.8,0);TG.add(HD);B(Cy(.085,.1,.2,12),Sk,0,0,0,HD);
  const hr=.21,hy=.2,Ew=P.skin(0xece4da),Ir=M(GX.c(0x3b2314),{roughness:.25,clearcoat:.9}),Lp=P.skin(0x9a584a);
- B(S(hr,.95,1.1,1.0),Sk,0,hy,0,HD);B(S(.15,1,.8,1.0),Sk,0,hy-.115,.04,HD);
+ B(GX.ashape(new THREE.SphereGeometry(hr,44,32),hr,{jaw:.12,chin:.03}).scale(.95,1.1,1.0),Sk,0,hy,0,HD);B(S(.15,1,.8,1.0),Sk,0,hy-.115,.04,HD);
+B(GX.ashape(new THREE.SphereGeometry(hr*1.008,36,26,Math.PI/2-.5,1,1.07,1),hr,{jaw:.12,chin:.03}).scale(.95,1.1,1.0),M(0xffffff,{map:GX.faceCr({}),roughness:.6,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2}),0,hy,0,HD);
  B(S(.04,.8,1.7,1.2),Sk,0,hy-.035,hr*.93,HD);B(S(.03,1.2,.8,.9),Sk,0,hy-.08,hr+.015,HD);
  [-1,1].forEach(s=>{
-  B(S(.032,1.3,.75,.5),Ew,s*.075,hy+.025,hr*.9,HD);B(S(.016,1,1,.5),Ir,s*.077,hy+.025,hr*.9+.014,HD);
-  B(S(.06,1.2,.22,.5),Hr,s*.078,hy+.075,hr*.9,HD).rotation.z=s*.12;
   B(S(.035,.55,1,.8),Sk,s*hr*.97,hy,0,HD);B(S(.05,1,.7,.8),Sk,s*.095,hy-.075,hr*.82,HD);
   B(S(.045,1.5,.3,.55),Hr,s*.04,hy-.1,hr*.93,HD).rotation.z=-s*.25;B(S(.025,.5,1.8,.8),Hr,s*.2,hy-.06,.07,HD)});
  B(S(.045,1.4,.25,.5),Lp,0,hy-.125,hr*.9,HD);
@@ -1999,9 +1998,9 @@ function gxDojina(M,team){
  const cape=B(cg,Cl,0,0,0,TG);cape.frustumCulled=false;const cb=new Float32Array(cp);
  // ---- سر ----
  const HD=new THREE.Group();HD.position.set(0,.8,0);TG.add(HD);B(Cy(.075,.09,.2,12),Sk,0,0,0,HD);
- const hr=.225,hy=.2;B(S(hr,1,1.08,1.02),Sk,0,hy,0,HD);
- B(new THREE.SphereGeometry(hr*1.008,28,20,Math.PI/2-.5,1,1.07,1).scale(1,1.08,1.02),M(0xffffff,{map:GX.faceDj({skin:0xe9ab88,hi:'#f4c4a4',ex:50}),roughness:.6,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2}),0,hy,0,HD);
- B(S(.17,1,.78,.92),Sk,0,hy-.12,.02,HD);B(S(.032,.85,1.5,1.2),Sk,0,hy-.03,hr*1.02,HD);
+ const hr=.225,hy=.2;B(GX.ashape(new THREE.SphereGeometry(hr,44,32),hr).scale(1,1.08,1.02),Sk,0,hy,0,HD);
+ B(GX.ashape(new THREE.SphereGeometry(hr*1.008,36,26,Math.PI/2-.5,1,1.07,1),hr).scale(1,1.08,1.02),M(0xffffff,{map:GX.faceDj({skin:0xe9ab88,hi:'#f4c4a4',ex:50}),roughness:.6,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2}),0,hy,0,HD);
+ B(S(.032,.85,1.5,1.2),Sk,0,hy-.03,hr*1.02,HD);
  // موی طلایی: کلاهک، چتری و دسته‌های کنار صورت
  B(new THREE.SphereGeometry(hr*1.08,28,18,0,TAU,0,1.12).scale(1,1.08,1.05),Hr,0,hy+.01,-.01,HD);
  B(S(.225,1,.85,.95),Hr,0,hy-.03,-.07,HD);
@@ -2542,7 +2541,7 @@ function gxAka(M,team){
  GX.strand(sw,Gr2,[[0,.34,0],[.03,.3,.02],[.05,.22,.03]],.01,.008,8);B(S(.012,1,1,1),Au,.05,.21,.03,sw);
  // ---- سر: صورت، موی مشکی، کلاه حصیری مخروطی ----
  const HD=grp(TG,0,.8,0),hr=.215,hy=.2;B(Cy(.075,.09,.2,12),Sk,0,0,0,HD);
- GX.head(HD,M,{skin:0xe8b898,hi:'#f4cfb4',y:hy,r:hr,ex:55,i1:'#bfe3dc',i2:'#4c8a82',i3:'#10302e',lash:'#14100e',brow:'#14100e',sl:-1,lip:'#a8685c',sm:-1,nat:1});
+ GX.head(HD,M,{skin:0xe8b898,hi:'#f4cfb4',y:hy,r:hr,ex:55,i1:'#bfe3dc',i2:'#4c8a82',i3:'#10302e',lash:'#14100e',brow:'#14100e',sl:-1,lip:'#a8685c',sm:-1,nat:1,id:'aka'});
  B(new THREE.SphereGeometry(hr*1.07,24,16,0,TAU,0,1.25).scale(1,1.08,1.05),Hr,0,hy+.01,-.01,HD);
  for(let i=0;i<7;i++)B(Cn(.04,.12,4),Hr,(i-3)*.055,hy+.12,hr*.88,HD).rotation.x=2.4;
  [-1,1].forEach(q=>GX.strand(HD,Hr,[[q*.2,hy+.02,.06],[q*.215,hy-.1,.07],[q*.2,hy-.2,.05]],.035,.01,8));
@@ -4113,18 +4112,19 @@ function mkVig(){var st=document.getElementById('stage');if(!st)return;
 /* --- Settings UI --- */
 function mkUI(){var p=document.getElementById('setG');if(!p||document.getElementById('gqSec'))return;
  var d=document.createElement('div');d.id='gqSec';
- d.innerHTML='<div class="sec">کیفیت گرافیک (برای گوشی‌های ضعیف «کم» را بزن؛ تغییر خودکار انجام نمی‌شود)</div><div style="display:flex;gap:8px;margin:6px 0 10px"><button type="button" id="gqH" class="pr" style="flex:1">بالا</button><button type="button" id="gqM" class="pr" style="flex:1">متوسط</button><button type="button" id="gqL" class="pr" style="flex:1">کم (سبک)</button></div><div class="sec">نرخ فریم (حداکثر)؛ «حداکثر» یعنی هر چقدر صفحه‌نمایش و گوشی بتوانند (مثلاً ۹۰ یا ۱۲۰) ولی گوشی گرم‌تر می‌شود</div><div style="display:flex;gap:8px;margin:6px 0 10px"><button type="button" id="fpsB30" class="pr" style="flex:1">۳۰</button><button type="button" id="fpsB60" class="pr" style="flex:1">۶۰</button><button type="button" id="fpsBM" class="pr" style="flex:1">حداکثر</button></div>';
+ d.innerHTML='<div class="sec">کیفیت گرافیک (برای گوشی‌های ضعیف «کم» را بزن؛ تغییر خودکار انجام نمی‌شود)</div><div style="display:flex;gap:8px;margin:6px 0 10px"><button type="button" id="gqH" class="pr" style="flex:1">بالا</button><button type="button" id="gqM" class="pr" style="flex:1">متوسط</button><button type="button" id="gqL" class="pr" style="flex:1">کم (سبک)</button></div><div class="sec">نرخ فریم (حداکثر)؛ «حداکثر» یعنی هر چقدر صفحه‌نمایش و گوشی بتوانند (مثلاً ۹۰ یا ۱۲۰) ولی گوشی گرم‌تر می‌شود</div><div style="display:flex;gap:8px;margin:6px 0 10px"><button type="button" id="fpsB30" class="pr" style="flex:1">۳۰</button><button type="button" id="fpsB60" class="pr" style="flex:1">۶۰</button><button type="button" id="fpsB90" class="pr" style="flex:1">۹۰</button><button type="button" id="fpsBM" class="pr" style="flex:1">حداکثر</button></div>';
  
  d.querySelector('#gqH').onclick=function(){setQ('high',true)};
  d.querySelector('#fpsB30').onclick=function(){window.setFPS&&window.setFPS(30)};
  d.querySelector('#fpsB60').onclick=function(){window.setFPS&&window.setFPS(60)};
+ d.querySelector('#fpsB90').onclick=function(){window.setFPS&&window.setFPS(90)};
  d.querySelector('#fpsBM').onclick=function(){window.setFPS&&window.setFPS(0)};
  d.querySelector('#gqM').onclick=function(){setQ('mid',true)};
  d.querySelector('#gqL').onclick=function(){setQ('low',true)};
  paintUI();p.insertBefore(d,p.querySelector('.sec:nth-of-type(1)')||p.firstChild);}
 function paintUI(){var h=document.getElementById('gqH'),m=document.getElementById('gqM'),l=document.getElementById('gqL');if(!h)return;
  [[h,HQ],[m,MQ],[l,!HQ&&!MQ]].forEach(function(a){a[0].style.opacity=a[1]?1:.45;a[0].style.outline=a[1]?'2px solid #e8a33d':'none'});window.paintFPS&&window.paintFPS()}
-function setQ(q,msg){GQ=q;HQ=q==='high';MQ=q==='mid';sv(q);apply();paintUI();
+function setQ(q,msg){GQ=q;HQ=q==='high';MQ=q==='mid';window.__FXQ=HQ?1:.3;sv(q);apply();paintUI();
  if(msg&&typeof toast==='function')toast((HQ?'کیفیت گرافیک: بالا':MQ?'کیفیت گرافیک: متوسط':'کیفیت گرافیک: کم')+' (برای اعمال کامل بازی را ببند و دوباره باز کن)')}
 function apply(){
  if(typeof renderer==='undefined'||!renderer)return;
@@ -4854,16 +4854,15 @@ q('tmExit').onclick=function(){var b=q('tmExit');
  var _b=mkUnit;mkUnit=function(u){window.__GD=true;try{return _b(u)}finally{window.__GD=false}}})();
 /* ===== محدودکردن / آزادکردن نرخ فریم (تنظیمات > گرافیک) ===== */
 (function(){
- var FPS=0;try{var v=localStorage.getItem('jt_fps');if(v!==null)FPS=+v||0}catch(e){}
- if(FPS!==30&&FPS!==60)FPS=0;
- window.paintFPS=function(){[['fpsB30',30],['fpsB60',60],['fpsBM',0]].forEach(function(a){var b=document.getElementById(a[0]);if(!b)return;
+ var FPS=90;try{var v=localStorage.getItem('jt_fps');if(v!==null){v=+v;FPS=(v===30||v===60||v===90)?v:0}}catch(e){}
+ window.paintFPS=function(){[['fpsB30',30],['fpsB60',60],['fpsB90',90],['fpsBM',0]].forEach(function(a){var b=document.getElementById(a[0]);if(!b)return;
   b.style.opacity=FPS===a[1]?1:.45;b.style.outline=FPS===a[1]?'2px solid #e8a33d':'none'})};
  window.setFPS=function(f){FPS=f;try{localStorage.setItem('jt_fps',String(f))}catch(e){}window.paintFPS();
   if(typeof toast==='function')toast(f?('نرخ فریم: حداکثر '+f):'نرخ فریم: حداکثر (بدون محدودیت)')};
  if(typeof loop!=='function')return;
  var _lp=loop,last=0;
  loop=function(){
-  if(FPS){var n=performance.now();if(n-last<1000/FPS-2){requestAnimationFrame(loop);return}last=n}
+  if(FPS){var n=performance.now(),iv=1000/FPS,el=n-last;if(el<iv-1.5){requestAnimationFrame(loop);return}last=el>iv*3?n:n-(el%iv)}
   _lp()};
 })();
 </script>
