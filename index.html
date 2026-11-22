@@ -4275,7 +4275,7 @@ connect();
 /* ===== ارتقای گرافیک: Bloom، مه، گرد و غبار، نور گوشه‌ها، تنظیم کیفیت ===== */
 (function(){
 'use strict';
-var GQ='low';try{GQ=localStorage.getItem('jt_gq')||'low'}catch(e){}
+var NODOTS=true;var GQ='low';try{GQ=localStorage.getItem('jt_gq')||'low'}catch(e){}
 if(['high','mid','master','ultra'].indexOf(GQ)<0)GQ='low';
 var HQ=GQ==='high'||GQ==='master'||GQ==='ultra',MQ=GQ==='mid',MS=GQ==='master'||GQ==='ultra',UL=GQ==='ultra',ulBuilt=false,sweep,bl,bctx,bfr=0,inst=false,built=false,ENV=null,emb,embPos,embVel,embSeed,lastKey='';
 var _r,dust,dustPos,dustVel,mist=[],lights=[],vig;
@@ -4328,17 +4328,17 @@ function apply(){
  scene.environment=HQ?ENV:null;
  if(HQ&&!built){built=true;try{addScene();mkVig()}catch(e){console.warn('gfx scene',e)}}
  if(MS&&!emb){try{addEmbers()}catch(e){console.warn('embers',e)}}
- if(dust)dust.visible=HQ;mist.forEach(function(m){m.visible=HQ});
+ if(dust)dust.visible=HQ&&!NODOTS;mist.forEach(function(m){m.visible=HQ});
  if(UL&&!ulBuilt){ulBuilt=true;try{addUltra()}catch(e){console.warn('ultra',e)}}
  if(sweep)sweep.visible=UL;if(bl)bl.style.display=UL?'block':'none';
- if(emb)emb.visible=MS;
+ if(emb)emb.visible=MS&&!NODOTS;
  lights.forEach(function(l){l.visible=false;l.intensity=0});
  if(vig)vig.style.opacity=MS?1:HQ?.75:0;
  try{renderer.domElement.style.filter=''}catch(e){}
  try{var mx=Math.min(4,renderer.capabilities.getMaxAnisotropy());
   scene.traverse(function(o){var m=o.material;if(m&&m.map&&MS&&m.map.anisotropy<mx){m.map.anisotropy=mx;m.map.needsUpdate=true}
    if(m&&m.isMeshStandardMaterial){if(m.userData.e0==null)m.userData.e0=m.envMapIntensity;m.envMapIntensity=UL?Math.max(m.userData.e0,.25)*2.2:m.userData.e0}});
-  if(typeof tiles!=='undefined')tiles.forEach(function(col){col.forEach(function(t){var m=t.material;if(m&&m.roughness!==undefined){if(m.userData.r0==null)m.userData.r0=m.roughness;if(m.userData.m0==null)m.userData.m0=m.metalness;m.roughness=UL?.42:MS?.5:m.userData.r0;m.metalness=m.userData.m0;var e0=m.userData.e0!=null?m.userData.e0:m.envMapIntensity;m.envMapIntensity=MS?.075:HQ?0:e0}})})}catch(e){}
+  if(typeof tiles!=='undefined')tiles.forEach(function(col){col.forEach(function(t){var m=t.material;if(m&&m.roughness!==undefined){if(m.userData.r0==null)m.userData.r0=m.roughness;if(m.userData.m0==null)m.userData.m0=m.metalness;m.roughness=1;m.metalness=m.userData.m0;var e0=m.userData.e0!=null?m.userData.e0:m.envMapIntensity;m.envMapIntensity=0}})})}catch(e){}
  var key=[HQ,MQ,MS,UL].join();
  if(key!==lastKey){lastKey=key;scene.traverse(function(o){if(o.material){(Array.isArray(o.material)?o.material:[o.material]).forEach(function(m){m.needsUpdate=true})}})}
  try{resize()}catch(e){}}
@@ -4388,13 +4388,13 @@ function adapt(now){
 function frame(){
  var now=performance.now()/1000,dt=Math.min(.05,now-last||.016);last=now;
  adapt(now);
- if(HQ&&dust&&((pf++)&1)===0){var d2=dt*2;
+ if(!NODOTS&&HQ&&dust&&((pf++)&1)===0){var d2=dt*2;
   for(var i=0;i<dustPos.length;i+=3){dustPos[i]+=dustVel[i]*d2;dustPos[i+1]+=dustVel[i+1]*d2;dustPos[i+2]+=dustVel[i+2]*d2;
    if(dustPos[i+1]>4.8){dustPos[i+1]=.1}}
   dust.geometry.attributes.position.needsUpdate=true;
   mist.forEach(function(m){var t=m.material.map;t.offset.x+=m.userData.v[0]*d2;t.offset.y+=m.userData.v[1]*d2})}
  if(MS){
-  if(emb){for(var j=0,e=0;j<embVel.length;j++,e+=3){embPos[e]+=Math.sin(now*.8+embSeed[j])*.25*dt;embPos[e+1]+=embVel[j]*dt;embPos[e+2]+=Math.cos(now*.6+embSeed[j])*.2*dt;if(embPos[e+1]>5.2)embPos[e+1]=.1}
+  if(emb&&!NODOTS){for(var j=0,e=0;j<embVel.length;j++,e+=3){embPos[e]+=Math.sin(now*.8+embSeed[j])*.25*dt;embPos[e+1]+=embVel[j]*dt;embPos[e+2]+=Math.cos(now*.6+embSeed[j])*.2*dt;if(embPos[e+1]>5.2)embPos[e+1]=.1}
    emb.geometry.attributes.position.needsUpdate=true}
   lights.forEach(function(l,i){l.intensity=.6+.14*Math.sin(now*7+i*2)+.07*Math.sin(now*13.3+i*5)});
   if(UL&&sweep){sweep.position.set(CTR.x+Math.sin(now*.4)*5,1.2,CTR.z+Math.cos(now*.27)*7.5)}}
