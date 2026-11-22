@@ -10,7 +10,7 @@
 /* ===== جزئیات بیشتر قطعات مهره‌ها (فقط در کیفیت «بالا») =====
    تعداد سگمنت کره/استوانه/مخروط/لاثه/تورس/کپسول موقع ساخت مهره‌ها بیشتر می‌شود. */
 window.__HQ=false;window.__MS=false;window.__UL=false;try{var _q0=localStorage.getItem('jt_gq');window.__HQ=_q0==='high'||_q0==='master'||_q0==='ultra';window.__MS=_q0==='master'||_q0==='ultra';window.__UL=_q0==='ultra'}catch(e){}
-window.__GD=false;window.__FXQ=1;try{var _q=localStorage.getItem('jt_gq');window.__FXQ=_q==='ultra'?2:_q==='master'?1.5:_q==='high'?1:.3}catch(e){}
+window.__BDK=function(){return window.__UL?.3:window.__MS?.45:window.__HQ?.6:.8};window.__GD=false;window.__FXQ=1;try{var _q=localStorage.getItem('jt_gq');window.__FXQ=_q==='ultra'?2:_q==='master'?1.5:_q==='high'?1:.3}catch(e){}
 (function(){
  var D=function(v,d,k,c){var X=window.__UL?2:window.__MS?1.5:1;v=(v==null?d:v);return Math.min(Math.round(c*X),Math.max(v,Math.round(v*k*X)))};
  var wrap=function(name,fn){var B=THREE[name];if(!B)return;
@@ -225,9 +225,9 @@ button em{font-style:normal;font-size:11px;font-weight:500;opacity:.8}
 .pfbn span{display:block;width:100%;padding:10px 12px;text-align:center;font-size:17px;font-weight:700;color:var(--fg);background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.25);border-radius:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pcsw{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
 .bdmode{display:grid;grid-template-columns:1fr 1fr;gap:8px}.bdmode button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 6px;border-radius:12px;border:2px solid transparent;font-size:14px}.bdmode button small{font-size:10px;font-weight:400;opacity:.7}.bdmode button.on,.bdtx button.on{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}
-.bdtx{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.bdtx button{min-height:62px;padding:0 0 4px;border-radius:10px;border:2px solid transparent;display:flex;align-items:flex-end;justify-content:center;font-size:11px;font-weight:700;color:#fff;text-shadow:0 1px 3px #000,0 0 5px #000;background-size:cover;background-position:center}
+.bdtx{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.bdtx button{display:flex;flex-direction:column;align-items:stretch;gap:5px;min-height:0;padding:4px;border-radius:10px;border:2px solid transparent;font-size:12px;font-weight:700;color:var(--fg)}.bdtx .tsw{display:block;height:56px;border-radius:7px;background-size:cover;background-position:center}.bdtx .tn{display:block;text-align:center;line-height:1.3}
 .bdrow{display:flex;gap:8px;align-items:center}.bdrow button{flex:1;min-height:38px;font-size:13px}.bdrow input[type=color]{flex:none;width:46px;height:38px;padding:0;border:0;background:none}
-#bdPv{display:block;width:100%;max-width:240px;margin:0 auto;touch-action:none;border-radius:12px;background:rgba(0,0,0,.35)}
+#bdPv{position:static;inset:auto;display:block;width:100%;height:auto;max-width:200px;margin:0 auto;touch-action:none;border-radius:12px;background:rgba(0,0,0,.35)}
 
 .pcsw button.sw{min-height:40px;padding:0;border-radius:10px;border:2px solid transparent}
 #avSw,#clSw,#clSw2{max-height:236px;overflow-y:auto;padding:2px}
@@ -405,13 +405,16 @@ html,body{background:#0b0b0d}
 <button id="setGoI" class="setgo" type="button">هویت من<small>تغییر نام کاربری و آیدی</small></button>
 <button id="setGoS" class="setgo" type="button">امنیت<small>تگ، آیدی، رمز عبور و خروج از حساب</small></button>
 <button id="setGoP" class="setgo" type="button">شخصی‌سازی<small>رنگ پروفایل و رنگ کادر چت</small></button>
-<button id="setGoG" class="setgo" type="button">گرافیک و صدا<small>کیفیت گرافیک و میزان صدای بازی</small></button>
+<button id="setGoG" class="setgo" type="button">گرافیک<small>کیفیت گرافیک، نرخ فریم و انیمیشن‌ها</small></button>
+<button id="setGoA" class="setgo" type="button">صدا<small>میزان صدای بازی و قطع صدا</small></button>
 <button id="ovSetClose" type="button">بستن</button></div>
-<div class="setp" id="setG" hidden><h2>گرافیک و صدا</h2>
+<div class="setp" id="setG" hidden><h2>گرافیک</h2>
+<div class="sec">✨ هالهٔ حرکتی (ردّ سفید پشت قهرمان هنگام حرکت)</div><button id="hlT" class="pr" type="button" style="margin-bottom:10px">هالهٔ حرکتی: <small></small></button>
+<button class="setBack" type="button">بازگشت</button></div>
+<div class="setp" id="setA" hidden><h2>صدا</h2>
 <div class="sec">میزان صدا</div>
 <div style="display:flex;gap:10px;align-items:center;margin:6px 0 10px"><input id="volR" type="range" min="0" max="100" step="5" style="flex:1;direction:ltr"><b id="volV" style="min-width:42px;text-align:center"></b></div>
 <button id="muteB" class="pr" type="button" style="margin-bottom:10px">قطع صدا</button>
-<div class="sec">✨ هالهٔ حرکتی (ردّ سفید پشت قهرمان هنگام حرکت)</div><button id="hlT" class="pr" type="button" style="margin-bottom:10px">هالهٔ حرکتی: <small></small></button>
 <button class="setBack" type="button">بازگشت</button></div>
 <div class="setp" id="setI" hidden><h2>هویت من</h2>
 <div class="sec">تغییر نام کاربری (نام همان چیزی است که با آن وارد می‌شوی؛ دوستانت نام جدید را می‌بینند)</div>
@@ -1230,7 +1233,7 @@ function applyBoard(){const q=BDP[BDI]||BDP[0],T=BDQ.m==='n'?(BDTXS[BDQ.t]||BDTX
  if(typeof tiles!=='undefined')tiles.forEach((col,c)=>col&&col.forEach((t,r)=>{if(!t||!t.material)return;const m=t.material,u=m.userData;
   if(!u.bd0)u.bd0={r:m.roughness,m:m.metalness,e:m.envMapIntensity};
   let hex=(c+r)%2?q[1]:q[2];const pk=BDQ.m==='i'?BDQ.c[c+','+r]:null;if(pk!=null)hex=pk|0;
-  m.color.setHex(hex);
+  m.color.setHex(hex);m.color.multiplyScalar(window.__BDK?window.__BDK():1);
   if(T.k){const tx=bdTex(T.k,(c*5+r*3)%4);m.color.multiplyScalar(T.b);
    if(m.map!==tx){m.map=tx;m.bumpMap=T.u?tx:null;m.needsUpdate=true}
    m.bumpScale=T.u;m.roughness=T.r;m.metalness=T.m;m.envMapIntensity=T.e}
@@ -1423,7 +1426,7 @@ function gxMakao3(M,team){
  const nh=t=>Math.round(t.n*1.9)+1,fo=(t,ph,u)=>1+t.a*(Math.sin(t.n*ph+t.ph)+.45*Math.sin(nh(t)*ph+t.ph*1.7))*(1-.8*u),
   hd=(t,ph,u)=>{const uc=Math.max(0,Math.min(1,u));return t.hem*(1-uc)*(.5+.5*Math.sin(t.k*ph+t.ph*2))-.07*(1-uc)*(.5+.5*Math.cos(ph-1))};
   const prof=t=>{const hh=t.y1-t.y0;return[[t.r0,t.y0],[t.r0*.85+t.r1*.15+.02,t.y0+hh*.18],[(t.r0+t.r1)/2,t.y0+hh*.55],[t.r1,t.y1]]},
-  lg=(pts,t,seg)=>{const g=new THREE.LatheGeometry(pts.map(q=>new THREE.Vector2(q[0],q[1])),seg||72),Pp=g.attributes.position,hh=t.y1-t.y0;
+  lg=(pts,t,seg)=>{const g=new THREE.LatheGeometry(pts.map(q=>new THREE.Vector2(q[0],q[1])),seg||40),Pp=g.attributes.position,hh=t.y1-t.y0;
    for(let i=0;i<Pp.count;i++){const x=Pp.getX(i),z=Pp.getZ(i),y=Pp.getY(i),ph=Math.atan2(x,z),u=Math.max(0,Math.min(1,(y-t.y0)/hh)),f=fo(t,ph,u);
     Pp.setX(i,x*f);Pp.setZ(i,z*f);Pp.setY(i,y-hd(t,ph,u))}
    g.computeVertexNormals();return g},
@@ -1547,12 +1550,12 @@ const HP=new THREE.Group();HP.position.set(0,Y+1.9,-.1);G.add(HP);
     a[k*3]=x+w*(.06*Math.sin(t*2.1+y*4.5+x*6+o.ph)+.03*Math.sin(t*3.4+y*7+x*9+o.ph)+SW.x*.8);
     a[k*3+1]=y-w*(Math.abs(SW.x)*.06+.015*Math.sin(t*2.6+x*5+o.ph));
     a[k*3+2]=z+w*(.04*Math.sin(t*1.7+y*3.8+x*5+o.ph)-.02+zf*.7)}
-   o.p.needsUpdate=true;o.m.geometry.computeVertexNormals()});
+   o.p.needsUpdate=true;if(!(ST.nf%3))o.m.geometry.computeVertexNormals()});
   LOCK.forEach(o=>{const b=o.b,a=o.p.array,n=a.length/3;
    for(let k=0;k<n;k++){const y=b[k*3+1],d=Math.min(1,Math.max(0,(o.r-y)/.6)),w=d*d;
     a[k*3]=b[k*3]+w*(o.s*.012+.012*Math.sin(t*2.3+d*5+o.s)+SW.x*.25);
     a[k*3+2]=b[k*3+2]+w*(.015*Math.sin(t*1.9+d*4+o.s)+Math.min(SW.z,.05)*.3)}
-   o.p.needsUpdate=true;o.m.geometry.computeVertexNormals()});
+   o.p.needsUpdate=true;if(!(ST.nf%3))o.m.geometry.computeVertexNormals()});
   // دامن (بدنه، حاشیه، زنجیر و آویزها یکسان جابه‌جا می‌شوند)
   const amp=1+.35*Math.sin(t*.45);
   SK.forEach(S=>{const hh=S.t.y1-S.t.y0;
@@ -1561,10 +1564,10 @@ const HP=new THREE.Group();HP.position.set(0,Y+1.9,-.1);G.add(HP);
      for(let k=0;k<n;k++){fl(b[k*3],b[k*3+1],b[k*3+2],S.t,hh,S.i,t,amp,kick);a[k*3]=Q3.x;a[k*3+1]=Q3.y;a[k*3+2]=Q3.z}
      E.p.needsUpdate=true}
     else{fl(E.r.x,E.r.y,E.r.z,S.t,hh,S.i,t,amp,kick);E.o.position.set(Q3.x,Q3.y,Q3.z)}});
-   S.ent[0].o.geometry.computeVertexNormals()});
+   if(!(ST.nf%2))S.ent[0].o.geometry.computeVertexNormals()});
   // آستین‌های زنگی
   SL.forEach(o=>{const k=o.j+1;o.e.rotation.x=.045*k*Math.sin(t*1.8+o.j*.9+o.s*1.3)+zf*.1*k;o.e.rotation.z=.05*k*Math.sin(t*1.5+o.j*.7+o.s)-SW.x*.15*k*o.s})};
- const ST={t0:-1e9,self:false,r0:-1e9,bl:-10,nb:2.5,sh:false},ez=x=>x<=0?0:x>=1?1:x*x*(3-2*x),eo=x=>{x=x<=0?0:x>=1?1:x;return 1-Math.pow(1-x,3)};
+ const ST={t0:-1e9,self:false,r0:-1e9,bl:-10,nb:2.5,sh:false,su:-1e9,nf:0},ez=x=>x<=0?0:x>=1?1:x*x*(3-2*x),eo=x=>{x=x<=0?0:x>=1?1:x;return 1-Math.pow(1-x,3)};
  GX.anim(G,t=>{const n=performance.now(),e=(n-ST.t0)/1000,e2=(n-ST.r0)/1000;
   const ant=e<0?0:e<.1?ez(e/.1):e<.24?1-ez((e-.1)/.14):0,
    k=e<.1?0:e<.3?eo((e-.1)/.2):e<1?1:e<1.5?1-ez((e-1)/.5):0,
@@ -1583,7 +1586,7 @@ const HP=new THREE.Group();HP.position.set(0,Y+1.9,-.1);G.add(HP);
   const sh=t-ST.bl<.13;if(sh!==ST.sh){ST.sh=sh;faceM.map=sh?fShut:fOpen}
   // مو و دامن: حرکت ثانویه با تأخیر
   HP.rotation.x=.03*Math.sin(t*1.3)+kick*.08;HP.rotation.z=.04*Math.sin(t*.9+1)-G.rotation.z*1.5;HP.rotation.y=-HD.rotation.y*.4;
-  tiers.forEach((m,i)=>{m.rotation.y=.02*Math.sin(t*1.1+i*.8)+kick*.035*Math.sin(i*2);m.rotation.z=.012*Math.sin(t*.9+i*.7)+kick*.02*(i%2?1:-1);m.rotation.x=.01*Math.sin(t*.8+i*.6)-kick*.01*i});softUpdate(t,kick)});
+  tiers.forEach((m,i)=>{m.rotation.y=.02*Math.sin(t*1.1+i*.8)+kick*.035*Math.sin(i*2);m.rotation.z=.012*Math.sin(t*.9+i*.7)+kick*.02*(i%2?1:-1);m.rotation.x=.01*Math.sin(t*.8+i*.6)-kick*.01*i});if(kick>.001||t<ST.su||t-ST.su>=.034){ST.su=t;ST.nf++;softUpdate(t,kick)}});
  
 G.userData.mak={fire:s=>{ST.t0=performance.now();ST.self=!!s},reload:()=>{ST.r0=performance.now()},muzzle};
  return G}
@@ -4212,7 +4215,7 @@ function renderBd(){const h=bdHex;$('bdSw').innerHTML=BDP.map((q,i)=>'<button ty
  $('bdT').textContent=ind?'🎨 رنگ حاشیه و قاب میدان':'🎨 رنگ میدان نبرد';
  document.querySelectorAll('#bdMode button').forEach(b=>b.classList.toggle('on',b.dataset.m===BDQ.m));
  $('bdNorm').hidden=ind;$('bdInd').hidden=!ind;
- if(!ind)$('bdTx').innerHTML=BDTXS.map((T,i)=>'<button type="button" class="'+(i===BDQ.t?'on':'')+'" data-t="'+i+'" style="background-image:url('+bdThumb(T)+')">'+T.n+'</button>').join('');
+ if(!ind)$('bdTx').innerHTML=BDTXS.map((T,i)=>'<button type="button" class="'+(i===BDQ.t?'on':'')+'" data-t="'+i+'"><span class="tsw" style="background-image:url('+bdThumb(T)+')"></span><span class="tn">'+T.n+'</span></button>').join('');
  else{$('bdBr').innerHTML=PCOLS.map((c,i)=>'<button type="button" class="sw'+(bdHex(BDQ.br)===c?' on':'')+'" data-p="'+i+'" style="background:'+c+'" aria-label="'+PCN[i]+'"></button>').join('');drawBdPv()}}
 $('bdSw').onclick=e=>{const b=e.target.closest('button[data-b]');if(!b)return;BDI=+b.dataset.b;try{localStorage.setItem('jt_bd',String(BDI))}catch(_){}try{applyBoard()}catch(_){}renderBd()};
 $('bdMode').onclick=e=>{const b=e.target.closest('button[data-m]');if(!b)return;BDQ.m=b.dataset.m;bdSave();try{applyBoard()}catch(_){}renderBd()};
@@ -4232,7 +4235,7 @@ renderBd();
 function renderMvT(){$('hlT').classList.toggle('on',MVO.halo);$('hlT').lastElementChild.textContent=MVO.halo?'روشن':'خاموش'}
 $('hlT').onclick=()=>{MVO.halo=!MVO.halo;try{localStorage.setItem('jt_halo',MVO.halo?'1':'0')}catch(_){}renderMvT()};
 renderMvT();
-function showSetPane(p){['setM','setS','setP','setI'].forEach(i=>$(i).hidden=i!==p);if(p==='setP'){renderSw();renderCc();renderAv()}}
+function showSetPane(p){['setM','setS','setP','setG','setA','setI'].forEach(i=>{const e=$(i);if(e)e.hidden=i!==p});if(p==='setP'){renderSw();renderCc();renderAv()}}
 $('setGoS').onclick=()=>showSetPane('setS');$('setGoI').onclick=()=>showSetPane('setI');$('nmSave').onclick=()=>sendW({t:'setname',n:$('nmIn').value.trim(),o:$('nmPw').value});$('setGoP').onclick=()=>showSetPane('setP');
 document.querySelectorAll('.setBack').forEach(b=>b.onclick=()=>showSetPane('setM'));
 /* ===== نمادهای سیاه و سفید پروفایل (۱۲ طرح SVG) ===== */
@@ -4487,7 +4490,7 @@ function rebuildUnits(){try{
   g.userData.pick.forEach(m=>{const i=pickables.indexOf(m);if(i>=0)pickables.splice(i,1)});unitG.delete(u)}
  if(typeof syncUnits==='function')syncUnits();
 }catch(e){console.warn('rebuildUnits',e)}}
-function setQ(q,msg){GQ=q;HQ=q==='high'||q==='master'||q==='ultra';MQ=q==='mid';MS=q==='master'||q==='ultra';UL=q==='ultra';window.__FXQ=UL?2:MS?1.5:HQ?1:.3;window.__HQ=HQ;window.__MS=MS;window.__UL=UL;RS=1;sv(q);apply();rebuildUnits();try{resize()}catch(e){}paintUI();
+function setQ(q,msg){try{window.__UL=q==='ultra';window.__MS=q==='master'||q==='ultra';window.__HQ=q==='high'||q==='master'||q==='ultra'}catch(e){}GQ=q;HQ=q==='high'||q==='master'||q==='ultra';MQ=q==='mid';MS=q==='master'||q==='ultra';UL=q==='ultra';window.__FXQ=UL?2:MS?1.5:HQ?1:.3;window.__HQ=HQ;window.__MS=MS;window.__UL=UL;RS=1;sv(q);apply();try{applyBoard();if(MS)tiles.forEach(function(c){c&&c.forEach(function(t){if(t&&t.material)t.material.envMapIntensity=0})})}catch(e){}rebuildUnits();try{resize()}catch(e){}paintUI();
  if(msg&&typeof toast==='function')toast((UL?'کیفیت گرافیک: فوق شاهکار':MS?'کیفیت گرافیک: شاهکار':HQ?'کیفیت گرافیک: بالا':MQ?'کیفیت گرافیک: متوسط':'کیفیت گرافیک: کم')+'')}
 function lt(){var o={sun:null,hemi:null,dirs:[]};scene.traverse(function(x){if(x.isDirectionalLight){if(x.castShadow)o.sun=x;else o.dirs.push(x)}else if(x.isHemisphereLight)o.hemi=x});return o}
 var RS=1;function resTarget(){return Math.round((HQ?1080:MQ?720:480)*RS)}
@@ -4516,6 +4519,7 @@ function apply(){
   scene.traverse(function(o){var m=o.material;if(m&&m.map&&MS&&m.map.anisotropy<mx){m.map.anisotropy=mx;m.map.needsUpdate=true}
    if(m&&m.isMeshStandardMaterial){if(m.userData.e0==null)m.userData.e0=m.envMapIntensity;m.envMapIntensity=UL?Math.max(m.userData.e0,.25)*2.2:m.userData.e0}});
   if(typeof tiles!=='undefined')tiles.forEach(function(col){col.forEach(function(t){var m=t.material;if(m&&m.roughness!==undefined){if(m.userData.r0==null)m.userData.r0=m.roughness;if(m.userData.m0==null)m.userData.m0=m.metalness;m.roughness=1;m.metalness=m.userData.m0;var e0=m.userData.e0!=null?m.userData.e0:m.envMapIntensity;m.envMapIntensity=0}})})}catch(e){}
+ try{applyBoard();if(MS)tiles.forEach(function(c){c&&c.forEach(function(t){if(t&&t.material)t.material.envMapIntensity=0})})}catch(e){}
  var key=[HQ,MQ,MS,UL].join();
  if(key!==lastKey){lastKey=key;scene.traverse(function(o){if(o.material){(Array.isArray(o.material)?o.material:[o.material]).forEach(function(m){m.needsUpdate=true})}})}
  try{resize()}catch(e){}}
@@ -4601,9 +4605,9 @@ function initSnd(){
  var r=document.getElementById('volR'),m=document.getElementById('muteB'),g=document.getElementById('setGoG');if(!r||!g)return;
  r.oninput=function(){VOL=+r.value;if(MUTE&&VOL>0)MUTE=false;try{localStorage.setItem('jt_vol',VOL);localStorage.setItem('jt_mute',MUTE?'1':'0')}catch(e){}applyVol();paintSnd()};
  m.onclick=function(){MUTE=!MUTE;try{localStorage.setItem('jt_mute',MUTE?'1':'0')}catch(e){}applyVol();paintSnd()};
- g.onclick=function(){showSetPane('setG')};
+ g.onclick=function(){showSetPane('setG')};var ga=document.getElementById('setGoA');if(ga)ga.onclick=function(){showSetPane('setA')};
  var _au=au;au=function(){var a=_au();applyVol();return a};
- var _sp=showSetPane;showSetPane=function(p){['setM','setS','setP','setG','setI'].forEach(function(i){var e=document.getElementById(i);if(e)e.hidden=i!==p});if(p==='setP'){renderSw();renderCc();renderAv()}if(p==='setG'){paintSnd();paintUI()}};
+ var _sp=showSetPane;showSetPane=function(p){['setM','setS','setP','setG','setA','setI'].forEach(function(i){var e=document.getElementById(i);if(e)e.hidden=i!==p});if(p==='setP'){renderSw();renderCc();renderAv()}if(p==='setG'){paintUI()}if(p==='setA'){paintSnd()}};
  mkUI();paintSnd()}
 try{initSnd()}catch(e){console.warn('snd',e)}
 var iv=setInterval(function(){try{install()}catch(e){inst=true;console.warn('gfx install',e)}if(inst)clearInterval(iv)},300);
