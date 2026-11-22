@@ -1156,18 +1156,18 @@ GX.reg=(k,fn,old)=>{FIG[k]=(M,t)=>{try{return fn(M,t)}catch(e){console.error('GX
 const _gxPC=placeCamera;placeCamera=function(){_gxPC();if(!/[?&]noanim/.test(location.search))GX.tick(clock.elapsedTime)};
 const _gxIS=initScene;initScene=function(){_gxIS();try{GX.post()}catch(e){console.error('GX.post',e)}};
 /* ===== رنگ میدان نبرد (شخصی‌سازی): [نام، کاشی۱، کاشی۲، حاشیه، قاب، کف] ===== */
-var BDP=[['پیش‌فرض',0x17130f,0x1c1713,0x5c5649,0x3b3025,0x1d1813],
- ['زغالی',0x2a2e35,0x31363e,0x5a626e,0x23262c,0x15171b],
- ['قهوه‌ای سوخته',0x33251a,0x3b2c1f,0x7a5c3e,0x2e2015,0x1a120c],
- ['شرابی تیره',0x3a1820,0x431c25,0x8a3a48,0x2e1218,0x1c0a0e],
- ['سبز جنگلی',0x17302a,0x1c382f,0x3f7a62,0x12261f,0x0b1612],
- ['سرمه‌ای',0x1a2440,0x202c4c,0x4a62a0,0x151d33,0x0c111f],
- ['بنفش تیره',0x2c1f40,0x342548,0x6a52a0,0x241a35,0x140d1f],
- ['زیتونی تیره',0x2c2f1a,0x343820,0x6b7440,0x25271a,0x15170d],
- ['فیروزه‌ای تیره',0x14333a,0x193c44,0x3a8a96,0x112a30,0x0a181c],
- ['مسی',0x40241a,0x4a2a1e,0x9a5a3a,0x34201a,0x1e120d],
- ['سنگی',0x34383a,0x3b4042,0x80898c,0x2b2f31,0x181a1b],
- ['سیاه',0x101012,0x151518,0x3a3a40,0x1a1a1d,0x0a0a0b]];
+var BDP=[['پیش‌فرض',0x0b0907,0x0e0b09,0x5c5649,0x3b3025,0x1d1813],
+ ['زغالی',0x15171a,0x181b1f,0x5a626e,0x23262c,0x15171b],
+ ['قهوه‌ای سوخته',0x19120d,0x1d160f,0x7a5c3e,0x2e2015,0x1a120c],
+ ['شرابی تیره',0x1d0c10,0x210e12,0x8a3a48,0x2e1218,0x1c0a0e],
+ ['سبز جنگلی',0x0b1815,0x0e1c17,0x3f7a62,0x12261f,0x0b1612],
+ ['سرمه‌ای',0x0d1220,0x101626,0x4a62a0,0x151d33,0x0c111f],
+ ['بنفش تیره',0x160f20,0x1a1224,0x6a52a0,0x241a35,0x140d1f],
+ ['زیتونی تیره',0x16170d,0x1a1c10,0x6b7440,0x25271a,0x15170d],
+ ['فیروزه‌ای تیره',0x0a191d,0x0c1e22,0x3a8a96,0x112a30,0x0a181c],
+ ['مسی',0x20120d,0x25150f,0x9a5a3a,0x34201a,0x1e120d],
+ ['سنگی',0x1a1c1d,0x1d2021,0x80898c,0x2b2f31,0x181a1b],
+ ['سیاه',0x080809,0x0a0a0c,0x3a3a40,0x1a1a1d,0x0a0a0b]];
 var BDI=0;try{BDI=(+localStorage.getItem('jt_bd')||0)|0;if(BDI<0||BDI>=BDP.length)BDI=0}catch(e){}
 function applyBoard(){const q=BDP[BDI]||BDP[0];
  if(typeof tiles!=='undefined')tiles.forEach((col,c)=>col&&col.forEach((t,r)=>{if(t&&t.material)t.material.color.setHex((c+r)%2?q[1]:q[2])}));
@@ -2960,7 +2960,7 @@ function syncTiles(){
   if(swT.some(t=>t.c===c&&t.r===r))f=0x14b8a6;
   if(abL.some(t=>t.c===c&&t.r===r))f=0xf5c832;
   if(mode==='mv'&&hitT.some(t=>t.c===c&&t.r===r))f=0xe63c3c;
-  if(phase!=='play'&&(P===0?r>=4:r<4))f=(ONLINE||!P)?0x5a1a15:0x12336a;const m=tiles[c][r].material;m.emissive.setHex(f);m.emissiveIntensity=f?.6:0;if(f)hlTiles.push(m)}
+  if(phase!=='play'&&(P===0?r>=4:r<4))f=(ONLINE||!P)?0x280b09:0x081730;const m=tiles[c][r].material;m.emissive.setHex(f);m.emissiveIntensity=f?.6:0;if(f)hlTiles.push(m)}
  if(sel){ringMesh.visible=true;ringMesh.position.set(CELL_X(sel.c),.03,CELL_Z(sel.c,sel.r))}else ringMesh.visible=false}
 function loop(){
  requestAnimationFrame(loop);const dt=Math.min(.05,clock.getDelta()),t=clock.elapsedTime;
