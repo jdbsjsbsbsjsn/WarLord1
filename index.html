@@ -2243,6 +2243,10 @@ function gxDemonKing(M,team){
     [[.1,.1,.17,.5,.5,1],[.0,.12,.2,0,.5,1],[-.1,.1,.17,-.5,.5,1]].forEach(a=>sp(K,Au,[s*a[0],a[1],a[2]],[s*a[3],a[4],a[5]],.03,.18,4));
     B(Bx(.028,.5,.04),Au,s*.12,-.34,.15,K);for(let i=0;i<4;i++)B(Sm(.016),Au,0,-.15-.1*i,.2,K);
     B(Tr(.16,.02,16),Au,0,.06,0,F).rotation.x=PI/2;[-.12,0,.12].forEach(x=>sp(F,Au,[x,-.1,.62],[0,-.1,1],.03,.18,4));B(Bx(.04,.12,.5),Au,s*.19,-.07,.14,F)}
+   /* جزئیات بیشتر پا: خار ران، حلقهٔ زانو، خار کناری چکمه */
+   {[0,1].forEach(i=>sp(L,Au,[s*.27,-.05-.12*i,.05],[s,.5-.3*i,.2],.04,.24-.04*i,5));
+    B(Tr(.19,.014,16),Au,0,-.1,0,K).rotation.x=PI/2;
+    [0,1].forEach(i=>sp(F,Au,[s*.18,-.05,.1-.14*i],[s,-.1,.3-.5*i],.03,.16,4))}
    gxMerge(F);gxMerge(K);gxMerge(L);
    return{L,K,F,s}});
  /* ---- تنه ---- */
@@ -2291,6 +2295,9 @@ function gxDemonKing(M,team){
    for(let i=0;i<10;i++){const a=i/10*TAU;sp(HD,Au,[Math.sin(a)*.2,.16,Math.cos(a)*.2-.01],[Math.sin(a)*.4,1,Math.cos(a)*.4],.02,.1+.04*(i%2),4)}
    [-1,1].forEach(s=>{for(let k=0;k<3;k++)sp(HD,Au,[s*.19,-.04-.04*k,.12],[s,-.2-.2*k,.5],.02,.12,4);B(Oc(.025,1,1.4,.6),Gm,s*.07,.1,.225,HD);B(Bx(.14,.02,.03),Ar,s*.07,.06,.235,HD).rotation.z=s*.3;sp(HD,Fu1,[s*.03,-.17,.245],[0,-1,.2],.012,.07,4)});
    [-.04,0,.04].forEach(x=>sp(HD,Au,[x,-.2,.15],[0,-1,.4],.02,.1,4))}
+  /* جزئیات بیشتر سر: خار گونه، ابروی زره‌ای، جواهرهای تاج */
+  {[-1,1].forEach(s=>{for(let k=0;k<3;k++)sp(HD,Au,[s*.2,-.09-.035*k,.04],[s,-.4,-.2],.018,.1,4);B(Bx(.1,.02,.04),Ar,s*.07,.09,.235,HD).rotation.z=s*.25});
+   for(let i=0;i<5;i++){const a=(i-2)*.45;B(Oc(.022,1,1.4,.6),Gm,Math.sin(a)*.222,.12,Math.cos(a)*.222,HD)}}
   gxMerge(HD);
   /* ---- چهار دست: دو دست بالا، دو دست پایین؛ ساعد زرهی، پنجهٔ طلایی ---- */
  const mkArm=(s,sx,sy,sz,up)=>{
@@ -2309,6 +2316,11 @@ function gxDemonKing(M,team){
     for(let k=0;k<3;k++)sp(A,Au,[s*(.1+.05*k),.14,-.1+.1*k],[s*(.4+.2*k),1,-.3+.3*k],.03,.2-.03*k,4);
     for(let i=0;i<6;i++){const a=i/6*TAU;B(Sm(.016),Au,Math.sin(a)*.16,-.12,Math.cos(a)*.16,Eb)}sp(Eb,Au,[s*.17,-.45,0],[s*.3,-1,0],.025,.3,4);
     [-.075,-.025,.025,.075].forEach(x=>sp(H,Au,[x,-.1,.07],[0,.3,1],.016,.08,4))}
+   /* جزئیات بیشتر دست: خار شانه، حلقهٔ طلایی، تیغ ساعد، خار پشت پنجه */
+   {for(let k=0;k<3;k++)sp(A,Ar,[s*(.12+.07*k),.1,.1-.1*k],[s*(.6+.3*k),.8,.3-.3*k],.04,.18-.02*k,5);
+    B(Tr(.2,.012,16),Au,s*.03,.12,0,A).rotation.x=PI/2;
+    B(Bx(.03,.3,.1),Au,s*.16,-.3,.02,Eb).rotation.z=s*.12;B(Bx(.03,.22,.08),Au,-s*.15,-.3,.02,Eb);B(Tr(.15,.015,16),Au,0,-.3,0,Eb).rotation.x=PI/2;
+    [-.075,-.025,.025,.075].forEach(x=>sp(H,Ar,[x,-.02,-.1],[0,1,-.4],.022,.1,4))}
    gxMerge(H);gxMerge(Eb);gxMerge(A);
    return{A,Eb,H,fg,s,up}};
  const LA=[-1,1].map(s=>mkArm(s,.66,.64,.05,0)),UA=[-1,1].map(s=>mkArm(s,.8,.98,-.02,1)),ARMS=LA.concat(UA);
@@ -2319,6 +2331,11 @@ function gxDemonKing(M,team){
    [[.17,.1],[-.17,.1],[0,.28],[0,-.08]].forEach(a=>B(Sm(.014),Au,a[0],a[1],.435,TG));
    for(let i=0;i<7;i++){const a=PI+(i-3)*.4;sp(TG,Au,[Math.sin(a)*.5,.14,Math.cos(a)*.4],[Math.sin(a)*.8,.2,Math.cos(a)*.8],.03,.16,4)}
    B(Bx(.07,.85,.03),Ar,-.05,.72,.35,TG).rotation.z=.5;for(let i=0;i<5;i++)B(Sm(.014),Au,-.05-.07*Math.sin(.5)*(i-2)*1.6,.72+.14*(i-2)*1.6,.37,TG)}
+  /* جزئیات بیشتر تنه: صفحات کمربند، خارهای پشت، یقهٔ طلایی */
+  {const Sm=r=>new THREE.SphereGeometry(r,6,5);
+   for(let i=0;i<5;i++){const x=(i-2)*.15,z=.46-Math.abs(i-2)*.03;B(Bx(.14,.26,.03),Ar,x,-.2,z,TG);B(Sm(.016),Au,x,-.1,z+.02,TG)}
+   for(let i=0;i<7;i++)sp(TG,Au,[0,1.0-i*.12,-.36-.01*i],[0,.3,-1],.035,.2-.015*i,4);
+   [-1,1].forEach(s=>{B(Tr(.2,.014,16),Au,s*.3,1.05,.02,TG).rotation.x=PI/2;B(Oc(.03,1,1.4,.6),Gm,s*.22,.98,.34,TG)})}
   gxMerge(TG);
   /* ---- انیمیشن: بیکار، راه رفتن، حمله، ضربهٔ ویژه، ضربه‌خوردن، مرگ ---- */
  const IDLE=[.1,2.25,-.3,.8,-.1,1.05,-.45,-.45,0,0,0,0,.35,0,0],
@@ -2878,6 +2895,33 @@ function skelFig(M){const g=new THREE.Group(),V=THREE.Vector3,B=M(GX.c(0xe9e3d0)
  const nz=add(new THREE.ConeGeometry(.022,.05,3),D,0,-.04,.15,HG);nz.rotation.x=Math.PI;
  for(let i=-3;i<=3;i++)add(new THREE.BoxGeometry(.018,.03,.012),B,i*.022,-.085,.155,HG);
  add(S(.035),B,0,1.4,-.02);add(S(.032),B,0,1.36,-.025);
+ /* جزئیات بیشتر اسکلت: دنده، ستون مهره، لگن، انگشت، دندان، تاج زنگ‌زده، کمربند، شمشیر */
+ {const T=(r,t,n)=>new THREE.TorusGeometry(r,t,5,n||14),Bx=(a,b,c)=>new THREE.BoxGeometry(a,b,c),Cn=(r,l,n)=>new THREE.ConeGeometry(r,l,n||4),PI=Math.PI;
+  [.89,.93,.97,1.01].forEach((y,i)=>{const t=add(T(.125+.004*i,.012,14),B,0,y,0);t.rotation.x=PI/2;t.scale.set(1,.7,1)});
+  for(let i=0;i<6;i++)[-1,1].forEach(s=>rod([s*.05,1.27-i*.06,-.03],[s*.16,1.25-i*.06,.07],.012,B));
+  for(let i=0;i<4;i++)add(Bx(.035,.045,.02),B,0,1.12+i*.055,.118);
+  [.82,.85,.88,.91].forEach(y=>add(S(.034),B,0,y,-.03));[1.36,1.39,1.42].forEach(y=>add(S(.03),B,0,y,-.025));
+  [-1,1].forEach(s=>{add(S(.07,1.2,.2,.6),B,s*.1,1.2,-.1).rotation.z=s*.4;
+   add(S(.1,.9,.55,.5),B,s*.12,.82,-.01).rotation.z=-s*.5;
+   add(S(.045),B,s*.11,.42,.09);rod([s*.11,.4,.02],[s*.11,.12,.0],.012,B).position.x+=s*.03;add(S(.032),B,s*.11,.08,0);
+   for(let k=-1;k<=1;k++)add(Bx(.02,.02,.07),B,s*.11+k*.03,.02,.14);add(Bx(.1,.025,.04),D,s*.11,.01,.0)});
+  add(S(.05,1,.8,.8),B,0,.77,-.01);add(S(.03,.8,1.4,.7),B,0,.74,.07);
+  [-1,1].forEach(s=>{add(Bx(.02,.04,.012),D,s*.065,.06,.158,HG);add(S(.04,1.3,.5,.5),B,s*.11,-.06,.1,HG);add(S(.035,1,.4,.7),B,s*.1,.07,.13,HG)});
+  [-3,-2,-1,0,1,2].forEach(i=>add(Bx(.016,.026,.012),B,i*.022+.011,-.145,.14,HG));
+  add(Bx(.008,.1,.012),D,.03,.1,.14,HG).rotation.z=.3;
+  const cr=add(T(.15,.012,18),Rs,0,.08,0,HG);cr.rotation.x=PI/2;
+  for(let i=0;i<5;i++){const a=(i-2)*.5;add(Cn(.014,.07,4),Rs,Math.sin(a)*.15,.13,Math.cos(a)*.15,HG)}
+  const bl=add(T(.135,.018,20),Rs,0,.7,0);bl.rotation.x=PI/2;bl.scale.set(1,.9,1);add(Bx(.06,.05,.02),Rs,0,.7,.13);
+  [-.1,0,.1].forEach(x=>add(Bx(.03,.14+Math.abs(x),.012),Cl,x,.6-Math.abs(x)*.4,-.12));[-.08,0,.08].forEach(x=>add(Bx(.025,.16,.012),Cl,x,.56,.13));
+  add(S(.02),B,.1,.6,.13);add(S(.016),B,.1,.56,.13);add(S(.016),B,.1,.52,.13);add(S(.045,1,1.2,.8),B,.1,.46,.13);
+  const sh=(G,s)=>{add(S(.09,1,.6,1),Rs,s*.02,.05,0,G);add(Bx(.02,.02,.02),D,s*.05,.07,.08,G)};sh(AL,-1);sh(AR,1);
+  for(let k=0;k<3;k++)add(Cn(.018,.09,4),Rs,-.06+k*.04,.12-k*.01,0,AL).rotation.z=.35-k*.3;
+  rod([-.04,-.3,.0],[-.04,-.55,.12],.012,B,AL);rod([.04,-.3,.0],[.04,-.55,.12],.012,B,AR);add(S(.03),B,-.07,-.3,.02,AL);add(S(.03),B,.07,-.3,.02,AR);
+  for(let k=0;k<5;k++){add(Bx(.012,.07,.012),B,-.09+k*.02,-.62,.14,AL);add(Bx(.012,.05,.012),B,.03+k*.016,-.585,.14,AR)}
+  add(S(.032),B,.05,-.63,.14,AR);add(Bx(.04,.025,.04),D,.05,-.6,.14,AR);add(Bx(.04,.025,.04),D,.05,-.58,.14,AR);
+  add(Bx(.01,.5,.016),D,.05,-.3,.145,AR);for(let k=0;k<4;k++)add(Bx(.012,.016,.022),D,.0325,-.12-k*.12,.14,AR);for(let k=0;k<3;k++)add(S(.01),D,.06,-.15-k*.14,.15,AR);
+  [-1,1].forEach(s=>{rod([s*.11,.42,.0],[s*.12,.1,.03],.014,B);add(Bx(.025,.07,.025),D,s*.11,.2,.03)});
+  [-1,1].forEach(s=>{for(let k=0;k<3;k++)add(Cn(.014,.06,4),D,s*.11+(k-1)*.025,.02,.19).rotation.x=PI/2})}
  GX.anim(g,t=>{HG.rotation.y=.28*Math.sin(t*.8);HG.rotation.x=.06*Math.sin(t*1.3);AR.rotation.x=-.12+.1*Math.sin(t*1.6);AL.rotation.x=.06*Math.sin(t*1.4+1)});
  return g}
 FIG.skl=skelFig;
@@ -4247,6 +4291,64 @@ function gxRaf(M,team){
 function rfSafe(M){const G=new THREE.Group(),a=(g,c,y,z)=>{const m=new THREE.Mesh(g,M(c,{roughness:.8}));m.position.set(0,y,z||0);G.add(m)};
  a(new THREE.CylinderGeometry(.25,.42,1.5,16),0xcfc6b8,.8);a(new THREE.SphereGeometry(.22,18,14),0xd2a68b,1.75);a(new THREE.ConeGeometry(.3,.5,12),0xcfc6b8,2.05);return G}
 GX.reg('raf',gxRaf,rfSafe);
+/* ===== ارتقای جزئیات و بافت اسکین‌ها (همهٔ اسکین‌های زیر ۶۰۰ تکه) =====
+ هر اسکین بعد از ساخته‌شدن، تعدادی تکهٔ ریز (گل‌میخ، پرچ، بخیه، خار/پولک) روی سطح قطعه‌های خودش می‌گیرد
+ تا مجموعِ تکه‌ها به ۶۰۰ برسد؛ تکه‌ها به قطعهٔ پدرشان می‌چسبند (با دست و پا حرکت می‌کنند) و ادغام می‌شوند تا فشار گرافیکی کم بماند.
+ جدول CFG: [تعداد تکهٔ افزوده، حالت]  حالت ۰=فقط فلز/چرم/پارچه، ۱=استخوان هم، ۲=پولک و خار (اژدها)
+ بافت: برای مواد بدون نقشه، بامپ‌مپِ مناسب (خراش فلز، دانهٔ چرم، منفذ، پولک، ترک استخوان) اضافه می‌شود. */
+(()=>{
+ const CFG={ali:[237,0],mak:[157,0],cri:[209,0],doj:[151,0],skl:[429,1],fd:[160,2],ft:[160,2],acro:[137,0],raf:[148,0]};
+ const BT={},T0={};
+ const bump=k=>BT[k]||(BT[k]=GX.tex(128,128,(x,w,h)=>{
+  let sd=7;const R=()=>{sd=(sd*16807)%2147483647;return sd/2147483647};
+  x.fillStyle='#808080';x.fillRect(0,0,w,h);
+  if(k==='scratch'){for(let i=0;i<110;i++){const a=R()*.5+(i%7?0:1.2),X=R()*w,Y=R()*h,L=8+R()*40;x.strokeStyle=R()<.5?'rgba(255,255,255,.35)':'rgba(0,0,0,.35)';x.lineWidth=.5+R()*1.2;x.beginPath();x.moveTo(X,Y);x.lineTo(X+Math.cos(a)*L,Y+Math.sin(a)*L);x.stroke()}
+   for(let i=0;i<14;i++){const g=x.createRadialGradient(0,0,0,0,0,6);g.addColorStop(0,'rgba(0,0,0,.5)');g.addColorStop(1,'rgba(0,0,0,0)');x.save();x.translate(R()*w,R()*h);x.fillStyle=g;x.beginPath();x.arc(0,0,6,0,7);x.fill();x.restore()}}
+  else if(k==='grain'){for(let i=0;i<1100;i++){x.fillStyle=R()<.5?'rgba(0,0,0,.28)':'rgba(255,255,255,.22)';x.beginPath();x.arc(R()*w,R()*h,.6+R()*1.3,0,7);x.fill()}
+   x.strokeStyle='rgba(0,0,0,.25)';x.lineWidth=1;for(let i=0;i<18;i++){let X=R()*w,Y=R()*h;x.beginPath();x.moveTo(X,Y);for(let j=0;j<4;j++){X+=R()*20-10;Y+=R()*20-10;x.lineTo(X,Y)}x.stroke()}}
+  else if(k==='pore'){for(let i=0;i<650;i++){x.fillStyle=R()<.65?'rgba(0,0,0,.22)':'rgba(255,255,255,.14)';x.beginPath();x.arc(R()*w,R()*h,.5+R()*.9,0,7);x.fill()}}
+  else if(k==='scales'){const S=16;for(let r=-1;r<h/S*1.2+1;r++)for(let c=-1;c<w/S+1;c++){const X=c*S+(r%2?S/2:0),Y=r*S*.8,g=x.createRadialGradient(X,Y,1,X,Y,S*.62);g.addColorStop(0,'#d6d6d6');g.addColorStop(.7,'#8a8a8a');g.addColorStop(1,'#303030');x.fillStyle=g;x.beginPath();x.arc(X,Y,S*.62,0,7);x.fill()}}
+  else{for(let i=0;i<45;i++){let X=R()*w,Y=R()*h;x.strokeStyle='rgba(0,0,0,.4)';x.lineWidth=.8+R();x.beginPath();x.moveTo(X,Y);for(let j=0;j<5;j++){X+=R()*14-7;Y+=R()*14-4;x.lineTo(X,Y)}x.stroke()}
+   for(let i=0;i<260;i++){x.fillStyle=R()<.6?'rgba(0,0,0,.2)':'rgba(255,255,255,.18)';x.beginPath();x.arc(R()*w,R()*h,.5+R()*1.6,0,7);x.fill()}}
+ },0,[3,3]));
+ const cls=m=>{
+  if(!m||m.isMeshBasicMaterial||m.transparent||m.map||(m.emissive&&m.emissive.r+m.emissive.g+m.emissive.b>.3))return null;
+  if(m.metalness>=.45)return 'metal';
+  if(m.roughness<.12)return null;
+  if(m.sheen>0||m.roughness>=.85)return 'cloth';
+  if(m.metalness===0&&m.clearcoat>.3&&m.clearcoat<.9&&m.clearcoatRoughness>=.27)return 'leather';
+  return 'skin'};
+ const TPL=()=>{if(!T0.s)Object.assign(T0,{s:new THREE.SphereGeometry(1,6,5),b:new THREE.BoxGeometry(2.4,.5,.7),y:new THREE.CylinderGeometry(1,1,.5,7),c:new THREE.ConeGeometry(1,2.8,5),o:new THREE.OctahedronGeometry(1)});return T0};
+ function detail(G,cfg,key){
+  const N=cfg[0],mode=cfg[1],V=THREE.Vector3;let sd=key.length*131+17;const R=()=>{sd=(sd*16807)%2147483647;return sd/2147483647};
+  const bb=new THREE.Box3().setFromObject(G),H=Math.max(.5,bb.max.y-bb.min.y),src=[];let tot=0;
+  G.traverse(o=>{if(!o.isMesh||!o.parent||o.userData.keep||o.frustumCulled===false||Array.isArray(o.material))return;
+   const m=o.material,c=cls(m);if(!c)return;if(c==='skin'&&!mode)return;
+   const ps=o.geometry&&o.geometry.attributes&&o.geometry.attributes.position;if(!ps||ps.count<24)return;
+   if(!m.bumpMap&&!m.userData.bd){m.userData.bd=1;m.bumpMap=bump(c==='metal'?'scratch':c==='leather'?'grain':c==='skin'?(mode===2?'scales':mode===1?'bone':'pore'):'pore');m.bumpScale=c==='metal'?1.6:1.2;m.needsUpdate=true}
+   if(c==='cloth'&&mode===0&&m.bumpMap&&m.bumpMap!==BT.pore&&false)return;
+   src.push({o,m,c,ps,nr:o.geometry.attributes.normal,w:ps.count});tot+=ps.count});
+  if(!src.length)return;
+  const T=TPL(),grp=new Map();
+  for(let n=0;n<N;n++){let r=R()*tot,e=src[0];for(const s of src){r-=s.w;if(r<=0){e=s;break}}
+   const i=Math.floor(R()*e.ps.count),o=e.o;o.updateMatrix();
+   const p=new V(e.ps.getX(i),e.ps.getY(i),e.ps.getZ(i)).applyMatrix4(o.matrix);
+   const nv=e.nr?new V(e.nr.getX(i),e.nr.getY(i),e.nr.getZ(i)):new V(0,1,0);nv.transformDirection(o.matrix);
+   const s=H*.0065*(.7+.8*R());let tp,sc=new V(s,s,s);
+   if(e.c==='metal')tp=R()<.6?T.s:T.o;else if(e.c==='cloth'){tp=T.b;sc.set(s*1.1,s*1.1,s*1.1)}else if(e.c==='leather')tp=T.y;else{tp=mode===2?T.c:T.s;if(mode===2)sc.set(s*1.5,s*1.5,s*1.5)}
+   const q=new THREE.Quaternion().setFromUnitVectors(new V(0,1,0),nv).multiply(new THREE.Quaternion().setFromAxisAngle(new V(0,1,0),R()*6.283));
+   p.addScaledVector(nv,s*.15);
+   const g=tp.clone().applyMatrix4(new THREE.Matrix4().compose(p,q,sc)),g2=g.index?g.toNonIndexed():g,k=o.parent.uuid+e.m.uuid;
+   let it=grp.get(k);if(!it){it={P:o.parent,m:e.m,L:[]};grp.set(k,it)}it.L.push(g2)}
+  grp.forEach(it=>{let n=0;it.L.forEach(g=>n+=g.attributes.position.count);
+   const P3=new Float32Array(n*3),N3=new Float32Array(n*3),U2=new Float32Array(n*2);let k=0;
+   it.L.forEach(g=>{const c=g.attributes.position.count;P3.set(g.attributes.position.array,k*3);if(g.attributes.normal)N3.set(g.attributes.normal.array,k*3);if(g.attributes.uv)U2.set(g.attributes.uv.array,k*2);k+=c;g.dispose()});
+   const mg=new THREE.BufferGeometry();mg.setAttribute('position',new THREE.BufferAttribute(P3,3));mg.setAttribute('normal',new THREE.BufferAttribute(N3,3));mg.setAttribute('uv',new THREE.BufferAttribute(U2,2));
+   it.P.add(new THREE.Mesh(mg,it.m))});
+  (window.__DET=window.__DET||{})[key]=N}
+ Object.keys(CFG).forEach(k=>{const f=FIG[k];if(!f)return;
+  FIG[k]=(M,t)=>{const g=f(M,t);try{detail(g,CFG[k],k)}catch(e){console.error('detail',k,e)}return g}})
+})();
 function rfFig(g){const i=g&&g.children[0];return i&&i.children.find(o=>o.userData&&o.userData.raf)}
 SFX.rfDie=()=>{os('sine',420,100,1,.3,0);os('triangle',640,200,1.2,.2,.05);nz(.5,'lowpass',1800,250,1,.5,0);os('sine',160,60,.8,.5,.3)};
 /* حمله: عصا با کریستال می‌درخشد و شعاع نور می‌زند؛ واکنش آسیب‌دیدن */
