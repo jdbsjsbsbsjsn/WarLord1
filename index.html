@@ -3910,12 +3910,16 @@ function botDraft(){
 /* وزن ارزش هر طلسم برای ربات: به‌جای انتخاب تصادفی، قوی‌ترین ترکیب ممکن را می‌بندد */
 const BOTSW={fb:10,fz:9,rs:7,cu:7,sr:6,eq:6,rg:6,rr:5,pt:5,wd:4,is:4};
 function botSpells(){
-  const ks=Object.keys(SPELLS).filter(k=>!SPELLS[k].s&&k!=='iv'),left=elLeft(P);let ex=[],near=[],bs=-1;
+  const ks=Object.keys(SPELLS).filter(k=>!SPELLS[k].s&&k!=='iv'&&k!=='eq'),left=elLeft(P);let ex=[],near=[],bs=-1;
   for(let i=0;i<ks.length;i++)for(let j=i+1;j<ks.length;j++)for(let k=j+1;k<ks.length;k++)for(let l=k+1;l<ks.length;l++){
     const q=[ks[i],ks[j],ks[k],ks[l]],s=q.reduce((n,x)=>n+SPELLS[x].x,0);
     if(s===left)ex.push(q);else if(s<left){if(s>bs){bs=s;near=[q]}else if(s===bs)near.push(q)}}
   const pool=ex.length?ex:near;if(!pool.length)return;
-  const w=q=>BOTLV==='hard'?q.reduce((n,x)=>n+(BOTSW[x]||3),0)+Math.random()*1.5:Math.random();
+  const pk=((PK&&PK[P]&&PK[P].length?PK[P]:(DR&&DR.picks))||[]).filter(k=>H[k]),n=Math.max(1,pk.length),mel=pk.filter(k=>H[k].r===1).length/n,rgd=1-mel,
+    avgD=pk.reduce((a,k)=>a+H[k].d,0)/n,avgHp=pk.reduce((a,k)=>a+H[k].hp,0)/n,avgC=pk.reduce((a,k)=>a+(hc(k)||0),0)/n,W=Object.assign({},BOTSW);
+  W.rg+=mel*2.5+(avgD>260?1:0)+(n>=6?1:0);W.fz+=mel*1.5;W.pt+=mel*1.5+(avgHp>2200?1.5:0);W.rr-=mel*1;
+  W.is+=rgd*2+(avgC>=7?1.5:0)+(n<=4?1:0);W.cu+=rgd*1.5+(n<=4?1.5:0);W.eq+=rgd*1;W.wd+=(avgD>260?1.5:0)+(n<=4?1:0);W.rs+=(avgC>=7?3:avgC>=5.5?1.5:0);W.fb+=rgd*.5;
+  const w=q=>BOTLV==='hard'?q.reduce((a,x)=>a+(W[x]||3),0)-(q.includes('pt')&&q.includes('is')?1.5:0)-(q.includes('rg')&&q.includes('rr')?.7:0)+Math.random()*.8:Math.random();
   SP[P]=pool.reduce((b,q)=>w(q)>w(b)?q:b).slice()}
 /* چیدمان هوشمند: تانک‌ها وسط خط مقدم، سریع‌ها کناره‌ها، دوربردها عقب و غیرمجاور (ضد توپ آتشین و زلزله) */
 function botPlaceSimple(){
@@ -3959,7 +3963,7 @@ function botPlayLite(){
   for(const u of my){const R=H[u.k].r,m=reach(u),cur=Math.min(...en.map(e=>dist(u,e)));
     for(const k in m){const [x,y]=k.split(',').map(Number),dm=Math.min(...en.map(e=>dist({c:x,r:y},e)));
       let g;if(R===1)g=cur-dm;else g=(Math.abs(cur-R)-Math.abs(dm-R))+(cur===1&&dm>1?1:0);
-      g+=Math.random()*.2;if(g>.15&&(!best||g>best.g))best={u,x,y,g}}}
+      g+=Math.random()*.2;if(!best||g>best.g)best={u,x,y,g}}}
   if(best){sel=best.u;mode='mv';handleCell0(best.x,best.y);return}
   endTurn(false)}
 /* ===== هوش مصنوعی نسخهٔ ۲: تحلیل تهدید، تمرکز روی کشتن، قابلیت‌ها و طلسم‌ها ===== */
@@ -3998,53 +4002,156 @@ function bAllTris(){const seen=new Set(),o=[];for(let a=0;a<COLS;a++)for(let b=0
   if(!T3.length)continue;const key=T3.map(p=>p.join(',')).sort().join('|');if(seen.has(key))continue;seen.add(key);o.push(T3)}}return o}
 function bSpells(){
   const out=[],me=P,EN=U.filter(x=>x.hp>0&&x.o!==me),MY=U.filter(x=>x.hp>0&&x.o===me),inC=cells=>U.filter(x=>x.hp>0&&cells.some(q=>q[0]===x.c&&q[1]===x.r));
-  const push=(k,c,r,cells,v,thr)=>{if(v>=thr||(T>=8&&v>=thr*.6))out.push({k,c,r,cells,s:v+250})};
-  for(const k of SP[me]){const S=SPELLS[k];if(!S||S.s||(botBadK[k]===T))continue;
-    if(k==='fb'){let b=null;for(const tr of bAllTris()){const v=inC(tr).filter(x=>x.o!==me).reduce((s,x)=>s+bVal(x,680),0);if(!b||v>b.v)b={v,tr}}if(b)push(k,b.tr[0][0],b.tr[0][1],b.tr,b.v,900)}
-    else if(k==='fz'||k==='rg'||k==='eq'||k==='rr'){let b=null;for(let c0=0;c0<COLS;c0++)for(let r0=0;r0<ROWS;r0++){const cells=cellsFor(S.t,c0,r0,null),A=inC(cells);let v=0;
-        for(const x of A){const en=x.o!==me;if(k==='fz'){if(en)v+=H[x.k].d*.9+60}else if(k==='rg'){v+=(en?-1:1)*H[x.k].d*.25*(x.act?.4:1)}else{if(en)v+=bVal(x,100)+(k==='rr'?120:0)}}
-        if(!b||v>b.v)b={v,c:c0,r:r0,cells}}
-      if(b)push(k,b.c,b.r,b.cells,b.v,k==='fz'?900:k==='rg'?450:550)}
-    else if(k==='sr'){if(!freeAny())continue;let b=null;for(let c0=0;c0<COLS;c0++){let f=true,v=250;for(let j=0;j<ROWS;j++){if(ST.some(q=>q.c===c0&&q.r===j))break;const x=EN.find(z=>z.c===c0&&z.r===j);if(x){v+=bVal(x,f?260:130);f=false}}if(!b||v>b.v)b={v,c:c0}}if(b)push(k,b.c,0,cellsFor('l',b.c,0,null),b.v,500)}
-    else if(k==='cu'){let b=null;for(const t of EN){const v=H[t.k].d*1.6+30;if(!b||v>b.v)b={v,t}}if(b)push(k,b.t.c,b.t.r,[[b.t.c,b.t.r]],b.v,750)}
-    else if(k==='wd'){let b=null;for(const t of EN){const v=Math.min(t.hp,3000)*.18+250;if(!b||v>b.v)b={v,t}}if(b)push(k,b.t.c,b.t.r,[[b.t.c,b.t.r]],b.v,450)}
-    else if(k==='pt'){let b=null;for(const t of MY){const m=Math.min(500,t.max-t.hp);const v=m*.9*(1+H[t.k].d/900);if(!b||v>b.v)b={v,t}}if(b)push(k,b.t.c,b.t.r,[[b.t.c,b.t.r]],b.v,450)}
-    else if(k==='is'){let b=null;for(const t of MY){const th=bThr(t,t.c,t.r);if(th<t.hp*.5)continue;const v=Math.min(th,t.hp)*.9*(1+H[t.k].d/900);if(!b||v>b.v)b={v,t}}if(b)push(k,b.t.c,b.t.r,[[b.t.c,b.t.r]],b.v,600)}
+  if(!EN.length)return out;
+  const ENr=EN.filter(x=>!(x.k in SMN)),MYr=MY.filter(x=>!(x.k in SMN)),maxD=Math.max(1,...EN.map(x=>H[x.k].d)),myMaxD=Math.max(1,...MY.map(x=>H[x.k].d)),
+    isSup=x=>!!(TR[x.k]&&TR[x.k].includes('ساپورتر')),
+    engaged=x=>{const o=U.filter(z=>z.hp>0&&z.o!==x.o);return o.length>0&&Math.min(...o.map(z=>dist(x,z)))<=H[x.k].r+2},
+    ready=u=>u.mv>=1&&!u.act&&!u.mo&&MV>=1,
+    potential=t=>{let s=0;for(const u of MY)if(ready(u)&&canHit(u,t))s+=bEst(u,t);return s},
+    near0=x=>Math.min(...EN.map(e=>dist(x,e)));
+  const push=(k,c,r,cells,v,ok,pre)=>{if(ok&&v>0)out.push({k,c,r,cells,s:v+(pre?600:250)})};
+  for(const k of SP[me]){const S=SPELLS[k];if(!S||S.s||k==='eq'||(botBadK[k]===T))continue;
+    /* توپ آتشین: اولویت با ساپورترهای دشمن */
+    if(k==='fb'){let b=null;for(const tr of bAllTris()){const A=inC(tr).filter(x=>x.o!==me),v=A.reduce((s,x)=>s+bVal(x,680)*(isSup(x)?2.4:1),0),kl=A.filter(x=>x.hp<=680).length,sp=A.filter(isSup).length;if(!b||v>b.v)b={v,tr,n:A.length,kl,sp}}
+      if(b)push(k,b.tr[0][0],b.tr[0][1],b.tr,b.v,b.sp>=1||(!ENr.some(isSup)&&(b.n>=2||b.kl>=1))||b.n>=3)}
+    /* فریز: دشمنِ درگیرِ پر‌دمیج را برای ۲ دور از کار می‌اندازد */
+    else if(k==='fz'){let b=null;for(let c0=0;c0<COLS;c0++)for(let r0=0;r0<ROWS;r0++){const cells=cellsFor(S.t,c0,r0,null),A=inC(cells).filter(x=>x.o!==me&&!(x.fz>0)&&engaged(x));let v=0,strong=0;
+        for(const x of A){v+=H[x.k].d*1.1+Math.min(x.hp,2000)*.05;if(H[x.k].d>=maxD*.8)strong++}
+        if(!b||v>b.v)b={v,c:c0,r:r0,cells,n:A.length,strong}}
+      if(b)push(k,b.c,b.r,b.cells,b.v,b.n>=2||b.strong>=1,1)}
+    /* عصبانیت: فقط روی نیروهای خودی مهم و درگیر، بدون دشمن در محدوده */
+    else if(k==='rg'){let b=null;for(let c0=0;c0<COLS;c0++)for(let r0=0;r0<ROWS;r0++){const cells=cellsFor(S.t,c0,r0,null),A=inC(cells);let v=0,na=0,ne=0,strong=0;
+        for(const x of A){const w=H[x.k].d*.3*(engaged(x)||ready(x)?1:.2);if(x.o!==me)ne++;else if(!(x.ra>0)&&!(x.k in SMN)){v+=w;na++;if(H[x.k].d>=myMaxD*.8&&engaged(x))strong++}}
+        if(!b||v>b.v)b={v,c:c0,r:r0,cells,na,ne,strong}}
+      if(b)push(k,b.c,b.r,b.cells,b.v,b.ne===0&&(b.na>=2||b.strong>=1),1)}
+    else if(k==='rr'){let b=null;for(let c0=0;c0<COLS;c0++)for(let r0=0;r0<ROWS;r0++){const cells=cellsFor(S.t,c0,r0,null),A=inC(cells).filter(x=>x.o!==me);let v=0,kl=0,strong=0;
+        for(const x of A){v+=bVal(x,100)+(x.rt>0?0:120);if(x.hp<=100)kl++;if(H[x.k].d>=maxD*.8)strong++}
+        if(!b||v>b.v)b={v,c:c0,r:r0,cells,n:A.length,kl,strong}}
+      if(b)push(k,b.c,b.r,b.cells,b.v,b.n>=2||b.kl>=1||b.strong>=1)}
+    else if(k==='sr'){if(!freeAny())continue;let b=null;for(let c0=0;c0<COLS;c0++){let f=true,v=250,n=0;for(let j=0;j<ROWS;j++){if(ST.some(q=>q.c===c0&&q.r===j))break;const x=EN.find(z=>z.c===c0&&z.r===j);if(x){v+=bVal(x,f?260:130);f=false;n++}}if(!b||v>b.v)b={v,c:c0,n}}if(b)push(k,b.c,0,cellsFor('l',b.c,0,null),b.v,b.n>=1)}
+    /* نفرین سیاه: دشمن پر‌دمیجِ درگیر که کشتنش با نیروهای فعلی سخت است */
+    else if(k==='cu'){let b=null;for(const t of ENr){if(t.cu>0||!engaged(t))continue;const pot=potential(t);if(pot>=t.hp*.8)continue;const v=H[t.k].d*1.6+t.hp*.03;if(!b||v>b.v)b={v,t}}
+      if(b)push(k,b.t.c,b.t.r,[[b.t.c,b.t.r]],b.v,H[b.t.k].d>=maxD*.7,1)}
+    else if(k==='wd'){let b=null;for(const t of EN){if(t.wd)continue;let h=0;for(const u of MY)if(ready(u)&&canHit(u,t))h=Math.max(h,bEst(u,t));if(h<=0)continue;const v=h*.25+Math.min(t.hp,3000)*.05;if(!b||v>b.v)b={v,t}}if(b)push(k,b.t.c,b.t.r,[[b.t.c,b.t.r]],b.v,1,1)}
+    else if(k==='pt'){let b=null;for(const t of MY){if(t.k in SMN)continue;const m=Math.min(500,t.max-t.hp);const v=m*.9*(1+H[t.k].d/900);if(!b||v>b.v)b={v,t,m}}if(b)push(k,b.t.c,b.t.r,[[b.t.c,b.t.r]],b.v,b.m>=300)}
+    /* شوک یخی: مهرهٔ خط مقدم تا دشمن مدام او را بزند و ضربه‌اش ۹۵٪ کم شود */
+    else if(k==='is'){let b=null;const md=MYr.length?Math.min(...MYr.map(near0)):9;for(const t of MYr){if(t.is>0)continue;const d0=near0(t);if(d0>md||d0>2)continue;const th=bThr(t,t.c,t.r);if(th<t.hp*.3)continue;const v=Math.min(th,t.hp*2)*1.2+t.max*.08;if(!b||v>b.v)b={v,t}}
+      if(b)push(k,b.t.c,b.t.r,[[b.t.c,b.t.r]],b.v,1,1)}
+    /* آینهٔ رستاخیز: فقط اگر مهرهٔ مرده بهترین مهرهٔ ربات باشد */
     else if(k==='rs'){if(!DX[me].length)continue;const d=DX[me][DX[me].length-1],cs=[];for(let c0=0;c0<COLS;c0++)for(let r0=0;r0<4;r0++)if(fr(c0,r0))cs.push([c0,r0]);if(!cs.length)continue;
-      const f=cs.map(p=>({p,d:EN.length?Math.min(...EN.map(x=>dist({c:p[0],r:p[1]},x))):9})).sort((a,b)=>b.d-a.d)[0].p;
-      push(k,f[0],f[1],[f],Math.min(1400,d.max*.5)*(1+H[d.k].d/700),700)}}
+      const sc=x=>(hc(x.k)||0)*10+H[x.k].hp*H[x.k].d/1e5,best=Math.max(...MYr.map(sc),...DX[me].map(sc));
+      const f=cs.map(p=>({p,d:Math.min(...EN.map(x=>dist({c:p[0],r:p[1]},x)))})).sort((a,b)=>b.d-a.d)[0].p;
+      push(k,f[0],f[1],[f],Math.min(1400,d.max*.5)*(1+H[d.k].d/700),sc(d)>=best*.98)}}
   return out}
 let botBadK={};
+/* ===== جست‌وجوی عمیق + پیش‌بینی نوبت حریف + مدیریت اکسیر (سطح سخت) ===== */
+const bV=u=>u.hp>0?u.hp*(1.5+H[u.k].d/700)+H[u.k].d*2:0;
+function bSnap(){const L=U.map(u=>[u,u.c,u.r,u.hp,u.act,u.mv,u.mo,u.fm]),M0=MV,P0=P;return()=>{for(const a of L){const u=a[0];u.c=a[1];u.r=a[2];u.hp=a[3];u.act=a[4];u.mv=a[5];u.mo=a[6];u.fm=a[7]}MV=M0;P=P0}}
+function bOppMV(){const n=T+1,m=U.filter(u=>u.hp>0&&u.o===0&&!(u.k in SMN));return Math.max(1,(n<4?[3,4,5,5][n]:Math.floor(m.reduce((s,u)=>s+H[u.k].m,0)/2))+(SY[0]['پادشاه']>=2?1:0))}
+/* شبیه‌سازی حریصانهٔ نوبت بعدی حریف روی وضعیت فعلی (بعد از اتمام، همه‌چیز به حالت اول برمی‌گردد). خروجی: ارزشی که از مهره‌های ربات از دست می‌رود */
+function bOppSim(){const rs=bSnap();
+  try{const mine=()=>U.filter(x=>x.hp>0&&x.o===1&&!(x.k in SMN)),V0=mine().reduce((s,x)=>s+bV(x),0);
+    P=0;MV=bOppMV();
+    const E0=U.filter(x=>x.hp>0&&x.o===0&&!(x.k in SMN));
+    for(const e of E0){const frz=e.fr>0||e.jl>0||e.fz>0;e.act=e.fr>0||e.jl>0;e.mo=0;e.fm=0;e.mv=frz?0:Math.min(H[e.k].m+(sy(e,'تانک',2)?1:0),e.sl||e.sh>0?1:9)}
+    for(let i=0;i<14&&MV>0;i++){
+      let best=null;const T1=mine();if(!T1.length)break;
+      for(const e of E0){if(e.hp<=0||e.act||e.mo||e.mv<1)continue;
+        for(const t of T1)if(canHit(e,t)){const v=bVal(t,bEst(e,t));if(!best||v>best.v)best={v,e,t,k:'a'}}
+        if(MV>=2&&e.mv>=2){const m=reach(e),c0=e.c,r0=e.r;
+          for(const key in m){const[x,y]=key.split(',').map(Number);e.c=x;e.r=y;e.mv--;
+            for(const t of T1)if(canHit(e,t)){const v=bVal(t,bEst(e,t))*.9;if(!best||v>best.v)best={v,e,x,y,k:'m'}}
+            e.c=c0;e.r=r0;e.mv++}}}
+      if(!best){let bm=null;
+        for(const e of E0){if(e.hp<=0||e.act||e.mo||e.mv<1)continue;const R=H[e.k].r,cur=Math.min(...T1.map(t=>dist(e,t))),m=reach(e);
+          for(const key in m){const[x,y]=key.split(',').map(Number),dm=Math.min(...T1.map(t=>dist({c:x,r:y},t))),g=R===1?cur-dm:(dm>R?cur-dm:0);if(g>0&&(!bm||g>bm.g))bm={e,x,y,g}}}
+        if(!bm)break;bm.e.c=bm.x;bm.e.r=bm.y;bm.e.mv--;MV--;continue}
+      if(best.k==='a'){best.t.hp=Math.max(0,best.t.hp-bEst(best.e,best.t));best.e.act=true;best.e.mv=0;MV--}
+      else{best.e.c=best.x;best.e.r=best.y;best.e.mv--;MV--}}
+    return Math.max(0,V0-mine().reduce((s,x)=>s+bV(x),0))
+  }catch(_){return 0}finally{rs()}}
+/* جست‌وجوی پرتویی (beam) روی ترتیب حرکت/حمله‌های همین نوبت؛ برگ‌ها با پیش‌بینی پاسخ حریف امتیاز می‌گیرند. فقط اولین حرکتِ بهترین دنباله برگردانده می‌شود */
+function bSearch(depth,BW,ms,agg,pf){
+  const t0=performance.now(),rs=bSnap();
+  try{
+    const mat=o=>{let s=0;for(const u of U)if(u.hp>0&&u.o===o&&!(u.k in SMN))s+=bV(u);return s};
+    const posv=()=>{const EN=U.filter(x=>x.hp>0&&x.o===0);if(!EN.length)return 0;let s=0;
+      for(const u of U){if(u.hp<=0||u.o!==1||(u.k in SMN))continue;const R=H[u.k].r,d=Math.min(...EN.map(e=>dist(u,e)));
+        s-=(R===1?d*10:Math.abs(d-R)*6)*agg;s-=Math.min(bThr(u,u.c,u.r),u.hp)*.35*pf}return s};
+    const ev=()=>pf*mat(1)-agg*mat(0)+posv();
+    const gen=()=>{const A=[];if(MV<1)return A;const EN=U.filter(x=>x.hp>0&&x.o===0);
+      for(const u of U){if(u.hp<=0||u.o!==1||(u.k in SMN)||u.mv<1)continue;
+        if(!u.act&&!u.mo){const W=EN.filter(x=>canHit(u,x));
+          if(W.length){if(sy(u,'مبارز',2))for(const t of W)A.push({k:'a',u,T:[t]});else A.push({k:'a',u,T:W})}}
+        const m=reach(u);for(const kx in m){const[x,y]=kx.split(',').map(Number);A.push({k:'m',u,x,y})}}
+      return A};
+    const ap=a=>{const u=a.u;
+      if(a.k==='m'){const o=[u.c,u.r,u.mv,MV];u.c=a.x;u.r=a.y;u.mv--;MV--;return()=>{u.c=o[0];u.r=o[1];u.mv=o[2];MV=o[3]}}
+      const n=a.T.length,hs=a.T.map(t=>t.hp),dm=a.T.map(t=>bEst(u,t)/n),o=[u.act,u.mv,MV];
+      a.T.forEach((t,i)=>{t.hp=Math.max(0,t.hp-dm[i])});u.act=true;u.mv=0;MV--;
+      return()=>{a.T.forEach((t,i)=>{t.hp=hs[i]});u.act=o[0];u.mv=o[1];MV=o[2]}};
+    let beam=[{p:[],s:0}];const done=[];
+    for(let d=0;d<depth;d++){const nx=[];
+      for(const nd of beam){rs();nd.p.forEach(ap);const A=gen();
+        if(!A.length){done.push(nd);continue}
+        for(const a of A){const un=ap(a),s=ev();un();nx.push({p:nd.p.concat([a]),s})}
+        if(performance.now()-t0>ms)break}
+      if(!nx.length){beam=[];break}
+      nx.sort((x,y)=>y.s-x.s);beam=nx.slice(0,BW);
+      if(performance.now()-t0>ms)break}
+    const leaves=done.concat(beam).filter(l=>l.p.length).sort((x,y)=>y.s-x.s).slice(0,BW);
+    let best=null;
+    for(const l of leaves){rs();l.p.forEach(ap);const tot=ev()-pf*bOppSim();if(!best||tot>best.tot)best={tot,l}}
+    rs();return best?best.l.p[0]:null
+  }finally{rs()}}
+/* ارزش هر واحد اکسیر: کم‌بودن اکسیر و بازی‌ای که هنوز زود است → خساست بیشتر؛ آخر بازی یا عقب‌بودن → خرج‌کردن راحت‌تر */
+function bLam(ratio){let l=120;const e=E[1],nAb=U.filter(u=>u.hp>0&&u.o===1&&!(u.k in SMN)&&H[u.k].c).length;
+  l*=e<=2?1.5:e<=4?1.15:.9;l*=T>=20?.6:T>=14?.8:1;l*=ratio<.6?.7:ratio>1.6?1.2:1;if(nAb*3<e)l*=.8;return l}
+let botSig='',botSigN=0;
 function botPlayV2(){
   if(botT!==T){botT=T;botN=0}
   const my=U.filter(u=>u.hp>0&&u.o===1&&!(u.k in SMN)),EN=U.filter(x=>x.hp>0&&x.o===0);
-  if(!EN.length||++botN>70||(MV<1&&!SP[1].length)){endTurn(false);return}
-  const cand=[];let FOC=null;try{FOC=bFocus(my,EN)}catch(_){}
+  if(!EN.length||++botN>120||(MV<1&&!SP[1].length)){endTurn(false);return}
+  const cand=[];let FOC=null;try{FOC=bFocus(my,EN)}catch(_){}const pw=L=>{const R=L.filter(x=>!(x.k in SMN));return R.reduce((a,x)=>a+x.hp,0)*R.reduce((a,x)=>a+H[x.k].d*(x.hp>0?1:0),0)};
+  const ratio=pw(my)/Math.max(1,pw(EN)),agg=Math.max(T>=10?.9:.5,Math.min(1.7,Math.sqrt(ratio))),pf=Math.max(.45,Math.min(1.5,2-agg));
   /* طلسم‌ها */
-  bSpells().forEach(o=>cand.push({s:o.s,f:()=>{spl=o.k;castAt({c:o.c,r:o.r,cells:o.cells,pt:V3(o.c,o.r)});if(SP[1].includes(o.k)){botBadK[o.k]=T;spl=null}}}));
+  bSpells().forEach(o=>cand.push({t:'sp',s:o.s,f:()=>{spl=o.k;castAt({c:o.c,r:o.r,cells:o.cells,pt:V3(o.c,o.r)});if(SP[1].includes(o.k)){botBadK[o.k]=T;spl=null}}}));
+  const lam=bLam(ratio),ABL=[];
   if(MV>=1)for(const u of my){
     const W=EN.filter(x=>canHit(u,x));let alt=0;
     /* حملهٔ ساده */
-    if(!u.act&&!u.mo&&u.mv>=1&&W.length){const vs=W.map(t=>bVal(t,bEst(u,t))),pick=sy(u,'مبارز',2),i=vs.indexOf(Math.max(...vs)),tg=pick?W[i]:W[0],s=pick?vs[i]:vs.reduce((a,b)=>a+b,0)/vs.length;let s2=s;try{if(FOC&&FOC.get(tg)>=tg.hp*.95&&bEst(u,tg)<tg.hp)s2*=1.3}catch(_){}alt=s2;cand.push({s:s2,f:()=>{sel=u;mode='mv';handleCell0(tg.c,tg.r)}})}
-    /* قابلیت (اکسیر کل بازی فقط ۷ است؛ هزینه با مالیات اکسیر سنجیده می‌شود) */
-    if(u._ab!==T&&!u.act&&!u.mo&&u.mv>=1&&H[u.k].c&&E[1]>=cost(u)&&!(u.rt>0)){let a=null;try{a=bAbil(u)}catch(_){}
-      if(a){const s=a.v-cost(u)*120;if(s>alt*.9+60)cand.push({s,f:()=>{u._ab=T;sel=u;if(a.self||a.acro){mode='mv';useAb(u,a.acro?abT(u)[0]:u)}else{mode='ab';handleCell0(a.t.c,a.t.r)}}})}}
-    /* حرکت */
+    if(!u.act&&!u.mo&&u.mv>=1&&W.length){const vs=W.map(t=>bVal(t,bEst(u,t))),pick=sy(u,'مبارز',2),i=vs.indexOf(Math.max(...vs)),tg=pick?W[i]:W[0],s=pick?vs[i]:vs.reduce((a,b)=>a+b,0)/vs.length;let s2=s;try{if(FOC&&FOC.get(tg)>=tg.hp*.95){const sh=bEst(u,tg);if(sh<tg.hp&&sh>=tg.hp*.2)s2*=1.7;else if(sh<tg.hp)s2*=1.25}else if(tg.hp<=bEst(u,tg)*2.2)s2*=1.15}catch(_){}alt=s2;cand.push({t:'at',s:s2,f:()=>{sel=u;mode='mv';handleCell0(tg.c,tg.r)}})}
+    /* قابلیت: فقط جمع‌آوری؛ انتخاب نهایی با مدیریت اکسیر (پایین) */
+    if(u._ab!==T&&!u.act&&!u.mo&&u.mv>=1&&H[u.k].c&&E[1]>=cost(u)&&!(u.rt>0)){let a=null;try{a=bAbil(u)}catch(_){}if(a)ABL.push({u,a,c:cost(u),alt})}
+    /* حرکت (دیگر آستانهٔ حداقلی ندارد؛ نوبت هیچ‌وقت بی‌دلیل تمام نمی‌شود) */
     const m=reach(u),keys=Object.keys(m);if(!keys.length)continue;
     const R=H[u.k].r,cur=Math.min(...EN.map(e=>dist(u,e))),thC=bThr(u,u.c,u.r),low=u.hp<u.max*.3;
     for(const kx of keys){const[x,y]=kx.split(',').map(Number),pos={c:x,r:y},ds=EN.map(e=>dist(pos,e)),dm=Math.min(...ds);let s=0;
       if(!u.act&&u.mv>=2&&MV>=2&&dm<=R){const near=EN.filter((e,i)=>ds[i]===dm);s+=Math.max(...near.map(t=>bVal(t,bEst(u,t))))*.85}
-      else if(R===1)s+=(cur-dm)*45;
-      else{if(dm>R)s+=(cur-dm)*45;if(cur===1&&dm>1)s+=40}
-      const th=bThr(u,x,y);s-=Math.max(0,th-thC)*(low?.8:.4);if(th>=u.hp)s-=u.hp*.5;if(low)s+=(thC-th)*.6+(dm-cur)*30;
-      if(s>25)cand.push({s,f:()=>{sel=u;mode='mv';handleCell0(x,y)}})}}
-  if(!cand.length){endTurn(false);return}
-  const b=cand.reduce((p,q)=>q.s>p.s?q:p);b.f()}
+      else if(R===1)s+=(cur-dm)*45*agg;
+      else{if(dm>R)s+=(cur-dm)*45*agg;if(cur===1&&dm>1)s+=40}
+      const th=bThr(u,x,y);s-=Math.max(0,th-thC)*(low?.8:.4)*pf;if(th>thC)s+=Math.min(3,my.filter(z=>z!==u&&dist(z,pos)<=2).length)*8;{const al=my.filter(z=>z!==u&&dist(z,pos)<=1).length;if(al>=2)s-=(al-1)*(R>1?26:14);if(R>1&&dm<R&&dm>0&&!u.act)s-=10}if(th>=u.hp)s-=u.hp*.5;if(low)s+=(thC-th)*.6+(dm-cur)*30;
+      cand.push({t:'mv',s,f:()=>{sel=u;mode='mv';handleCell0(x,y)}})}}
+  /* مدیریت اکسیر: از بین قابلیت‌های این نوبت، بهترین زیرمجموعه‌ای را که در بودجهٔ اکسیر می‌گنجد و بعد از کسر «ارزش اکسیر» و «از دست رفتن حملهٔ ساده» سود دارد انتخاب می‌کند؛ بقیه نگه داشته می‌شوند */
+  {const Ec=E[1],it=ABL.map(o=>({o,g:o.a.v-o.c*lam-o.alt*.9})).filter(x=>x.g>60&&x.o.c<=Ec),n=it.length;let bs=[],bg=0;
+    for(let mk=1;mk<(1<<n);mk++){let c=0,g=0;for(let i=0;i<n;i++)if(mk>>i&1){c+=it[i].o.c;g+=it[i].g}if(c<=Ec&&g>bg){bg=g;bs=it.filter((_,i)=>mk>>i&1)}}
+    bs.forEach(x=>{const o=x.o,a=o.a,u=o.u;cand.push({t:'ab',s:a.v-o.c*lam,f:()=>{u._ab=T;sel=u;if(a.self||a.acro){mode='mv';useAb(u,a.acro?abT(u)[0]:u)}else{mode='ab';handleCell0(a.t.c,a.t.r)}}})})}
+  const pk=ts=>cand.filter(c=>ts.includes(c.t)).reduce((p,q)=>!p||q.s>p.s?q:p,null),sa=pk(['sp','ab']),am=pk(['at','mv']);
+  if(sa&&(!am||sa.s>=am.s)){sa.f();return}
+  /* جست‌وجوی عمیق روی حرکت/حمله‌ها با پیش‌بینی نوبت حریف */
+  let go=null;
+  if(MV>=1){try{const a=bSearch(Math.min(MV,5),8,380,agg,pf);
+    if(a){const sig=T+'|'+MV+'|'+a.k+a.u.k+(a.k==='m'?a.x+','+a.y:a.T[0].c+','+a.T[0].r);if(sig===botSig)botSigN++;else{botSig=sig;botSigN=0}
+      if(botSigN<2)go=()=>{sel=a.u;mode='mv';if(a.k==='m')handleCell0(a.x,a.y);else handleCell0(a.T[0].c,a.T[0].r)}}}catch(e){console.error('bot search',e)}}
+  if(go){go();return}
+  if(am){am.f();return}
+  if(sa){sa.f();return}
+  endTurn(false)}
 let botErr=0;
 function botPlayEasy(){
   if(botT!==T){botT=T;botN=0}
   const my=U.filter(u=>u.hp>0&&u.o===1&&!(u.k in SMN)),en=U.filter(u=>u.hp>0&&u.o===0);
-  if(!en.length||++botN>12||MV<1||Math.random()<.12){endTurn(false);return}
+  if(!en.length||++botN>60||MV<1){endTurn(false);return}
   const att=[];for(const u of my){if(u.act||u.mo)continue;for(const t of en)if(canHit(u,t))att.push({u,t})}
   if(att.length&&Math.random()<.7){const a=rnd(att);sel=a.u;mode='mv';handleCell0(a.t.c,a.t.r);return}
   const mv=[];for(const u of my){if(u.act||u.mo)continue;const m=reach(u);for(const k in m){if(m[k]>0){const[x,y]=k.split(',').map(Number);mv.push({u,x,y})}}}
