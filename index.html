@@ -557,6 +557,12 @@ window.__BDK=function(){return window.__UL?.3:window.__MS?.45:window.__HQ?.6:.8}
 <div id="tgo" hidden role="dialog" aria-modal="true"><div class="cfbox"><h2>✅ حساب ساخته شد</h2><p>قبل از هر کاری، این تگ را جایی ذخیره کن (اسکرین‌شات بگیر یا کپی کن). برای بازیابی حساب و ورود دوباره حتماً لازم است.</p><div id="tgv"></div><button id="tgc" type="button">📋 کپی تگ</button><button id="tgok" class="pr" type="button" disabled>تگ را ذخیره کردم</button></div></div>
 <div id="toast" hidden></div>
 <div id="cf" hidden role="dialog" aria-modal="true" aria-labelledby="cft"><div class="cfbox"><h2 id="cft"></h2><p id="cfp"></p><div class="cfb"><button id="cfn" type="button">انصراف</button><button id="cfy" type="button"></button></div></div></div>
+<!-- Global DOM helper: used by battle.js and the inline game UI -->
+<script>
+window.$ = window.$ || function(id) {
+  return document.getElementById(id);
+};
+</script>
 <script src="battle.js"></script>
 <script src="skins.js"></script>
 <script>
