@@ -851,7 +851,7 @@ function placeCamera(){
  camera.lookAt(CTR.x,0,CTR.z+1.1)}
 
 function mkLabel(){const cv2=document.createElement('canvas');cv2.width=LW;cv2.height=LH;const tex=new THREE.CanvasTexture(cv2);tex.colorSpace=THREE.SRGBColorSpace;
- const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthTest:false,toneMapped:false}));sp.scale.set(LW/LU*.6,LH/LU*.6,1);sp.renderOrder=10;return{cv:cv2,tex,sp}}
+ const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthTest:false,toneMapped:false}));sp.scale.set(LW/LU*.7,LH/LU*.7,1);sp.renderOrder=10;return{cv:cv2,tex,sp}}
 
 function limb(M,p1,p2,r,mat){const a=new THREE.Vector3(...p1),b=new THREE.Vector3(...p2),d=b.clone().sub(a),L=d.length(),m=new THREE.Mesh(new THREE.CylinderGeometry(r,r*.9,L,10),mat);m.position.copy(a).addScaledVector(d,.5);m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize());return m}
 function aliceTex(kind){const c=document.createElement('canvas'),x=c.getContext('2d');
