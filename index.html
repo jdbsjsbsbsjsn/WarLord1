@@ -504,7 +504,7 @@ dk:{n:'پادشاه اهریمن',hp:2670,d:330,r:1,m:2,c:2},
 gq:{n:'ملکه‌ی باروت',hp:1600,d:450,r:1,m:2,c:3},
 dn:{n:'شوالیه‌ی اهریمن',hp:1600,d:350,r:1,m:2,c:1},
 dw:{n:'ساحره‌ی اهریمن',hp:820,d:240,r:4,m:2,c:3,o1:1},
-lich:{n:'الدرلیچ',i:'💀',hp:1500,d:300,r:1,m:1,c:0},pen:{n:'سارسار',i:'🐧',hp:900,d:130,r:1,m:2,c:0},mi:{n:'معدنچی',i:'⛏️',hp:1600,d:160,r:1,m:2,c:0},skl:{n:'اسکلت',i:'💀',hp:300,d:150,r:1,m:2,c:0}};const SMN={lich:1,pen:1,mi:1,skl:1};
+lich:{n:'الدرلیچ',i:'💀',hp:1500,d:300,r:1,m:1,c:0},pen:{n:'سارسار',i:'🐧',hp:900,d:130,r:1,m:2,c:0},mi:{n:'معدنچی',i:'⛏️',hp:1600,d:160,r:1,m:2,c:0},skl:{n:'اسکلت',i:'💀',hp:300,d:150,r:1,m:2,c:0},sno:{n:'آدم‌برفی',i:'⛄',hp:200,d:0,r:1,m:0,c:0}};const SMN={lich:1,pen:1,mi:1,skl:1,sno:1};
 const COLS=6,ROWS=8,SQ=Math.sqrt(3),DIR=[[1,0],[1,-1],[0,-1],[-1,0],[-1,1],[0,1]],NM=['قرمز','آبی'],CL=['#e5483c','#3a8cf0'];
 const toA=(c,r)=>[c,r-((c-(c&1))>>1)],toO=(q,r)=>[q,r+((q-(q&1))>>1)];
 const inb=(c,r)=>c>=0&&c<COLS&&r>=0&&r<ROWS;
@@ -594,7 +594,7 @@ function hit(a,t,d){if(t.im>0)return 0;if(t.ar>0&&a.o!==t.o){t.ar=0;return 0}
   const sm=sy(a,'سامورایی',4)?2:sy(a,'سامورایی',2)?1.5:0;if(sm&&RL()<1/3)d*=sm;
   if(sy(a,'شکارچی',4)&&t.hp<=t.max/2)d*=1.5;else if(sy(a,'شکارچی',2)&&t.hp<=t.max/3)d*=4/3;
   d*=(1+(a.bk|0)/100)*(a.al||1)*(a.rg>0?1.3:1)}
- if(a.weak||a.cu>0)d*=.5;if(a.ra>0)d*=1.25;if(t.wd===1&&a.o!==t.o){d*=1.25;t.wd=2}if(t.is>0){d*=.05;if(a.o!==t.o&&a.hp>0)a.hp=Math.max(0,a.hp-50)}else if(t.fz>0)d*=.5;if(t.mk>0)d*=1.25;if(t.k==='med'&&d>0)t.sn=Math.min(6,(t.sn|0)+1);if(a.bf>0)d*=a.bm;if(a.dm)d*=a.dm;if(a.crit>0&&RL()<.5)d*=2;if(t.sh>0)d*=.1;d=Math.round(d);if(t.shd>0&&a.k!=='mak'){const ab=Math.min(t.shd,d);t.shd-=ab;d-=ab}t.hp=Math.max(0,t.hp-d);if(a.o!==t.o&&sy(a,'شوالیه',4))a.hp=Math.min(a.max,a.hp+Math.round(d*.25));
+ if(a.weak||a.cu>0)d*=.5;if(a.ra>0)d*=1.25;if(t.wd===1&&a.o!==t.o){d*=1.25;t.wd=2}if(t.is>0){d*=.05;if(a.o!==t.o&&a.hp>0)a.hp=Math.max(0,a.hp-50)}if(t.mk>0)d*=1.25;if(t.k==='med'&&d>0)t.sn=Math.min(6,(t.sn|0)+1);if(a.bf>0)d*=a.bm;if(a.dm)d*=a.dm;if(a.crit>0&&RL()<.5)d*=2;if(t.sh>0)d*=.1;d=Math.round(d);if(t.shd>0&&a.k!=='mak'){const ab=Math.min(t.shd,d);t.shd-=ab;d-=ab}t.hp=Math.max(0,t.hp-d);if(a.o!==t.o&&sy(a,'شوالیه',4))a.hp=Math.min(a.max,a.hp+Math.round(d*.25));
  if(t.hp<=0&&sy(t,'راهب',3)&&!t.imu){t.imu=1;t.hp=1;t.im=(P===t.o?4:3)}
  if(t.hp<=0&&sy(t,'ربات',2)&&!t.dd2){t.dd2=1;U.filter(x=>x.hp>0&&x.o!==t.o&&dist(t,x)===1).forEach(x=>x.hp=Math.max(0,x.hp-Math.round(t.max*.4)))}
  if(t.hp<=0&&!t.dd){if(t.k==='bud'&&a.o!==t.o){t.dd=1;boom(t)}if(t.k==='fd'){t.dd=1;U.filter(x=>x.hp>0&&x!==t&&x.o!==t.o&&dist(t,x)===1).forEach(x=>x.hp=Math.max(0,x.hp-800))}}
@@ -631,7 +631,8 @@ function abT(u){if(u.rt>0)return[];const k=u.k,al=U.filter(x=>x.hp>0&&x.o===u.o)
  if(k==='ikh')return u.rel?[]:[u];
  if(k==='col')return D[1-u.o]>0?[u]:[];
  if(k==='ear')return ST.some(s=>s.o===u.o&&s.heal>0)?[u]:[];
- if(k==='ik'||k==='iw')return en.filter(t=>rng(u,t)&&!(t.fly&&H[k].r===1));
+ if(k==='iw'){const o=[];for(let c=0;c<COLS;c++)for(let r=0;r<ROWS;r++){if(at(c,r)||blkAt(c,r)||dist(u,{c,r})>H.iw.r)continue;o.push({c,r})}return o}
+  if(k==='ik')return en.filter(t=>rng(u,t)&&!(t.fly&&H[k].r===1));
  if(k==='mus'||k==='bud')return[u];
  if(k==='ske')return en.some(t=>!(t.k in SMN))?[u]:[];
  if(k==='que')return en.some(t=>rng(u,t)&&near(u,t))?[u]:[];
@@ -723,7 +724,8 @@ function useAb0(u,t){
  if(k==='ikh')u.rel=true;
  if(k==='col'){const n=Math.min(3,D[1-u.o]);u.hp+=Math.round(H.col.hp*.22*n);u.bm=1+.22*n;u.bf=3}
  if(k==='ear'){ST.filter(s=>s.o===u.o&&s.heal>0).forEach(s=>{const x=add(s.k,s.o,s.c,s.r);x.hp=Math.min(x.max,Math.round(s.heal));x.used=s.used});ST=ST.filter(s=>s.o!==u.o)}
- if(k==='ik'||k==='iw'){hit(u,t,H[k].d);if(!sy(t,'سرخ',2)){t.fr=1;t.sl=1}}
+ if(k==='ik'){hit(u,t,H[k].d);if(!sy(t,'سرخ',2)){t.fr=1;t.sl=1}}
+  if(k==='iw'){const s=add('sno',u.o,t.c,t.r);s.mv=0;s.act=true;const zz=U.filter(x=>x.hp>0&&x.o!==u.o&&dist(x,s)===1&&!sy(x,'سرخ',2));zz.forEach(x=>{x.fr=1});try{const p=V3(t.c,t.r);burst(p,46,0xdff8ff,{sp:3,vy:2.2,size:.34,life:.9});burst(p,16,0xffffff,{sp:2,vy:1.5,size:.4,life:.6});ring(p,0x9fd8ff,3,.8);ring(p,0xdff8ff,1.6,.5);shk=Math.max(shk,.3)}catch(_){}msg=H[k].n+': آدم‌برفی احضار شد'+(zz.length?' و '+PX(zz.length)+' دشمن اطرافش فریز شد':'')+'.'}
  if(k==='mus')u.sh=3;
  if(k==='ske'){const e=U.filter(x=>x.hp>0&&x.o!==u.o&&!(x.k in SMN)&&!x.inv),x=e[RL()*e.length|0];hit(u,x,350);x.jl=2;msg=H[k].n+': '+H[x.k].n+' زندانی شد.'}
  if(k==='bud'){u.dd=1;boom(u);u.hp=0}
@@ -734,7 +736,7 @@ function useAb0(u,t){
  if(H[k].o1)u.used=(u.used|0)+1;u.act=true;u.mv=0;MV--;after()}
 function endTurn(auto){if(smnRun(auto))return;endTurn0(auto)}
 function endTurn0(auto){const was=P;shopOpen=false;spl=null;try{gasHitCheck()}catch(e){}
- U.filter(u=>u.o===P).forEach(u=>{if(sy(u,'مشکی',2))u.bk=Math.min(50,(u.bk|0)+(sy(u,'مشکی',4)?10:6));if(u.im>0){u.im--;if(u.im===0&&u.imu)u.hp=0}if(u.rg>0)u.rg--;if(sy(u,'اژدها',2)&&u.hp<u.max)u.hp=Math.min(u.max,u.hp+80);if(sy(u,'ساپورتر',2)&&(T>>1)%2===1)u.inv=true;if(u.fly>0)u.fly--;if(u.crit>0)u.crit--;u.weak=0;['fr','jl','sl','sh','bf','bl','fz','cu','ra','is','rt'].forEach(f=>{if(u[f]>0)u[f]--});if(u.ps>0){u.hp=Math.max(0,u.hp-20);u.ps--}if(u.wd)u.hp=Math.max(0,u.hp-40);if(!(u.bf>0))u.bm=1;if(u.k==='ikh'){if(!u.atk)u.inv=u.zp=true;u.atk=false}});
+ U.filter(u=>u.o===P).forEach(u=>{if(u.k==='sno')u.hp=Math.max(0,u.hp-100);if(sy(u,'مشکی',2))u.bk=Math.min(50,(u.bk|0)+(sy(u,'مشکی',4)?10:6));if(u.im>0){u.im--;if(u.im===0&&u.imu)u.hp=0}if(u.rg>0)u.rg--;if(sy(u,'اژدها',2)&&u.hp<u.max)u.hp=Math.min(u.max,u.hp+80);if(sy(u,'ساپورتر',2)&&(T>>1)%2===1)u.inv=true;if(u.fly>0)u.fly--;if(u.crit>0)u.crit--;u.weak=0;['fr','jl','sl','sh','bf','bl','fz','cu','ra','is','rt'].forEach(f=>{if(u[f]>0)u[f]--});if(u.ps>0){u.hp=Math.max(0,u.hp-20);u.ps--}if(u.wd)u.hp=Math.max(0,u.hp-40);if(!(u.bf>0))u.bm=1;if(u.k==='ikh'){if(!u.atk)u.inv=u.zp=true;u.atk=false}});
  U.forEach(u=>{if(u.mk>0)u.mk--});if(SY[P]['کهکشان']>=2){const e=U.filter(x=>x.hp>0&&x.o!==P&&!x.inv);if(e.length){const x=e[RL()*e.length|0];x.hp=Math.max(0,x.hp-200)}}P=1-P;T++;try{gasRound()}catch(e){}zoneTick();startTurn();sel=null;mode='mv';msg=(auto?'حرکت‌های '+NM[was]+' تمام شد. ':'')+'نوبت '+NM[P]+'.'+(GAS.msg||'');GAS.msg='';after()}
 let autoT=0;
 function canAct(){if(over||phase!=='play'||MV<1)return false;
@@ -956,6 +958,16 @@ function buildMakao(M,team){
  gp(new THREE.Mesh(new THREE.BoxGeometry(.06,.14,.08),Sv),0,-.1,-.08);gp(new THREE.Mesh(new THREE.OctahedronGeometry(.03),Gm),0,.06,.06);
  return G}
 const FIG={ali:buildAlice,mak:buildMakao};
+FIG.sno=function(M,team){const G=new THREE.Group(),Y0=.18,S=M(0xf4f9ff,{roughness:.95}),K=M(0x15151a,{roughness:.6}),Cr=M(0xff7a1c,{roughness:.6}),Wd=M(0x5a3a1c,{roughness:.9}),Tm=M(team&&team.getHex?team.getHex():0x3a8cf0);
+ const put=(m,x,y,z)=>{m.position.set(x,y,z);G.add(m);return m},ball=(r,y,mt)=>put(new THREE.Mesh(new THREE.SphereGeometry(r,18,14),mt||S),0,Y0+y,0);
+ ball(.42,.4);ball(.31,.98);ball(.23,1.45);
+ [-.09,.09].forEach(x=>ball(.035,1.5,K).position.set(x,Y0+1.5,.2));
+ const nose=new THREE.Mesh(new THREE.ConeGeometry(.04,.24,8).rotateX(Math.PI/2),Cr);put(nose,0,Y0+1.43,.33);
+ [-.1,0,.1].forEach(dy=>put(new THREE.Mesh(new THREE.SphereGeometry(.035,8,6),K),0,Y0+.98+dy,Math.sqrt(.31*.31-dy*dy)));
+ const scarf=new THREE.Mesh(new THREE.TorusGeometry(.2,.05,8,20).rotateX(Math.PI/2),Tm);put(scarf,0,Y0+1.25,0);
+ [-1,1].forEach(sx=>{const a=put(new THREE.Mesh(new THREE.CylinderGeometry(.018,.018,.6,6),Wd),sx*.47,Y0+1.12,0);a.rotation.z=-sx*.95});
+ put(new THREE.Mesh(new THREE.CylinderGeometry(.2,.2,.03,16),K),0,Y0+1.64,0);put(new THREE.Mesh(new THREE.CylinderGeometry(.13,.13,.22,16),K),0,Y0+1.76,0);
+ return G};
 /* ===== GX — موتور گرافیک مهره‌ها (ابزار مشترک برای همهٔ کاراکترها) =====
  کاراکتر جدید: تابعی مثل gxAlice بنویس (M,team)=>Group و با GX.reg('کلید',تابع) ثبتش کن.
  ابزارها: GX.pal(M) مواد PBR | GX.lathe بدنه/دامن چین‌دار | GX.limb/GX.strand لولهٔ باریک‌شونده (دست، پا، مو)
@@ -3074,7 +3086,7 @@ cv.addEventListener('pointerdown',e=>{if(spl&&e.isPrimary){spHold=true;try{cv.se
 cv.addEventListener('pointermove',e=>{if(spHold)spUpdate(e)});
 cv.addEventListener('pointerup',e=>{if(!spHold)return;spHold=false;const p=spPrev;spPrev=null;spShow();spSw=true;setTimeout(()=>spSw=false,0);if(spl&&p){if(mine())net({a:'cast',k:spl,x:p.c,y:p.r,cells:p.cells,pt:[p.pt.x,p.pt.y,p.pt.z]});else flash('نوبت حریف است')}});
 cv.addEventListener('pointercancel',()=>{spHold=false;spPrev=null;if(PV.length)spShow()});
-function sdm(t,d){if(t.im>0)return;if(FB&&sy(t,'ساپورتر',2))d*=.9;if(t.is>0)d*=.05;else if(t.fz>0)d*=.5;t.hp=Math.max(0,t.hp-Math.round(d))}
+function sdm(t,d){if(t.im>0)return;if(FB&&sy(t,'ساپورتر',2))d*=.9;if(t.is>0)d*=.05;t.hp=Math.max(0,t.hp-Math.round(d))}
 function fbFX(P3,cb){const g=new THREE.Group();g.add(new THREE.Mesh(new THREE.SphereGeometry(1.1,20,16),new THREE.MeshBasicMaterial({color:0xffc04a})),new THREE.Mesh(new THREE.SphereGeometry(1.9,20,16),new THREE.MeshBasicMaterial({color:0xff5a14,transparent:true,opacity:.45,blending:THREE.AdditiveBlending,depthWrite:false})));
  const A=P3.clone().add(new THREE.Vector3(-5,22,-4)),B=P3.clone();B.y=.7;g.position.copy(A);scene.add(g);const t0=performance.now(),D=1000;
  (function f(){const k=Math.min(1,(performance.now()-t0)/D);g.position.lerpVectors(A,B,k*k);g.scale.setScalar(.7+.6*k);try{burst(g.position,3,0xff8a2a,{sp:.6,life:.5,y:0,size:.6,g:-1,up:0,vy:0,r:.6})}catch(_){}
@@ -3218,7 +3230,7 @@ function smnStep(u){const pen=u.k==='pen',E=U.filter(x=>x.hp>0&&x.o!==u.o&&!x.in
  const ok=(a,b)=>!at(a,b)&&(pen||!blkAt(a,b)),seen=new Set([u.c+','+u.r]);let q=[];
  const add2=(c,r,f)=>{for(const p of nb(c,r))if(ok(p[0],p[1])&&!seen.has(p+'')){seen.add(p+'');q.push({p,f:f||p})}};add2(u.c,u.r,null);
  while(q.length){const n=q.shift();if(E.some(x=>dist({c:n.p[0],r:n.p[1]},x)===1))return n.f;add2(n.p[0],n.p[1],n.f)}return null}
-function smnAct(u,next,gen){if(gen!==smnGen)return;if(u.fr>0||u.jl>0||u.fz>0)return next();let used=0;const cap=(u.sl||u.sh>0)?1:2,
+function smnAct(u,next,gen){if(gen!==smnGen)return;if(u.k==='sno')return next();if(u.fr>0||u.jl>0||u.fz>0)return next();let used=0;const cap=(u.sl||u.sh>0)?1:2,
  adj=()=>U.filter(x=>x.hp>0&&x.o!==u.o&&!x.inv&&!(x.fly>0)&&dist(u,x)===1);
  const go=()=>{if(gen!==smnGen)return;if(u.hp<=0||over)return next();const A=adj();
   if(A.length&&used<2){const t=A[RL()*A.length|0],g=unitG.get(u),gt=unitG.get(t);
@@ -3229,7 +3241,7 @@ function smnAct(u,next,gen){if(gen!==smnGen)return;if(u.fr>0||u.jl>0||u.fz>0)ret
   if(u.k==='pen'&&blkAt(s[0],s[1])){try{const p=V3(s[0],s[1]);burst(p,30,0xdff4ff,{sp:3,vy:3,size:.4,life:.8})}catch(_){}u.hp=0;msg='سارسار به مانع خورد و از بین رفت.';after();return setTimeout(next,500)}
   draw();setTimeout(go,450)};
  go()}
-function smnRun(auto){if(phase!=='play'||over||LOCK)return false;const L=U.filter(u=>u.hp>0&&u.o===P&&(u.k in SMN));if(!L.length)return false;const gen=smnGen;LOCK=1;let i=0;
+function smnRun(auto){if(phase!=='play'||over||LOCK)return false;const L=U.filter(u=>u.hp>0&&u.o===P&&(u.k in SMN)&&u.k!=='sno');if(!L.length)return false;const gen=smnGen;LOCK=1;let i=0;
  const step=()=>{if(gen!==smnGen)return;if(over||i>=L.length){LOCK=0;if(!over)endTurn0(auto);return}const u=L[i++];if(u.hp<=0||!U.includes(u))return step();smnAct(u,()=>setTimeout(step,250),gen)};
  setTimeout(step,300);return true}
 function draw(){ zsync();if(DSW||!renderer||NOGAME)return; syncUnits();syncStatues();syncTiles();ui();shopRender();autoCheck()}
@@ -3433,6 +3445,7 @@ function atkSnd(a,t){const k=a.k;
  if(H[k].r===1){SFX.sword(1);return 1}
  return 0}
 function abSnd(u,t){const k=u.k;
+  if(k==='iw'){try{SFX.ice()}catch(e){}return 1}
  if(k==='dk')return 1;
  if(k==='ali'){if(CX)CX.al=1;return 1}
  if(k==='fd'||k==='jack'||k==='ft')return 1;
@@ -3973,7 +3986,7 @@ function botPlayLite(){
 /* ===== هوش مصنوعی نسخهٔ ۲: تحلیل تهدید، تمرکز روی کشتن، قابلیت‌ها و طلسم‌ها ===== */
 const bVal=(t,d)=>{d=Math.max(0,d);return Math.min(d,t.hp)*(1+H[t.k].d/700)+(d>=t.hp?t.hp*.5+H[t.k].d*2:0)};
 const bEst=(a,t)=>{let d;try{d=base(a,t)}catch(_){d=NaN}if(!(d>=0))d=H[a.k].d;
-  if(t.im>0||t.ar>0)return 0;if(a.weak||a.cu>0)d*=.5;if(a.ra>0)d*=1.25;if(t.is>0)d*=.05;else if(t.fz>0)d*=.5;if(t.mk>0)d*=1.25;if(t.sh>0)d*=.1;if(a.bf>0)d*=a.bm||1;return d*(a.al||1)};
+  if(t.im>0||t.ar>0)return 0;if(a.weak||a.cu>0)d*=.5;if(a.ra>0)d*=1.25;if(t.is>0)d*=.05;if(t.mk>0)d*=1.25;if(t.sh>0)d*=.1;if(a.bf>0)d*=a.bm||1;return d*(a.al||1)};
 const bThr=(u,c,r)=>{let s=0;for(const e of U){if(e.hp<=0||e.o===u.o||e.fr>0||e.jl>0||e.fz>0)continue;if(dist(e,{c,r})<=H[e.k].r+Math.min(H[e.k].m,2))s+=bEst(e,u)*.8}return s};
 const bCone=(u,t,DM)=>{const[q0,r0]=toA(u.c,u.r),[q1,r1]=toA(t.c,t.r),d=DIR.findIndex(([a,b])=>q1-q0===a&&r1-r0===b);if(d<0)return[];
   const A=DIR[(d+5)%6],B=DIR[d],C=DIR[(d+1)%6],res=[];
@@ -3991,7 +4004,8 @@ function bAbil(u){
     case 'ber':return top(t=>bVal(t,700));
     case 'blk':return top(t=>bVal(t,400)+(u.shd>0?150:450));
     case 'ft':return top(t=>chain(u,t).reduce((s,x,i)=>s+bVal(x,[250,200,150][i]),0));
-    case 'ik':case 'iw':return top(t=>bVal(t,H[k].d)+H[t.k].d*.9);
+    case 'iw':{let b=null;for(const t of AT){const n=EN.filter(x=>!(x.k in SMN)&&!x.inv&&!(x.fr>0)&&dist(x,t)===1&&!sy(x,'سرخ',2));if(!n.length)continue;const v=n.reduce((s,x)=>s+H[x.k].d*.9+150,0);if(!b||v>b.v)b={v,t}}return b}
+    case 'ik':return top(t=>bVal(t,H[k].d)+H[t.k].d*.9);
     case 'ske':return EN.some(x=>!(x.k in SMN)&&!x.inv)?{v:650,self:1}:null;
     case 'doj':return{v:600+Math.min(350,u.max-u.hp),self:1};
     case 'cri':{const m=u.max-u.hp;return m>1500?{v:m*.8,self:1}:null}
@@ -4764,7 +4778,7 @@ ikh:['یک روح مهروموم‌شده! مهروموم اختفاگر هیچ�
 col:['ناخدای هفت دریا، کاپیتان دزدان دریایی','به یک دشمن آسیب مستقیم وارد می‌کند.','وقتی حداقل یک قهرمان دشمن از میدان خارج شده باشد، می‌تواند از قابلیتش استفاده کند. هرچه دشمن‌های بیشتری از بین رفته باشند (تا سه نفر)، اثرش قوی‌تر است. با استفاده از آن، بخشی از تحمل‌ضربه‌اش را بازیابی می‌کند و تا سه راند آسیب بیشتری می‌زند.'],
 ear:['جادوگر زمین؛ متحدان من برای بار دوم به میدان نبرد برمی‌گردند','به یک دشمن آسیب مستقیم وارد می‌کند. وقتی تحمل‌ضربه‌ی یک قهرمان خودی تمام شود، به جای خارج شدن از میدان نبرد به سنگ تبدیل می‌شود (تا سقف سه قهرمان). اگر سنگ متحدی در میدان نبرد باشد، ضربه‌ی جادوگر زمین آن سنگ را به اندازه‌ی آسیب ضربه شفا می‌دهد و اگر دو سنگ در زمین باشد، شفا بین دو سنگ پخش می‌شود. تحمل‌ضربه‌ی سنگ‌ها از سقف تحمل‌ضربه‌ی متحدِ سنگ‌شده بیشتر نمی‌شود.','قهرمان‌های سنگ‌شده دوباره به میدان نبرد برمی‌گردند.'],
 ik:['پادشاه یخی؛ پادشاه سرزمین‌های شمال، یک جنگ‌آور تمام‌عیار با تسلط به عنصر یخ','به یک دشمن آسیب مستقیم وارد می‌کند. دشمن آسیب‌خورده برای یک راند آهسته می‌شود.','یک ضربه به یک دشمن می‌زند و دشمنان کاشی‌های اطرافش هم آسیب می‌بینند و آهسته می‌شوند.'],
-iw:['جادوگر یخ؛ مهم‌ترین متحد پادشاه‌یخ برای سلطنت در سرزمین‌های شمال، علاقه‌مند به مجسمه‌های یخی!','به یک دشمن آسیب مستقیم وارد می‌کند. دشمن آسیب‌خورده برای یک راند آهسته می‌شود.','یک آدم‌برفی با تحمل‌ضربه‌ی پایین احضار می‌شود که دشمنان اطرافش را فریز می‌کند. آدم‌برفی در جایی ظاهر می‌شود که بیشترین دشمن را بتواند فریز کند و تحمل‌ضربه‌اش هر راند ۵۰٪ کمتر می‌شود.'],
+iw:['جادوگر یخ؛ مهم‌ترین متحد پادشاه‌یخ برای سلطنت در سرزمین‌های شمال، علاقه‌مند به مجسمه‌های یخی!','به یک دشمن آسیب مستقیم وارد می‌کند. دشمن آسیب‌خورده برای یک راند آهسته می‌شود.','روی یکی از کاشی‌های خالی در برد ضربه‌اش یک آدم‌برفی با جان ۲۰۰ احضار می‌کند و دشمنان کاشی‌های اطرافش را یک راند فریز می‌کند. آدم‌برفی فقط حضور دارد؛ نه حمله می‌کند و نه حرکت، و در هر راند ۱۰۰ جان از دست می‌دهد.'],
 mus:['سایبرگ موساشی؛ فنون قدیمی سامورایی با ترکیب تکنولوژی جدید، مرگبار و وحشت‌آور!','به یک دشمن آسیب مستقیم وارد می‌کند.','سه راند سپر می‌گیرد و بخش اعظمی از آسیب‌ها را دفع می‌کند. در این سه راند سرعت حرکتش دو واحد کمتر می‌شود.'],
 ske:['پادشاه اسکلت؛ پادشاه دنیای برزخ چرا به زمین احضار شده؟','به یک دشمن آسیب مستقیم وارد می‌کند. ضربه‌اش به احتمال ۵۰٪ به کاشی پشت جهت ضربه جهش می‌کند و نصف آسیب اصلی را وارد می‌کند.','به یک قهرمان دشمن تصادفی آسیب می‌زند و او را برای دو نوبت زندانی می‌کند.'],
 bud:['بودا؛ بودا روش زندگی یک راهب واقعی را در پیش گرفت و به خلوص واقعی اینان رسید','در یکی از شش جهت مستقیم حمله می‌کند. بردش کم است ولی ضربه‌اش به کاشی‌های پشت هم می‌خورد.','به زندگی خود پایان می‌دهد و به دشمنان مستقیم در جهت عمودی آسیب زیادی وارد می‌کند. اگر بودا بدون استفاده از قابلیت شکست بخورد، قابلیتش بدون مصرف اکسیر فعال می‌شود.'],
@@ -4808,7 +4822,7 @@ var CB={
 /* طلسم‌ها */
 var SPD={
 fb:['','یک گلولهٔ آتشین از آسمان روی یک مثلثِ سه‌خانه‌ای فرود می‌آید و به همهٔ دشمن‌های داخل ۶۸۰ آسیب می‌زند.','دشمن‌های «ساپورتر ۲» ۱۰٪ کمتر آسیب می‌بینند.'],
-fz:['','روی یک خانه و ۶ همسایه‌اش: به دشمن‌ها ۱۰۰ آسیب می‌زند و ۲ نوبت فریز می‌کند (حرکت صفر، ولی نصف آسیب دریافتی).','دشمنِ فریزشده نمی‌تواند حرکت کند.'],
+fz:['','روی یک خانه و ۶ همسایه‌اش: به دشمن‌ها ۱۰۰ آسیب می‌زند و ۲ نوبت فریز می‌کند (حرکت صفر).','دشمنِ فریزشده نمی‌تواند حرکت کند.'],
 cu:['','روی یک دشمن: ۳۰ آسیب و ۳ نوبت نصف آسیبِ ضربه‌هایش.','هدف باید یک دشمن باشد.'],
 mi:['','یک معدنچی (۱۶۰۰ جان، ۱۶۰ آسیب) روی هر کاشی خالی میدان (نیمهٔ خودت یا حریف) احضار می‌کند.','معدنچی خودش به‌سمت نزدیک‌ترین دشمن می‌رود و در پایان نوبتت حمله می‌کند. وقتی می‌میرد منفجر می‌شود و فقط به دشمن‌های کاشی‌های اطرافش ۳۲۰ آسیب می‌زند.'],
 sr:['','یک ستون را انتخاب می‌کنی؛ یک پنگوئن از ته ستون می‌دود: اولین دشمنِ سر راه ۲۶۰ و بقیه ۱۳۰ آسیب می‌گیرند. اگر سنگ‌قبر سد شود، می‌ایستد. انتهای ستون یک «سارسار» (۹۰۰ جان) برای تو احضار می‌شود.','اگر میدان کاملاً پر باشد قابل استفاده نیست.'],
@@ -4871,7 +4885,7 @@ ikh:[['آسیب: 350','بدون متحدِ کنارش: 875 (2.5 برابر)'],0]
 col:[0,['ترمیم: ۲۲٪ جان کل به‌ازای هر دشمن از دست‌رفته (تا 3 نفر، حداکثر ۶۶٪)','آسیب بیشتر: ۲۲٪ به‌ازای هر دشمن (حداکثر ۶۶٪) برای 3 راند']],
 ear:[['آسیب: 480','شفای سنگ: 480 (بین سنگ‌ها تقسیم می‌شود)','حداکثر سنگ: 3'],['بازگشت متحدان سنگ‌شده با جانِ شفاگرفته']],
 ik:[['آسیب: 300','کندی: 1 راند'],['آسیب: 300','فریز و کندی: 1 راند']],
-iw:[['آسیب: 350','کندی: 1 راند'],['آدم‌برفی: جان 200، بدون آسیب، حرکت ندارد','کاهش جان: ۵۰٪ در هر راند']],
+iw:[['آسیب: 350','کندی: 1 راند'],['احضار آدم‌برفی: جان 200، بدون آسیب، بدون حرکت','فریز دشمنان کنارش: 1 راند','کاهش جان: ۱۰۰ در هر راند']],
 mus:[0,['سپر: 3 راند، ۹۰٪ کاهش آسیب','کاهش حرکت: 2']],
 ske:[['آسیب: 350','۵۰٪ شانس: جهش به کاشی پشت با 175 آسیب'],['آسیب: 350','زندانی: 2 نوبت']],
 bud:[['آسیب به هر دشمن در خط (تا برد 6): 220'],['آسیب به دشمنان خط عمودی: 660','اگر بدون قابلیت شکست بخورد: بدون اکسیر فعال می‌شود']],
