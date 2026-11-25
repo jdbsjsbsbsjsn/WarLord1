@@ -4839,6 +4839,7 @@ function css(){var st=document.createElement('style');st.textContent=
 '#ovKb .pill{display:inline-block;font-size:11px;font-weight:700;padding:1px 9px;border-radius:999px;background:rgba(124,196,255,.14);border:1px solid var(--ice);color:var(--ice)}#ovKb .pill.y{background:rgba(242,193,78,.14);border-color:var(--gold);color:var(--gold)}#ovKb .pill.r{background:rgba(255,69,58,.12);border-color:var(--bad);color:#ff8a82}'+
 '#ovKb .kbt{display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-top:1px dashed var(--line)}#ovKb .kbt:first-of-type{border-top:0}#ovKb .kbt .lv{flex:none;min-width:58px;text-align:center;font-size:12px;font-weight:700;color:var(--ink);background:var(--gold);border-radius:8px;padding:2px 6px}#ovKb .kbt span.tx{flex:1;font-size:14px;line-height:1.9}'+
 '#ovKb .kbq{font:inherit;font-size:15px;padding:9px;border-radius:12px;border:1px solid var(--line);background:var(--panel2);color:var(--fg);width:100%;text-align:start}'+
+'#ovKb .kbx{min-height:30px;padding:2px 0;margin-top:4px;border:0;background:transparent;color:var(--mut);font-size:12px;flex-direction:row;gap:6px;width:100%}#ovKb .kbx i{font-style:normal;transition:transform .2s}#ovKb .kbx[aria-expanded=true] i{transform:rotate(180deg)}#ovKb .kbn{margin-top:4px;padding-top:6px;border-top:1px dashed var(--line);display:flex;flex-direction:column;gap:3px;font-size:13px;line-height:1.8}'+
 '#ovKb #kbB{direction:rtl}#ovKb .kbh.cb .hn{text-align:center}#ovKb .kbi{position:relative;justify-content:center}#ovKb .kbi .e{position:absolute;inset-inline-start:12px;top:50%;transform:translateY(-50%)}#ovKb .kbi .t{flex:none;width:100%;box-sizing:border-box;padding:0 46px;align-items:center;text-align:center}#ovKb .kbh .hn{text-align:center}';
 document.head.appendChild(st)}
 function build(){css();
@@ -4848,16 +4849,60 @@ function build(){css();
  ov.querySelector('#kbClose').onclick=function(){ov.hidden=true};
  ov.querySelector('#kbBack').onclick=function(){stack.pop();show(stack[stack.length-1])};
  ov.addEventListener('click',function(e){if(e.target===ov)ov.hidden=true});
- body.addEventListener('click',function(e){var b=e.target.closest('[data-go]');if(!b)return;var p=b.dataset.go.split(':');go({t:p[0],g:p[1],k:p[2]})})}
+ body.addEventListener('click',function(e){var x=e.target.closest('[data-tg]');if(x){var n=x.nextElementSibling;n.hidden=!n.hidden;x.setAttribute('aria-expanded',n.hidden?'false':'true');return}var b=e.target.closest('[data-go]');if(!b)return;var p=b.dataset.go.split(':');go({t:p[0],g:p[1],k:p[2]})})}
 function item(em,t,sub,right,go){return '<button class="kbi" type="button" data-go="'+go+'"><span class="e">'+em+'</span><span class="t"><b>'+esc(t)+'</b>'+(sub?'<small>'+esc(sub)+'</small>':'')+'</span>'+(right?'<span class="g">'+esc(right)+'</span>':'')+'</button>'}
-function card(title,txt,cls){return '<div class="kbc '+(cls||'')+'"><h4>'+title+'</h4><p>'+txt+'</p></div>'}
+var NUM={
+acro:[0,['آسیب به هر دشمن در مسیر: 390']],
+aka:[0,['آسیب به هر دشمن روی خط: 500','برای یک نوبت: ۵۰٪ شانس دو برابر شدن آسیب']],
+cri:[0,['ترمیم: 2200 جان (تا سقف جان کل)']],
+doj:[['2 ضربه، هرکدام 200 آسیب (جمعاً 400)','اگر دو دشمن هم‌فاصله باشند، هر ضربه تصادفی به یکی از آن‌ها می‌خورد'],['آسیب: 400','ترمیم خودش: 350 جان']],
+pri:[0,['کم‌کردن از جان پرجان‌ترین متحد: 100','ترمیم خودش: 350 جان']],
+raf:[['کاشی اول (هدف): 400','کاشی دوم پشت هدف: 200','کاشی سوم پشت هدف: 100'],['پرواز: 3 راند']],
+bri:[['آسیب: 420','تضعیف هدف: ۵۰٪ آسیب کمتر برای 1 راند'],['احضار الدرلیچ: جان 1500، آسیب 300، حرکت 1']],
+ali:[0,['آسیب: 600']],
+mar:[['آسیب: 200 + قدرت جمع‌شده','هر کشتن: 200+ به قدرت'],['آسیب: 200 + قدرت جمع‌شده','اگر هدف بمیرد: 200+ به قدرت']],
+mak:[['آسیب: 500','خشاب: 6 گلوله','شانس شکست هر شلیک: 1/6 (آسیب به خودش)','ششمین شلیک پشت‌سرهم حتماً به خودش می‌خورد'],['پر شدن کامل خشاب: 6 گلوله']],
+and:[['آسیب: 400','شارژ سیاه‌چاله: برابر آسیب هر ضربه (حداکثر 2000)'],['آسیب: برابر شارژ (حداکثر 2000)']],
+zep:[['کاشی 1: 840','کاشی 2: 630','کاشی 3: 420','کاشی 4: 210'],['ردیف اول: 840','ردیف دوم: 630','ردیف سوم: 420','ردیف چهارم: 210']],
+jack:[['12 کارت، هرکدام 40 آسیب (جمعاً 480)'],['6 کارت، هرکدام 120 آسیب (جمعاً 720)']],
+blk:[0,['سپر: 600','آسیب به هدف: 400']],
+jal:[['آسیب به هر دشمن اطراف: 300'],['2 تبر، هرکدام 200 آسیب (جمعاً 400)']],
+ikh:[['آسیب: 350','بدون متحدِ کنارش: 875 (2.5 برابر)'],0],
+col:[0,['ترمیم: ۲۲٪ جان کل به‌ازای هر دشمن از دست‌رفته (تا 3 نفر، حداکثر ۶۶٪)','آسیب بیشتر: ۲۲٪ به‌ازای هر دشمن (حداکثر ۶۶٪) برای 3 راند']],
+ear:[['آسیب: 480','شفای سنگ: 480 (بین سنگ‌ها تقسیم می‌شود)','حداکثر سنگ: 3'],['بازگشت متحدان سنگ‌شده با جانِ شفاگرفته']],
+ik:[['آسیب: 300','کندی: 1 راند'],['آسیب: 300','فریز و کندی: 1 راند']],
+iw:[['آسیب: 350','کندی: 1 راند'],['آدم‌برفی: جان 200، بدون آسیب، حرکت ندارد','کاهش جان: ۵۰٪ در هر راند']],
+mus:[0,['سپر: 3 راند، ۹۰٪ کاهش آسیب','کاهش حرکت: 2']],
+ske:[['آسیب: 350','۵۰٪ شانس: جهش به کاشی پشت با 175 آسیب'],['آسیب: 350','زندانی: 2 نوبت']],
+bud:[['آسیب به هر دشمن در خط (تا برد 6): 220'],['آسیب به دشمنان خط عمودی: 660','اگر بدون قابلیت شکست بخورد: بدون اکسیر فعال می‌شود']],
+que:[['آسیب: 180 + ۱۸٪ جان هدف (اگر جان هدف ≥ 1620)','یا 180 + ۹٪ جان هدف (اگر جان هدف ≥ 810)'],['اگر جان کل هدف بیش از 2430 باشد: 180 + ۳۶٪ جان کل','در غیر این صورت: مثل حمله‌ی معمولی']],
+fd:[['آسیب: 400','انفجار هنگام مرگ: 800 به دشمنان کنارش'],['ردیف اول: 400','ردیف دوم: 400']],
+ft:[['هدف اول: 250','هدف دوم: 200','هدف سوم: 150'],['هدف اول: 250','هدف دوم: 200','هدف سوم: 150','کاهش دائمی: ۱۰٪ جان کل و ۱۰٪ آسیب هر هدف']],
+mac:[['نزدیک: ردیف اول 400، ردیف دوم 200','دوربرد: 20 گلوله، هرکدام 20 آسیب (جمعاً 400)'],['بار اول: 4 بمب روی دشمنان تصادفی','بار دوم (2 اکسیر): انفجار 90 آسیب به‌ازای هر بمب']],
+eld:[['آسیب: 180','ترمیم: 240 جان به کم‌جان‌ترین متحد در شعاع 2'],0],
+spg:[0,['آسیب به هر دشمنِ زنجیره: 70 × اندازه‌ی خوشه (حداکثر 5) = تا 350']],
+med:[['آسیب: 500 + 50 به‌ازای هر مار بیدار (حداکثر 6 مار، یعنی 800)','شانس مسموم‌سازی: 1/6 به‌ازای هر مار','زهر: 20 آسیب در هر راند، 2 راند'],0],
+eli:[0,['نیزه: 120','دشمن 2 راند ۲۵٪ آسیب بیشتر می‌گیرد','ضربه‌ی دوم بعد از حرکت: 400']],
+ber:[0,['16 ضربه، هرکدام 160 آسیب (جمعاً 2560)']],
+dk:[['آسیب: 330','۵۰٪ شانس پرتاب به عقب (ضربه‌ی چهارم حتماً)'],['آسیب: 140','قفل قابلیت: 3 راند']],
+gq:[['گلوله‌ی عادی: 450','گلوله‌ی آتشین: ردیف اول 900، ردیف دوم 300','خشاب: 2 تیر'],['پر شدن خشاب با 2 گلوله‌ی آتشین']],
+dn:[['آسیب: 350','هر حمله‌ی سوم: 700'],['۵۰٪: زره نشکن (اولین ضربه یا طلسم بی‌اثر می‌شود)','۵۰٪: 6 شمشیر، هرکدام 70 آسیب (جمعاً 420)']],
+dw:[['آسیب به هدف: 240','آسیب به دشمنان کنار هدف: 240'],['آسیب به ضعیف‌ترین دشمن: 820']]
+};
+function fa(x){return String(x).replace(/\d/g,function(c){return '۰۱۲۳۴۵۶۷۸۹'[c]})}
+function numBox(k,t){var d=H[k],n=NUM[k]&&NUM[k][t],L=[];
+ if(t===1&&d.c)L.push('هزینه: '+(k==='mac'?'1 اکسیر (بار اول)':d.c+' اکسیر'));
+ if(n)L=L.concat(n);else if(t===0)L.push('آسیب: '+d.d);
+ if(!L.length)return '';
+ return '<button type="button" class="kbx" data-tg="1" aria-expanded="false"><span>مشخصات و اعداد</span><i>▾</i></button><div class="kbn" hidden>'+L.map(function(x){return '<div>• '+esc(fa(x))+'</div>'}).join('')+'</div>'}
+function card(title,txt,cls,ex){return '<div class="kbc '+(cls||'')+'"><h4>'+title+'</h4><p>'+txt+'</p>'+(ex||'')+'</div>'}
 function lim(k){var o=H[k].o1;return o===1?'<span class="pill r">فقط ۱ بار در بازی</span>':o?'<span class="pill r">حداکثر '+px(o)+' بار در بازی</span>':''}
 function heroDetail(k){var d=H[k],l=HD[k],tr=TR[k]||[];
  var cost=d.c?px(d.c)+' اکسیر':'ندارد';
  return '<div class="kbh"><div class="em">'+EM[k]+'</div><div class="hn"><h3>'+esc(qn(d.n))+'</h3><p>'+esc(l[0])+'</p></div></div>'+
  '<div class="kbs"><div><i></i><b>'+px(d.hp)+'</b><small>تحمل ضربه</small></div><div><i></i><b>'+px(d.d)+'</b><small>آسیب پایه</small></div><div><i></i><b>'+px(d.r)+'</b><small>برد (خانه)</small></div><div><i></i><b>'+px(d.m)+'</b><small>حرکت در نوبت</small></div><div><i></i><b>'+cost+'</b><small>اکسیر قابلیت</small></div></div>'+
- card('حملهٔ معمولی',esc(l[1]))+
- card('قابلیت'+(d.c?' <span class="pill y">'+px(d.c)+' اکسیر</span>':'')+' '+lim(k),esc(l[2]),'g')+
+ card('حملهٔ معمولی',esc(l[1]),'',numBox(k,0))+
+ card('قابلیت'+' '+lim(k),esc(l[2]),'g',numBox(k,1))+
  card('کمبوها','<div class="kbtg">'+tr.map(function(t){return '<button type="button" data-go="d:c:'+esc(t)+'">'+(CB[t]?CB[t][0]+' ':'')+esc(t)+'</button>'}).join('')+'</div><span style="font-size:12px;color:var(--mut)">روی هر کمبو بزن تا ببینی چه کاری می‌کند.</span>')}
 function comboDetail(k){var c=CB[k],th=TH[k]||Object.keys(c[2]).map(Number);
  return '<div class="kbh cb"><div class="em">'+c[0]+'</div><div class="hn"><h3>کمبوی '+esc(k)+'</h3></div></div>'+
