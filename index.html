@@ -479,7 +479,7 @@ ali:{n:'کماندو آلیس',hp:710,d:350,r:3,m:2,c:1},
 mar:{n:'ژنرال مارسا',hp:820,d:240,r:4,m:2,c:1},
 mak:{n:'ملکه‌ی ماکائو',hp:1030,d:500,r:4,m:2,c:1},
 and:{n:'آندرومدا',hp:640,d:400,r:4,m:2,c:3},
-zep:{n:'پدر ژپتو',hp:1150,d:840,r:4,m:2,c:4,o1:1},
+zep:{n:'پدر ژپتو',hp:1150,d:720,r:4,m:2,c:4,o1:1},
 jack:{n:'جک قاتل',hp:1600,d:450,r:5,m:2,c:2},
 blk:{n:'سیاه بال',hp:3300,d:400,r:1,m:2,c:2,o1:2},
 jal:{n:'جلاد',hp:1600,d:300,r:1,m:2,c:1},
@@ -652,7 +652,7 @@ function after(){zsync();U.forEach(u=>{if(u.imu&&u.im>0&&u.hp<1)u.hp=1});
  const lost=[0,1].find(o=>!U.some(u=>u.o===o&&!(u.k in SMN)));
  if(lost!==undefined){over=true;msg='🏆 بازیکن '+NM[1-lost]+' برنده شد!'}
  draw()}
-const base=(a,t)=>(CAB?0:(a.md|0))+(a.k==='pen'?(RL()<.5?260:130):a.k==='zep'?[840,630,420,210][dist(a,t)-1]:a.k==='dn'?H.dn.d*(((a.sc|0)+1)%3===0?2:1):a.k==='med'?H.med.d+50*(a.sn|0):a.k==='mar'?240+a.bonus:a.k==='que'?180+(t.max>=1620?.17*t.max:t.max>=810?.085*t.max:0):a.k==='ikh'&&!U.some(x=>x.hp>0&&x.o===a.o&&x!==a&&dist(a,x)===1)?H.ikh.d*1.75:H[a.k].d);
+const base=(a,t)=>(CAB?0:(a.md|0))+(a.k==='pen'?(RL()<.5?260:130):a.k==='zep'?[720,540,360,180][dist(a,t)-1]:a.k==='dn'?H.dn.d*(((a.sc|0)+1)%3===0?2:1):a.k==='med'?H.med.d+50*(a.sn|0):a.k==='mar'?240+a.bonus:a.k==='que'?180+(t.max>=1620?.17*t.max:t.max>=810?.085*t.max:0):a.k==='ikh'&&!U.some(x=>x.hp>0&&x.o===a.o&&x!==a&&dist(a,x)===1)?H.ikh.d*1.75:H[a.k].d);
 function ld(a,t){const[q1,r1]=toA(a.c,a.r),[q2,r2]=toA(t.c,t.r),dq=q2-q1,dr=r2-r1,k=Math.max(Math.abs(dq),Math.abs(dr),Math.abs(dq+dr));if(!k)return-1;return DIR.findIndex(([x,y])=>x*k===dq&&y*k===dr)}
 function macBomb(u){U.filter(x=>x.hp>0&&x.o!==u.o&&!x.inv&&x.bb>0).forEach(x=>{hit(u,x,90*x.bb);x.bb=0})}
 function boom(u){U.filter(x=>{if(x.hp<=0||x.o===u.o)return false;const d=ld(u,x);return d===2||d===5}).forEach(x=>hit(u,x,660))}
@@ -3590,7 +3590,7 @@ function acroAnim(g,pts,uu,ex){const af=acFig(g),d=g.userData,inner=g.children[0
   scene.remove(halo);halo.material.dispose();inner.rotation.x=0;if(af)af.userData.acro.flip(0,0);if(uu&&ex){uu.c=ex[0];uu.r=ex[1]}d.anim=0;g.position.set(P[N].x,0,P[N].z);ring(P[N],0xffe9a0,2,.5,.15);LOCK--;draw()})()}
 const _at=attack;attack=function(a,t){if(FXI&&phase==='play')try{CX={a,i:0,ab:false,snd:false,near:false,prev:null};CX.snd=!!atkSnd(a,t);if(a.k==='dk')dkStart(a,t,false)}catch(e){}
  const fl=U.filter(x=>x.o!==a.o&&x.hp>0&&x.hp>=x.max);try{return _at(a,t)}finally{if(CX&&CX.mk&&!CX.mkDone)try{makFX(a,t,0)}catch(e){}if(CX&&CX.cr&&!CX.crDone)try{criFX(a,t,0,false)}catch(e){}if(CX&&CX.al&&!CX.alDone)try{aliFX(a,t,0,false)}catch(e){}CX=null;if(a.k==='zep'&&fl.some(x=>x.hp<=0))say('One shot!',0,'zep')}};
-const _zp=zep;zep=function(u,t,DM){if(FXI&&phase==='play')try{zepFX(u,t,DM||[840,630,420,210])}catch(e){}return _zp(u,t,DM)};
+const _zp=zep;zep=function(u,t,DM){if(FXI&&phase==='play')try{zepFX(u,t,DM||[720,540,360,180])}catch(e){}return _zp(u,t,DM)};
 const _mk=mkUnit;mkUnit=function(u){if(!FXI)fxInit();const g=_mk(u),bg=[];for(let i=0;i<8;i++){const b=new THREE.Group(),d=new THREE.Mesh(new THREE.SphereGeometry(.13,10,8),new THREE.MeshBasicMaterial({color:0x151515})),l=new THREE.Mesh(new THREE.SphereGeometry(.05,8,6),new THREE.MeshBasicMaterial({color:0xff2a1a}));l.position.set(0,.15,0);b.add(d,l);const an=i*Math.PI/4;b.position.set(Math.cos(an)*.55,.9+.12*(i%2),Math.sin(an)*.55);b.visible=false;g.add(b);bg.push(b)}g.userData.bm=bg;const a=new THREE.Mesh(new THREE.PlaneGeometry(2.6,2.6).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({map:GL,transparent:true,opacity:0,depthWrite:false,blending:THREE.AdditiveBlending}));a.position.y=.05;g.add(a);g.userData.aura=a;return g};
 const _su=syncUnits;syncUnits=function(){_su();if(!FXI)return;for(const u of [...FS.keys()])if(!U.includes(u))FS.delete(u);
  U.forEach(u=>{const g=unitG.get(u);if(!g)return;if(g.userData.bm)g.userData.bm.forEach((m,i)=>m.visible=i<Math.min(8,u.bb|0));const s=FS.get(u);if(!s){FS.set(u,{c:u.c,r:u.r,wk:u.weak,bn:u.bonus,rg:u.rg>0,an:0});return}
@@ -4877,7 +4877,7 @@ ali:[0,['آسیب: 600']],
 mar:[['آسیب: 200 + قدرت جمع‌شده','هر کشتن: 200+ به قدرت'],['آسیب: 200 + قدرت جمع‌شده','اگر هدف بمیرد: 200+ به قدرت']],
 mak:[['آسیب: 500','خشاب: 6 گلوله','شانس شکست هر شلیک: 1/6 (آسیب به خودش)','ششمین شلیک پشت‌سرهم حتماً به خودش می‌خورد'],['پر شدن کامل خشاب: 6 گلوله']],
 and:[['آسیب: 400','شارژ سیاه‌چاله: برابر آسیب هر ضربه (حداکثر 2000)'],['آسیب: برابر شارژ (حداکثر 2000)']],
-zep:[['کاشی 1: 840','کاشی 2: 630','کاشی 3: 420','کاشی 4: 210'],['ردیف اول: 840','ردیف دوم: 630','ردیف سوم: 420','ردیف چهارم: 210']],
+zep:[['کاشی 1: 720','کاشی 2: 540','کاشی 3: 360','کاشی 4: 180'],['ردیف اول: 720','ردیف دوم: 540','ردیف سوم: 360','ردیف چهارم: 180']],
 jack:[['12 کارت، هرکدام 40 آسیب (جمعاً 480)'],['6 کارت، هرکدام 120 آسیب (جمعاً 720)']],
 blk:[0,['سپر: 600','آسیب به هدف: 400']],
 jal:[['آسیب به هر دشمن اطراف: 300'],['2 تبر، هرکدام 200 آسیب (جمعاً 400)']],
