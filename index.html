@@ -133,6 +133,7 @@ button em{font-style:normal;font-size:11px;font-weight:500;opacity:.8}
 #shp,#spb{position:absolute;top:50%;transform:translateY(-50%);z-index:5;min-height:44px;padding:0 8px;font-size:18px;border-radius:12px;background:rgba(20,22,28,.85);color:var(--gold);border-color:var(--gold)}#shp{right:6px;width:44px}#spb{left:6px;font-size:12px}
 #shop{position:absolute;z-index:9;top:38px;bottom:8px;right:0;width:min(max(50%,236px),92%);background:rgba(20,22,28,.96);border:1px solid var(--line);border-inline-end:0;border-radius:14px 0 0 14px;padding:8px;display:flex;flex-direction:column;gap:8px;overflow:hidden;transform:translateX(105%);visibility:hidden;transition:transform .25s ease,visibility 0s .25s}
 #shop.open{transform:none;visibility:visible;transition:transform .25s ease}
+#shop .sc small{display:block;width:100%;font-size:10px;color:var(--mut);text-align:right;line-height:1.5}
 .shh{display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:700;gap:6px}.shh button{min-height:30px;padding:0 10px;font-size:12px}
 .sm{display:grid;gap:8px}.sm button{min-height:48px;font-size:14px;flex-direction:row;gap:6px}
 .sg{display:grid;grid-template-columns:1fr 1fr;gap:8px;overflow-y:auto;flex:1;min-height:0;align-content:start}
@@ -504,7 +505,14 @@ dk:{n:'پادشاه اهریمن',hp:2670,d:330,r:1,m:2,c:2},
 gq:{n:'ملکه‌ی باروت',hp:1700,d:600,r:1,m:2,c:3},
 dn:{n:'شوالیه‌ی اهریمن',hp:1600,d:350,r:1,m:2,c:1},
 dw:{n:'ساحره‌ی اهریمن',hp:820,d:240,r:4,m:2,c:3,o1:1},
-lich:{n:'الدرلیچ',i:'💀',hp:1500,d:300,r:1,m:1,c:0},pen:{n:'سارسار',i:'🐧',hp:900,d:130,r:1,m:2,c:0},mi:{n:'معدنچی',i:'⛏️',hp:1600,d:160,r:1,m:2,c:0},skl:{n:'اسکلت',i:'💀',hp:300,d:150,r:1,m:2,c:0},sno:{n:'آدم‌برفی',i:'⛄',hp:200,d:0,r:1,m:0,c:0}};const SMN={lich:1,pen:1,mi:1,skl:1,sno:1};
+lich:{n:'الدرلیچ',i:'💀',hp:1500,d:300,r:1,m:1,c:0},pen:{n:'سارسار',i:'🐧',hp:900,d:130,r:1,m:2,c:0},mi:{n:'معدنچی',i:'⛏️',hp:1600,d:160,r:1,m:2,c:0},skl:{n:'اسکلت',i:'💀',hp:300,d:150,r:1,m:2,c:0},sno:{n:'آدم‌برفی',i:'⛄',hp:200,d:0,r:1,m:0,c:0},
+/* سربازهای فروشگاه: برد ۱ و حرکت ۲؛ تفاوت سطح‌ها فقط در جان و دمیج است */
+fm1:{n:'مبارز ⭐',i:'⚔️',hp:1190,d:360,r:1,m:2,c:0},fm2:{n:'مبارز ⭐⭐',i:'⚔️',hp:2080,d:430,r:1,m:2,c:0},fm3:{n:'مبارز ⭐⭐⭐',i:'⚔️',hp:3640,d:510,r:1,m:2,c:0},
+ tn1:{n:'تانک ⭐',i:'🛡️',hp:1550,d:280,r:1,m:2,c:0},tn2:{n:'تانک ⭐⭐',i:'🛡️',hp:2710,d:340,r:1,m:2,c:0},tn3:{n:'تانک ⭐⭐⭐',i:'🛡️',hp:4740,d:400,r:1,m:2,c:0},
+ cr1:{n:'کریسدور ⭐',i:'🔱',hp:1130,d:190,r:1,m:2,c:0},cr2:{n:'کریسدور ⭐⭐',i:'🔱',hp:1980,d:230,r:1,m:2,c:0},cr3:{n:'کریسدور ⭐⭐⭐',i:'🔱',hp:3470,d:270,r:1,m:2,c:0},
+ sm1:{n:'سامورایی ⭐',i:'🥷',hp:940,d:430,r:1,m:3,c:0},sm2:{n:'سامورایی ⭐⭐',i:'🥷',hp:1650,d:520,r:1,m:3,c:0},sm3:{n:'سامورایی ⭐⭐⭐',i:'🥷',hp:2890,d:610,r:1,m:3,c:0},
+ cu1:{n:'نفرینی ⭐',i:'☠️',hp:1150,d:370,r:1,m:2,c:0},cu2:{n:'نفرینی ⭐⭐',i:'☠️',hp:2010,d:450,r:1,m:2,c:0},cu3:{n:'نفرینی ⭐⭐⭐',i:'☠️',hp:3520,d:540,r:1,m:2,c:0}};const SMN={lich:1,pen:1,mi:1,skl:1,sno:1};
+const TROOPS={fm1:{type:'مبارز',star:1,x:3},fm2:{type:'مبارز',star:2,x:6},fm3:{type:'مبارز',star:3,x:12},tn1:{type:'تانک',star:1,x:3},tn2:{type:'تانک',star:2,x:6},tn3:{type:'تانک',star:3,x:12},cr1:{type:'کریسدور',star:1,x:3},cr2:{type:'کریسدور',star:2,x:6},cr3:{type:'کریسدور',star:3,x:12},sm1:{type:'سامورایی',star:1,x:3},sm2:{type:'سامورایی',star:2,x:6},sm3:{type:'سامورایی',star:3,x:12},cu1:{type:'نفرینی',star:1,x:3},cu2:{type:'نفرینی',star:2,x:6},cu3:{type:'نفرینی',star:3,x:12}};
 const COLS=6,ROWS=8,SQ=Math.sqrt(3),DIR=[[1,0],[1,-1],[0,-1],[-1,0],[-1,1],[0,1]],NM=['قرمز','آبی'],CL=['#e5483c','#3a8cf0'];
 const toA=(c,r)=>[c,r-((c-(c&1))>>1)],toO=(q,r)=>[q,r+((q-(q&1))>>1)];
 const inb=(c,r)=>c>=0&&c<COLS&&r>=0&&r<ROWS;
@@ -515,6 +523,7 @@ const $=id=>document.getElementById(id),cv=$('cv');
 let U,P,E,sel,mode,over,W,Hh,S,pad,msg='',MV=0,T=0,D=[0,0],ST=[],SC=[0,0],LOCK=0;
 let NOGAME=true,phase='pick',DR={picks:[],pool:new Set(),offer:[]},dl=0,tray=null,unp=[];
 const TR={acro:'مبارز شوالیه',aka:'سامورایی کاپیتان',raf:'اشرافی ساپورتر',cri:'تانک سرخ',doj:'کریسدور اشرافی',pri:'سامورایی اشرافی',bri:'نفرینی ساپورتر',ali:'سرخ ساپورتر',mar:'کاپیتان دوشیزگان',mak:'دوشیزگان اشرافی',and:'کهکشان ساپورتر',zep:'شکارچی ساچمه',jack:'شکارچی کاپیتان',blk:'مشکی اشرافی',jal:'شکارچی مشکی',ikh:'شکارچی نفرینی',col:'مبارز کاپیتان',ear:'راهب کریسدور',ik:'انجماد پادشاه',iw:'انجماد ساپورتر',mus:'ربات سامورایی',ske:'نفرینی پادشاه',bud:'راهب ساپورتر',que:'مشکی دوشیزگان',med:'تانک کاپیتان',mac:'ربات مبارز',fd:'اژدها سرخ',ft:'اژدها کاپیتان',eld:'کریسدور راهب',spg:'شوالیه کهکشان',eli:'شوالیه مشکی',ber:'مبارز سرخ',dk:'اهریمن پادشاه',dw:'اهریمن ساپورتر',dn:'اهریمن شوالیه',gq:'ساچمه اشرافی'};
+for(const [k,v] of Object.entries(TROOPS))TR[k]=v.type;
 for(const k in TR)TR[k]=TR[k].split(' ');
 const at=(c,r)=>U.find(u=>u.hp>0&&u.c===c&&u.r===r);
 let SY=[{},{}],CAB=false,FB=false,DX=[[],[]],SP=[[],[]],spl=null,shopOpen=false,shopTab=0;
@@ -527,20 +536,20 @@ function synStart(){SY=[0,1].map(o=>{const m={};U.filter(u=>u.o===o).forEach(u=>
   if(SY[o]['اهریمن']>=2)shuf(foe.filter(u=>!sy(u,'مشکی',2))).slice(0,4).forEach(u=>u.bl=5)})}
 function add(k,o,c,r){const h=H[k],u={k,o,c,r,hp:h.hp,max:h.hp,mv:h.m,act:false,fly:0,weak:0,crit:0,ammo:6,ok:0,chg:0,bonus:0,used:false,sh2:2,fire:false,sn:0,kc:0,sc:0,inv:k==='ikh'};U.push(u);return u}
 /* ===== مرحلهٔ انتخاب و چیدن قهرمان (۱۶۰ ثانیه برای هر بازیکن) ===== */
-function init(){NOGAME=false;clearTimeout(autoT);autoT=0;PK=[[],[]];SP=[[],[]];DX=[[],[]];zoneClear();smnGen++;LOCK=0;spl=null;shopOpen=false;U=[];P=0;T=0;E=[7,7];D=[0,0];ST=[];SC=[0,0];sel=null;mode='mv';over=false;MV=0;msg='';BWdone=false;try{if(window.hideBattleWin)hideBattleWin()}catch(_){}if(ONLINE)startDraftBoth();else startDraft(0)}
+function init(){NOGAME=false;clearTimeout(autoT);autoT=0;PK=[[],[]];TP=[[],[]];SP=[[],[]];DX=[[],[]];zoneClear();smnGen++;LOCK=0;spl=null;shopOpen=false;U=[];P=0;T=0;E=[7,7];D=[0,0];ST=[];SC=[0,0];sel=null;mode='mv';over=false;MV=0;msg='';BWdone=false;try{if(window.hideBattleWin)hideBattleWin()}catch(_){}if(ONLINE)startDraftBoth();else startDraft(0)}
 const shuf=a=>{for(let i=a.length-1;i>0;i--){const j=RL()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a},rnd=a=>a[RL()*a.length|0];
 /* ===== اکسیر هیروها: هر هیرو هنگام انتخاب از همان ۴۲ اکسیرِ طلسم‌ها کم می‌کند؛ بدون اکسیر کافی خرید ممکن نیست ===== */
 const XC={acro:5,aka:6,cri:11,doj:5,pri:4,raf:5,bri:5,ali:5,mar:4,mak:6,and:4,zep:7,jack:6,blk:8,jal:5,ikh:4,col:6,ear:6,ik:4,iw:4,mus:9,ske:5,bud:3,que:4,fd:8,ft:8,mac:6,eld:6,spg:5,med:10,eli:7,ber:5,dk:6,gq:6,dn:4,dw:6},XT=42,
  hc=k=>XC[k]|0,
  hCost=o=>(PK[o]||[]).reduce((s,k)=>s+hc(k),0),
- elLeft=o=>XT-spCost(o)-hCost(o),spLeft=o=>elLeft(o),
+ elLeft=o=>XT-spCost(o)-hCost(o)-troopCost(o),spLeft=o=>elLeft(o),
  afford=k=>phase==='pick'&&DR.pool.has(k)&&hc(k)<=elLeft(P);
 let drClosed=false;
 /* اگر هیچ‌کدام از کارت‌های پیشنهادی را نتوانی بخری ولی هیروی ارزان‌تری در چرخه مانده، یکی‌شان جایگزین می‌شود تا گیر نکنی */
 function fixOff(o){if(o.some(afford))return o;const c=[...DR.pool].filter(afford);if(!c.length)return o;o=o.slice();o[o.length-1]=rnd(c);return o}
 function finishPick(){phase='place';drClosed=false;DR.offer=[];if(!unp.includes(tray))tray=unp[0]||null}
 function startDraft(o){shopOpen=false;drClosed=false;P=o;phase='pick';tray=null;sel=null;unp=[];dl=(ONLINE&&GT0?GT0+SOFF+3000:Date.now())+160000;
- DR={picks:[],pool:new Set(Object.keys(H).filter(k=>!(k in SMN))),offer:[]};PK[o]=DR.picks;DR.offer=mkOffer();draw()}
+ DR={picks:[],pool:new Set(Object.keys(H).filter(k=>!(k in SMN)&&!(k in TROOPS))),offer:[]};PK[o]=DR.picks;DR.offer=mkOffer();draw()}
 const dsSnap=()=>({P,phase,DR,unp,tray,sel,dl}),dsLoad=d=>{P=d.P;phase=d.phase;DR=d.DR;unp=d.unp;tray=d.tray;sel=d.sel;dl=d.dl};
 function startDraftBoth(){FIN=[false,false];DSV=[null,null];DSW=true;BEGINQ=false;
  try{[0,1].forEach(o=>{startDraft(o);DSV[o]=dsSnap()});dsLoad(DSV[ME===1?1:0])}finally{DSW=false}draw()}
@@ -572,9 +581,9 @@ function drUI(){if(BOTG&&P===1){$('dr').innerHTML='<div class="dh"><span>🤖 ه
  hn=unp.length?'<div class="dp hn">'+(tray&&H[tray]?'📍 «'+esc(H[tray].n)+'» را همین حالا با زدن روی یکی از خانه‌های رنگیِ نیمهٔ خودت مستقر کن.':'📍 '+PX(unp.length)+' مهره هنوز چیده نشده؛ از لیست پایین یکی را انتخاب کن.')+'</div>':'';
  if(phase==='pick')h='<div class="dh"><span>'+NM[P]+': قهرمان '+PX(DR.picks.length+1)+' از ۷ را انتخاب کن</span><span class="xl">💧 '+PX(elLeft(P))+'</span>'+X+'</div>'+hn+'<div class="of">'
   +DR.offer.map(k=>{const q=H[k],ok=afford(k);return '<button type="button" class="oc t'+P+'" data-k="'+k+'"'+(ok?'':' disabled')+'><span class="r1"><b>'+esc(q.n)+'</b><span class="xc'+(ok?'':' no')+'">💧'+PX(hc(k))+'</span></span><span class="tr">'+TR[k].join(' · ')+'</span><small>جان '+PX(q.hp)+' · ضربه '+PX(q.d)+' · برد '+PX(q.r)+' · حرکت '+PX(q.m)+'</small></button>'}).join('')+'</div>'
-  +(any?'':'<div class="dp">اکسیر کافی برای هیچ هیروی دیگری نداری.</div><button type="button" id="ok" data-a="fin">ادامه به چیدمان</button>')+(DR.picks.length?'<div class="dp"><b>انتخاب‌های قبلی و کمبوهایشان:</b><div class="pk">'+DR.picks.map((k,i)=>{const u=U.find(x=>x.k===k&&x.o===P),on=u?sel===u:tray===k;return '<div class="pc t'+P+(on?' on':'')+(u?' done':' un')+'" data-t="'+k+'"><span class="nm">'+PX(i+1)+'. '+esc(H[k].n)+' · 💧'+PX(hc(k))+'</span><small>'+(u?'✓ ':'⏳ ')+TR[k].join(' · ')+'</small></div>'}).join('')+'</div></div>':'');
+  +(any?'':'<div class="dp">اکسیر کافی برای هیچ هیروی دیگری نداری.</div><button type="button" id="ok" data-a="fin">ادامه به چیدمان</button>')+((DR.picks.length||TP[P].length)?'<div class="dp"><b>انتخاب‌های قبلی و کمبوهایشان:</b><div class="pk">'+comboPicks(P).map((k,i)=>{const u=U.find(x=>x.k===k&&x.o===P),on=u?sel===u:tray===k,tc=TROOPS[k]?.x||hc(k);return '<div class="pc t'+P+(on?' on':'')+(u?' done':' un')+'" data-t="'+k+'"><span class="nm">'+PX(i+1)+'. '+esc(H[k].n)+' · 💧'+PX(tc)+'</span><small>'+(u?'✓ ':'⏳ ')+(TR[k]||[]).join(' · ')+'</small></div>'}).join('')+'</div></div>':'');
  else h='<div class="dh"><span>'+NM[P]+': مهره‌ها را در نیمهٔ خودت بچین'+(unp.length?' ('+PX(unp.length)+' مانده)':'')+'</span><span class="xl">💧 '+PX(elLeft(P))+'</span>'+X+'</div><div class="tray">'
-  +DR.picks.map(k=>{const u=U.find(x=>x.k===k&&x.o===P);return '<button type="button" class="tc'+((u?sel===u:tray===k)?' on':'')+(u?' done':'')+'" data-t="'+k+'">'+esc(H[k].n)+'</button>'}).join('')
+  +comboPicks(P).map(k=>{const u=U.find(x=>x.k===k&&x.o===P);return '<button type="button" class="tc'+((u?sel===u:tray===k)?' on':'')+(u?' done':'')+'" data-t="'+k+'">'+esc(H[k].n)+'</button>'}).join('')
   +'</div><div class="drb"><button type="button" data-a="r">چیدمان تصادفی</button><button type="button" id="ok" data-a="ok"'+(unp.length?' disabled':'')+'>تأیید چیدمان</button></div>';
  $('dr').innerHTML=h}
 function startTurn(){try{gasSnap()}catch(e){}const m=U.filter(u=>u.o===P&&!(u.k in SMN));U.filter(u=>u.o===P).forEach(u=>{u.mo=0;u.fm=0;if(u.inv&&u.k!=='ikh'&&!u.zi)u.inv=false;if(u.zi&&u.k!=='ikh')u.zp=false;u.act=u.fr>0||u.jl>0;u.mv=u.act?0:Math.min(H[u.k].m+(sy(u,'تانک',2)?1:0),u.sl||u.sh>0?1:9);if(u.fz>0)u.mv=0;if(u.k in SMN){u.mv=0;u.act=true}
@@ -585,7 +594,7 @@ function reach(u){const seen={};seen[u.c+','+u.r]=0;const q=[[u.c,u.r]];
  while(q.length){const[c,r]=q.shift(),d=seen[c+','+r];if(d>=1||MV<1||u.mv<1||(u.act&&!u.fm)||u.mb||(u.k==='ikh'&&!u.rel)||u.o!==P)continue;
   nb(c,r).forEach(([x,y])=>{const k=x+','+y;if(k in seen||at(x,y)||ST.some(s=>s.c===x&&s.r===y))return;seen[k]=d+1;q.push([x,y])})}
  delete seen[u.c+','+u.r];return seen}
-const MS={doj:[2,200],jack:[15,30]};
+const MS={doj:[2,200],jack:[15,30],cr1:[2,190],cr2:[2,230],cr3:[2,270]};
 const near=(a,t)=>{const v=U.filter(x=>x.hp>0&&x.o!==a.o&&!x.inv&&rng(a,x)&&!(x.fly>0&&H[a.k].r===1&&!['gq','fd','ft'].includes(a.k)));return dist(a,t)===Math.min(...v.map(x=>dist(a,x)))};
 const rng=(a,t)=>a.k==='mac'?(a.mb||dist(a,t)===1||(ld(a,t)>=0&&dist(a,t)<=5)):a.k==='bud'?(ld(a,t)>=0&&dist(a,t)<=4):dist(a,t)<=H[a.k].r;
 const canHit=(a,t)=>t.o!==a.o&&(a.k!=='ikh'||a.rel)&&rng(a,t)&&!t.inv&&!(t.fly>0&&H[a.k].r===1&&!['gq','fd','ft'].includes(a.k))&&(a.k!=='mak'||a.ammo>0)&&(a.k!=='gq'||a.sh2>0)&&a.mv>0&&MV>0&&near(a,t);
@@ -625,7 +634,7 @@ function abT(u){if(u.rt>0)return[];const k=u.k,al=U.filter(x=>x.hp>0&&x.o===u.o)
  if(k==='ber')return en.filter(t=>dist(u,t)===1&&!t.fly&&near(u,t));
  if(k==='gq')return u.sh2<1?[u]:[];
  if(k==='dn')return[u];
- if(k==='dw')return en.some(t=>!(t.k in SMN))?[u]:[];
+ if(k==='dw')return en.some(t=>!(t.k in SMN)&&!(t.k in TROOPS))?[u]:[];
  if(k==='blk')return en.filter(t=>dist(u,t)===1&&!t.fly);
  if(k==='jal')return en.length?[u]:[];
  if(k==='ikh')return u.rel?[]:[u];
@@ -634,7 +643,7 @@ function abT(u){if(u.rt>0)return[];const k=u.k,al=U.filter(x=>x.hp>0&&x.o===u.o)
  if(k==='iw'){const o=[];for(let c=0;c<COLS;c++)for(let r=0;r<ROWS;r++){if(at(c,r)||blkAt(c,r)||dist(u,{c,r})>H.iw.r)continue;o.push({c,r})}return o}
   if(k==='ik')return en.filter(t=>rng(u,t)&&!(t.fly&&H[k].r===1));
  if(k==='mus'||k==='bud')return[u];
- if(k==='ske')return en.some(t=>!(t.k in SMN))?[u]:[];
+ if(k==='ske')return en.some(t=>!(t.k in SMN)&&!(t.k in TROOPS))?[u]:[];
  if(k==='que')return en.some(t=>rng(u,t)&&near(u,t))?[u]:[];
  if(k==='ft')return en.filter(t=>dist(u,t)===1&&near(u,t));
  if(k==='mac')return u.d2?[]:u.mb?(en.length?[u]:[]):[u];
@@ -646,8 +655,8 @@ function maidenDeaths(){U.filter(u=>u.hp<=0&&!u.mdd&&sy(u,'دوشیزگان',2))
 function minerBlast(){{const L=U.filter(u=>u.k==='mi'&&u.hp<=0&&!u.bx);if(!L.length)return;L.forEach(u=>{u.bx=1;nb(u.c,u.r).forEach(([c,r])=>{const t=U.find(x=>x.hp>0&&x.o!==u.o&&x.c===c&&x.r===r);if(t)sdm(t,320)});try{const p=V3(u.c,u.r);burst(p,60,0xff9a2a,{sp:4,vy:3,size:.5,life:.9});ring(p,0xffc04a,3.2,.8);shk=Math.max(shk,1)}catch(_){}msg='معدنچی منفجر شد و به دشمن‌های اطرافش ۳۲۰ آسیب زد.'});U.forEach(u=>{if(u.k==='mi'&&u.hp<=0)u.bx=1})}}
 function mvRefill(u){if(u.k==='mak'&&u.ammo<1){u.ammo=6;u.ok=0}if(u.k==='gq'&&u.sh2<1){u.sh2=2;u.fire=false}}
 function after(){zsync();U.forEach(u=>{if(u.imu&&u.im>0&&u.hp<1)u.hp=1});
- minerBlast();maidenDeaths();U.filter(u=>u.hp<=0&&!(u.k in SMN)).forEach(u=>{D[u.o]++;if(u.k==='mak')say('But I was the queen',0,'mak');if(sy(u,'پادشاه',3))U.filter(x=>x.o===u.o&&x.hp>0).forEach(x=>x.rg=2);if(u.k!=='ear'&&SC[u.o]<3&&U.some(x=>x.hp>0&&x.k==='ear'&&x.o===u.o)){SC[u.o]++;ST.push({k:u.k,o:u.o,c:u.c,r:u.r,heal:0,max:u.max,used:u.used})}});
- U.filter(u=>u.hp<=0&&!(u.k in SMN)).forEach(u=>DX[u.o].push(u));U=U.filter(u=>u.hp>0);
+ minerBlast();maidenDeaths();U.filter(u=>u.hp<=0&&!(u.k in SMN)).forEach(u=>{if(!(u.k in TROOPS))D[u.o]++;if(u.k==='mak')say('But I was the queen',0,'mak');if(sy(u,'پادشاه',3))U.filter(x=>x.o===u.o&&x.hp>0).forEach(x=>x.rg=2);if(!(u.k in TROOPS)&&u.k!=='ear'&&SC[u.o]<3&&U.some(x=>x.hp>0&&x.k==='ear'&&x.o===u.o)){SC[u.o]++;ST.push({k:u.k,o:u.o,c:u.c,r:u.r,heal:0,max:u.max,used:u.used})}});
+ U.filter(u=>u.hp<=0&&!(u.k in SMN)&&!(u.k in TROOPS)).forEach(u=>DX[u.o].push(u));U=U.filter(u=>u.hp>0);
  [0,1].forEach(o=>{const n=SY[o]['اشرافی']|0,p=n>=6?2.4:n>=4?1.2:n>=2?.4:0,al=U.filter(u=>u.o===o&&sy(u,'اشرافی',2));if(p&&al.length===1&&!al[0].alx){const u=al[0];u.alx=1;u.max=Math.round(u.max*(1+p));u.hp=Math.round(u.hp*(1+p));u.al=1+p}});if(sel&&!U.includes(sel))sel=null;mode='mv';
  const lost=[0,1].find(o=>!U.some(u=>u.o===o&&!(u.k in SMN)));
  if(lost!==undefined){over=true;msg='🏆 بازیکن '+NM[1-lost]+' برنده شد!'}
@@ -680,7 +689,7 @@ function attack0(a,t){
  const d=hit(a,t,base(a,t));let ex='';
  if(a.k==='raf'){const D=dist(a,t),[q1,r1]=toA(a.c,a.r),[q2,r2]=toA(t.c,t.r);[200,100].forEach((v,i)=>{const f=(D+i+1)/D,[c,y]=toO(...cr(q1+(q2-q1)*f,r1+(r2-r1)*f)),x=inb(c,y)&&at(c,y);if(x&&x.o!==a.o){hit(a,x,v);ex+=' و '+v+' به '+H[x.k].n}})}
  if(a.k==='bri'&&t.hp>0&&!sy(t,'مشکی',2))t.weak=1;
- if(a.k==='and')a.chg=Math.min(2000,a.chg+d);if(a.k==='mar'&&t!==a&&t.hp<=0&&!(t.k in SMN))a.bonus+=180;
+ if(a.k==='and')a.chg=Math.min(2000,a.chg+d);if(a.k==='mar'&&t!==a&&t.hp<=0&&!(t.k in SMN)&&!(t.k in TROOPS))a.bonus+=180;
  if(a.k==='ske'&&RL()<.5){const[q1,r1]=toA(a.c,a.r),[q2,r2]=toA(t.c,t.r),[c,w]=toO(2*q2-q1,2*r2-r1),v=inb(c,w)&&at(c,w);if(v&&v.o!==a.o)hit(a,v,H.ske.d/2)}
  if((a.k==='ik'||a.k==='iw')&&t.hp>0&&!sy(t,'سرخ',2))t.sl=1;
  if(sy(a,'انجماد',2)&&t.hp>0&&!sy(t,'سرخ',2)&&RL()<2/3)t.fr=1;
@@ -706,9 +715,9 @@ function useAb0(u,t){
  if(k==='pri'){const b=U.filter(x=>x.o===u.o&&x!==u).reduce((m,x)=>x.hp>m.hp?x:m);b.hp=Math.max(0,b.hp-50);u.hp+=350}
  if(k==='raf')u.fly=3;
  if(k==='ali')hit(u,t,600);
- if(k==='mar'){hit(u,t,240+u.bonus);if(t.hp<=0&&!(t.k in SMN))u.bonus+=180}
+ if(k==='mar'){hit(u,t,240+u.bonus);if(t.hp<=0&&!(t.k in SMN)&&!(t.k in TROOPS))u.bonus+=180}
  if(k==='mak'){u.ammo=6;u.ok=0}
- if(k==='and'){const total=Math.min(2000,u.chg);u.chg=0;const foes=U.filter(x=>x.hp>0&&x.o!==u.o&&!x.inv&&!(x.im>0));const heroes=foes.filter(x=>!(x.k in SMN));const targets=shuf(heroes.length?heroes:foes);if(targets.length&&total>0){const each=Math.floor(total/targets.length),extra=total-each*targets.length;targets.forEach((x,i)=>hit(u,x,each+(i<extra?1:0)))}}
+ if(k==='and'){const total=Math.min(2000,u.chg);u.chg=0;const foes=U.filter(x=>x.hp>0&&x.o!==u.o&&!x.inv&&!(x.im>0));const heroes=foes.filter(x=>!(x.k in SMN)&&!(x.k in TROOPS));const targets=shuf(heroes.length?heroes:foes);if(targets.length&&total>0){const each=Math.floor(total/targets.length),extra=total-each*targets.length;targets.forEach((x,i)=>hit(u,x,each+(i<extra?1:0)))}}
  if(k==='jack'){const r=volley(u,6,120);msg=H[k].n+' قابلیت: '+Object.entries(r).map(([x,v])=>H[x].n+' '+v).join('، ')}
  if(k==='zep')zep(u,t);
  if(k==='spg'){const e=U.filter(x=>x.hp>0&&x.o!==u.o);e.forEach(x=>{const s=new Set([x]),q=[x];while(q.length){const y=q.pop();e.forEach(z=>{if(!s.has(z)&&dist(y,z)===1){s.add(z);q.push(z)}})}x.cl=Math.min(5,s.size)});const root=e.filter(x=>dist(u,x)===1),chain=new Set(root),qq=[...root];while(qq.length){const y=qq.pop();e.forEach(z=>{if(!chain.has(z)&&dist(y,z)===1){chain.add(z);qq.push(z)}})}[...chain].forEach(x=>hit(u,x,110*x.cl))}
@@ -717,7 +726,7 @@ function useAb0(u,t){
  if(k==='dk')dkZone(u,t).forEach(([c,r])=>{const x=at(c,r);if(x&&x.o!==u.o){hit(u,x,140);if(!sy(x,'مشکی',2))x.bl=3}});
  if(k==='gq'){u.sh2=2;u.fire=true}
  if(k==='dn'){if(RL()<.5){u.ar=1;msg=H[k].n+': زره نشکن گرفت.'}else{for(let i=0;i<6;i++){const h2=U.filter(x=>x.hp>0&&x.o!==u.o&&!x.inv&&!(x.k in SMN)),p=h2.length?h2:U.filter(x=>x.hp>0&&x.o!==u.o&&!x.inv);if(!p.length)break;hit(u,p[RL()*p.length|0],70)}msg=H[k].n+': ۶ شمشیر از بالا.'}}
- if(k==='dw'){const e=U.filter(x=>x.hp>0&&x.o!==u.o&&!(x.k in SMN)&&!x.inv).sort((a,b)=>a.hp-b.hp)[0];if(e)hit(u,e,820)}
+ if(k==='dw'){const e=U.filter(x=>x.hp>0&&x.o!==u.o&&!(x.k in SMN)&&!(x.k in TROOPS)&&!x.inv).sort((a,b)=>a.hp-b.hp)[0];if(e)hit(u,e,820)}
  if(k==='fd')zep(u,t,[400,400]);
  if(k==='blk'){u.shd=(u.shd|0)+600;hit(u,t,400)}
  if(k==='jal'){const e=U.filter(x=>x.hp>0&&x.o!==u.o&&!x.inv);u.axT=[];for(let i=0;i<2&&e.length;i++){const x=e[RL()*e.length|0];u.axT.push(x);hit(u,x,200)}}
@@ -727,7 +736,7 @@ function useAb0(u,t){
  if(k==='ik'){hit(u,t,H[k].d);if(!sy(t,'سرخ',2)){t.fr=1;t.sl=1}}
   if(k==='iw'){const s=add('sno',u.o,t.c,t.r);s.mv=0;s.act=true;const zz=U.filter(x=>x.hp>0&&x.o!==u.o&&dist(x,s)===1&&!sy(x,'سرخ',2));zz.forEach(x=>{x.fr=1});try{const p=V3(t.c,t.r);burst(p,46,0xdff8ff,{sp:3,vy:2.2,size:.34,life:.9});burst(p,16,0xffffff,{sp:2,vy:1.5,size:.4,life:.6});ring(p,0x9fd8ff,3,.8);ring(p,0xdff8ff,1.6,.5);shk=Math.max(shk,.3)}catch(_){}msg=H[k].n+': آدم‌برفی احضار شد'+(zz.length?' و '+PX(zz.length)+' دشمن اطرافش فریز شد':'')+'.'}
  if(k==='mus')u.sh=3;
- if(k==='ske'){const e=U.filter(x=>x.hp>0&&x.o!==u.o&&!(x.k in SMN)&&!x.inv),x=e[RL()*e.length|0];hit(u,x,350);x.jl=2;msg=H[k].n+': '+H[x.k].n+' زندانی شد.'}
+ if(k==='ske'){const e=U.filter(x=>x.hp>0&&x.o!==u.o&&!(x.k in SMN)&&!(x.k in TROOPS)&&!x.inv),x=e[RL()*e.length|0];hit(u,x,350);x.jl=2;msg=H[k].n+': '+H[x.k].n+' زندانی شد.'}
  if(k==='bud'){u.dd=1;boom(u);u.hp=0}
  if(k==='que'){const w=U.filter(x=>x.hp>0&&x.o!==u.o&&!x.inv&&rng(u,x)&&near(u,x)),x=w[RL()*w.length|0];hit(u,x,x.max>2430?180+.34*x.max:base(u,x))}
  if(k==='ft')chain(u,t).forEach((x,i)=>{hit(u,x,[250,200,150][i]);if(!sy(x,'مشکی',2)){x.max=Math.round(x.max*.9);x.hp=Math.min(x.hp,x.max);x.dm=(x.dm||1)*.9}});
@@ -750,27 +759,29 @@ const PX=n=>String(n).replace(/\d/g,d=>'۰۱۲۳۴۵۶۷۸۹'[d]);
 let LOG=[],lastMsg='';
 const esc=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const chip=(t,c)=>'<span class="chip'+(c?' '+c:'')+'">'+t+'</span>';
-let PK=[[],[]],cbOpen=false;
+let PK=[[],[]],TP=[[],[]],cbOpen=false;
+const troopCost=o=>(TP[o]||[]).reduce((s,k)=>s+(TROOPS[k]?.x||0),0);
+const comboPicks=o=>[...(PK[o]||[]),...(TP[o]||[])];
 const TH={'کاپیتان':[2,4,6],'نفرینی':[4],'اهریمن':[2],'اشرافی':[2,4,6],'تانک':[2],'شوالیه':[2,4],'سرخ':[2,4],'مبارز':[2,4],'ساپورتر':[2],'سامورایی':[2,4],'شکارچی':[2,4],'مشکی':[2,4],'کریسدور':[2,4],'انجماد':[2],'ربات':[2],'راهب':[3],'پادشاه':[2,3],'اژدها':[2],'کهکشان':[2],'ساچمه':[2]};
 function cbRender(){const b=$('cb');b.hidden=!cbOpen;if(!cbOpen)return;
- const col=o=>{const m={};PK[o].forEach(k=>TR[k].forEach(t=>m[t]=(m[t]||0)+1));
+ const col=o=>{const m={};comboPicks(o).forEach(k=>(TR[k]||[]).forEach(t=>m[t]=(m[t]||0)+1));
   const rows=Object.entries(m).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0])).map(([t,n])=>{const th=TH[t]||[],nx=th.find(x=>x>n),on=th.some(x=>x<=n),
    txt=on?(nx?'فعال ✓ · '+PX(nx-n)+' قهرمان دیگر تا سطح بعد':'فعال ✓ · سطح کامل'):(nx?'نیاز به '+PX(nx-n)+' قهرمان دیگر تا فعال شدن':'');
    return '<div class="cr'+(on?' on':'')+'"><span class="n">'+PX(n)+' / '+PX(nx||th[th.length-1]||n)+'</span><b>'+t+'</b><small>'+txt+'</small></div>'}).join('');
-  return '<div class="cbp t'+o+'"><h3>'+NM[o]+' · '+PX(PK[o].length)+' قهرمان</h3>'+(rows||'<div class="dp">هنوز قهرمانی انتخاب نشده</div>')+'</div>'};
+  return '<div class="cbp t'+o+'"><h3>'+NM[o]+' · '+PX(comboPicks(o).length)+' مهره</h3>'+(rows||'<div class="dp">هنوز مهره‌ای انتخاب نشده</div>')+'</div>'};
  b.innerHTML='<div class="cbh"><span>کمبوهای انتخاب‌شده</span><button type="button" data-x="1">بستن</button></div><div class="cbc">'+(ONLINE&&phase!=='play'?col(ME):col(0)+col(1))+'</div>'}
 const TO=()=>ONLINE?(ME<2?ME:P):BOTG?0:P;
 let EC=false;var HSTAT='',EV=[],EVO=false;
-function ecRender(){const on=phase==='play'&&!over&&!NOGAME;$('eb').hidden=!on;$('cbtn').hidden=on;{const o=TO(),mm={};if(phase==='play')Object.assign(mm,SY[o]||{});else(PK[o]||[]).forEach(k=>(TR[k]||[]).forEach(t=>mm[t]=(mm[t]||0)+1));$('bbCt').textContent=PX(Object.keys(mm).filter(t=>(TH[t]||[]).some(x=>x<=mm[t])).length);$('bbCa').textContent=document.body.classList.contains('cbHide')?'▲':'▼';if(phase!=='play')$('sbT').textContent=phase==='pick'?'قهرمان‌هایت را انتخاب کن':'مهره‌ها را در نیمهٔ خودت بچین'}$('evb').hidden=!on;if(!on)$('evm').hidden=true;$('eb').textContent=EC?'کمبوهای دشمن ▲':'کمبوهای دشمن ▼';$('ec').hidden=!(on&&EC);if(on&&EC)$('ec').innerHTML=cbl(1-TO());dcRender()}
+function ecRender(){const on=phase==='play'&&!over&&!NOGAME;$('eb').hidden=!on;$('cbtn').hidden=on;{const o=TO(),mm={};if(phase==='play')Object.assign(mm,SY[o]||{});else comboPicks(o).forEach(k=>(TR[k]||[]).forEach(t=>mm[t]=(mm[t]||0)+1));$('bbCt').textContent=PX(Object.keys(mm).filter(t=>(TH[t]||[]).some(x=>x<=mm[t])).length);$('bbCa').textContent=document.body.classList.contains('cbHide')?'▲':'▼';if(phase!=='play')$('sbT').textContent=phase==='pick'?'قهرمان‌هایت را انتخاب کن':'مهره‌ها را در نیمهٔ خودت بچین'}$('evb').hidden=!on;if(!on)$('evm').hidden=true;$('eb').textContent=EC?'کمبوهای دشمن ▲':'کمبوهای دشمن ▼';$('ec').hidden=!(on&&EC);if(on&&EC)$('ec').innerHTML=cbl(1-TO());dcRender()}
 function evRender(){$('sbT').textContent=LOG[0]||'';const on=phase==='play'&&!over&&!NOGAME;$('evm').hidden=!(on&&EVO);if(!(on&&EVO))return;$('evm').innerHTML='<div class="cbh"><span>رخدادها</span><button type="button" data-x="1">بستن</button></div>'+(sel&&HSTAT?'<div class="evh">'+HSTAT+'</div>':'')+'<div class="evl">'+(EV.length?EV.map(m=>'<p>'+esc(m)+'</p>').join(''):'<p class="none">هنوز رخدادی نیست</p>')+'</div>'}
 var DSEEN=new Set();
-function dcRender(){const d=phase!=='play'&&!abortInfo&&!NOGAME&&!!PK;$('dc').hidden=!d;if(!d)return;const o=ONLINE?(ME<2?ME:P):P,pk=PK[o]||[];if(!pk.length)DSEEN.clear();const m={};pk.forEach(k=>(TR[k]||[]).forEach(t=>m[t]=(m[t]||0)+1));$('dc').dataset.pos=(ONLINE||P===0)?'bot':'top';$('dc').innerHTML=cbl(o,m,DSEEN)}
+function dcRender(){const d=phase!=='play'&&!abortInfo&&!NOGAME&&!!PK;$('dc').hidden=!d;if(!d)return;const o=ONLINE?(ME<2?ME:P):P,pk=comboPicks(o);if(!pk.length)DSEEN.clear();const m={};pk.forEach(k=>(TR[k]||[]).forEach(t=>m[t]=(m[t]||0)+1));$('dc').dataset.pos=(ONLINE||P===0)?'bot':'top';$('dc').innerHTML=cbl(o,m,DSEEN)}
 function cbl(o,mm,seen){const m=mm||SY[o]||{},r=Object.keys(m).map(t=>{const n=m[t]|0,th=TH[t]||[],lv=th.filter(x=>x<=n).length,key=t+':'+lv,nw=seen&&!seen.has(key);if(seen&&lv)seen.add(key);return lv?[lv,'<span class="cp2'+(nw?' new':'')+'">کمبوی '+t+' سطح '+PX(lv)+'/'+PX(th.length)+'</span>']:null}).filter(Boolean).sort((x,y)=>y[0]-x[0]).map(x=>x[1]).join('');return '<div class="cbl">'+(r||'<span class="cp2 none">کمبوی فعالی ندارد</span>')+'</div>'}
 function ui(){if(DSW)return;cbRender();ecRender();
  // سربرگ: اکسیر دو طرف و حرکت باقی‌مانده
  const dr=phase!=='play'&&!abortInfo;$('ctl').hidden=$('msg').hidden=dr;$('dr').hidden=!dr||drClosed||(ONLINE&&P!==ME);$('dbtn').hidden=!(dr&&drClosed);
  if(dr&&drClosed){const tn=tray&&H[tray]?H[tray].n:'';$('dbtn').innerHTML='<span>📂 '+(phase==='pick'?'انتخاب هیرو':'چیدمان')+'</span>'+(tn?'<em>مستقر کن: '+esc(tn)+'</em>':'')}$('dr').dataset.pos=(ONLINE||P===0)?'top':'bottom';
- [0,1].forEach(o=>{const n=dr?7:Math.max(7,E[o]),on=dr?(ONLINE?PK[o].length:(o<P?7:o===P?DR.picks.length:0)):E[o];let h='';for(let i=0;i<n;i++)h+='<i'+(i<on?' class="on"':'')+'></i>';
+ [0,1].forEach(o=>{const n=dr?7+TP[o].length:Math.max(7,E[o]),on=dr?(ONLINE?PK[o].length+TP[o].length:(o<P?7+TP[o].length:o===P?DR.picks.length+TP[o].length:0)):E[o];let h='';for(let i=0;i<n;i++)h+='<i'+(i<on?' class="on"':'')+'></i>';
   $('p'+o).innerHTML=h;$('s'+o).classList.toggle('act',!over&&P===o);$('s'+o).querySelector('.ex').textContent=dr?PX(on)+'/۷'+((ONLINE&&o!==ME)?'':' · 💧'+PX(elLeft(o))):PX(Math.max(0,E[o]))+'/۷ 💧'});
  if(!dr)$('tn').style.color='';$('tn').textContent=dr?PX(Math.max(0,Math.ceil((dl-Date.now())/1000))):over?'—':PX(MV);$('turn').dataset.p=over?'':P;
  $('tl').textContent=dr?(phase==='pick'?'انتخاب قهرمان · ':'چیدمان · ')+NM[P]:over?'پایان بازی':'حرکت باقی‌مانده · نوبت '+NM[P];
@@ -3143,17 +3154,20 @@ function spFrame(){const n=performance.now(),dt=Math.min(.05,(n-sT0)/1000);sT0=n
   if(u.is>0)burst(p,3,0xdff8ff,{sp:.6,y:.8,vy:1,g:-1,size:.2,life:.8,up:1});else if(u.fz>0)burst(p,2,0x7cc4ff,{sp:.4,y:.8,vy:.5,g:0,size:.2,life:.8,up:0});if(u.ra>0)burst(p,3,0xb44dff,{sp:.7,y:.4,vy:2,g:-2,size:.2,life:.7,up:1})})}
 {const _pc2=placeCamera;placeCamera=function(){_pc2();try{spFrame()}catch(e){}}}
 function shopRender(){const b=$('shop'),pre=phase!=='play';$('shp').hidden=!pre||over;$('spb').hidden=pre||over||(!SP[P].length&&!spl);$('spb').textContent=spl?'لغو طلسم':'«طلسم‌ها»';
- b.classList.toggle('open',shopOpen);if(!shopOpen)return;const mine=SP[P],left=spLeft(P);
+ b.classList.toggle('open',shopOpen);if(!shopOpen)return;const mine=SP[P],left=spLeft(P),troops=TP[P]||[];
  let h='<div class="shh"><span>'+(pre?'فروشگاه — '+NM[P]:'طلسم‌های '+NM[P])+'</span><button type="button" data-x="1">✕</button></div>';
- if(pre&&shopTab===0)h+='<div class="sm"><button type="button" data-tab="1">طلسم‌ها</button></div>';
- else{if(pre)h+='<div class="shh"><button type="button" data-tab="0">→ بخش‌ها</button><span>💧 '+PX(left)+' · '+PX(mine.length)+'/۴</span></div>';
-  const list=pre?Object.keys(SPELLS):mine;h+='<div class="sg">'+(list.length?list.map(k=>{const S=SPELLS[k],on=mine.includes(k),dis=pre&&!on&&(mine.length>=4||left<S.x);
-   return '<button type="button" class="sc'+(on&&pre?' on':'')+'" data-s="'+k+'"'+(dis?' disabled':'')+'><b>'+S.n+'</b><span class="sx">💧 '+PX(S.x)+'</span></button>'}).join(''):'<div class="dp">طلسمی نمانده.</div>')+'</div>'}
+ if(pre&&shopTab===0)h+='<div class="sm"><button type="button" data-tab="1">✨ طلسم‌ها</button><button type="button" data-tab="2">⚔️ سربازها</button></div><div class="shh"><span>اکسیر باقی‌مانده</span><b>💧 '+PX(elLeft(P))+'</b></div>';
+ else if(pre&&shopTab===1){h+='<div class="shh"><button type="button" data-tab="0">→ بخش‌ها</button><span>💧 '+PX(left)+' · '+PX(mine.length)+'/۴</span></div>';const list=Object.keys(SPELLS);h+='<div class="sg">'+(list.length?list.map(k=>{const S=SPELLS[k],on=mine.includes(k),dis=!on&&(mine.length>=4||left<S.x);return '<button type="button" class="sc'+(on?' on':'')+'" data-s="'+k+'"'+(dis?' disabled':'')+'><b>'+S.n+'</b><span class="sx">💧 '+PX(S.x)+'</span></button>'}).join(''):'<div class="dp">طلسمی نمانده.</div>')+'</div>'}
+ else if(pre&&shopTab===2){h+='<div class="shh"><button type="button" data-tab="0">→ بخش‌ها</button><span>💧 '+PX(elLeft(P))+' · '+PX(troops.length)+' سرباز</span></div><div class="sg">'+Object.keys(TROOPS).map(k=>{const q=TROOPS[k],u=H[k],on=troops.includes(k),dis=!on&&elLeft(P)<q.x;return '<button type="button" class="sc'+(on?' on':'')+'" data-troop="'+k+'"'+(dis?' disabled':'')+'><b>'+esc(u.n)+'</b><span class="sx">💧 '+PX(q.x)+'</span><small>جان '+PX(u.hp)+' · '+(k.startsWith('cr')?'۲ ضربهٔ '+PX(u.d):'دمیج '+PX(u.d))+' · کمبو '+q.type+'</small></button>'}).join('')+'</div>'}
+ else{const list=mine;h+='<div class="sg">'+(list.length?list.map(k=>{const S=SPELLS[k];return '<button type="button" class="sc" data-s="'+k+'"><b>'+S.n+'</b><span class="sx">آماده</span></button>'}).join(''):'<div class="dp">طلسمی برای استفاده نداری.</div>')+'</div>'}
  b.innerHTML=h}
-$('shop').onclick=e=>{const t=e.target.closest('[data-s],[data-tab],[data-x]');if(!t)return;const d=t.dataset;
+$('shop').onclick=e=>{const t=e.target.closest('[data-s],[data-troop],[data-tab],[data-x]');if(!t)return;const d=t.dataset;
  if(d.x){shopOpen=false}else if(d.tab!==undefined){shopTab=+d.tab}
- else{if(mine())net({a:'shop',k:d.s});else flash('نوبت حریف است');return}draw()};
-function shopSel(k){if(ONLINE&&phase!=='play'&&FIN[P])return;const S=SPELLS[k];if(phase==='play'){{spl=k;shopOpen=false;msg='«'+S.n+'»: روی صفحه نگه دار و بکش تا کاشی‌های هدف نشان داده شود، رها کنی اجرا می‌شود.'}}
+ else{if(mine())net({a:'shop',k:d.s||d.troop});else flash('نوبت حریف است');return}draw()};
+function troopSel(k){if(ONLINE&&phase!=='play'&&FIN[P])return;const q=TROOPS[k];if(!q||phase==='play')return;const i=TP[P].indexOf(k);if(i>=0){TP[P].splice(i,1);unp=unp.filter(x=>x!==k);const u=U.find(x=>x.k===k&&x.o===P);if(u)U=U.filter(x=>x!==u);if(tray===k)tray=unp[0]||null;if(sel&&sel.k===k&&sel.o===P)sel=null}
+ else if(elLeft(P)>=q.x){TP[P].push(k);unp.push(k);tray=k;sel=null}
+ if(phase==='pick')DR.offer=fixOff(DR.offer);draw()}
+function shopSel(k){if(TROOPS[k])return troopSel(k);if(ONLINE&&phase!=='play'&&FIN[P])return;const S=SPELLS[k];if(!S)return;if(phase==='play'){{spl=k;shopOpen=false;msg='«'+S.n+'»: روی صفحه نگه دار و بکش تا کاشی‌های هدف نشان داده شود، رها کنی اجرا می‌شود.'}}
   else{const i=SP[P].indexOf(k);if(i>=0)SP[P].splice(i,1);else if(SP[P].length<4&&spLeft(P)>=S.x)SP[P].push(k);if(phase==='pick')DR.offer=fixOff(DR.offer)}draw()}
 $('shp').onclick=()=>{shopOpen=!shopOpen;shopTab=0;draw()};
 $('spb').onclick=()=>{if(spl){if(mine())net({a:'spc'})}else{shopOpen=!shopOpen;draw()}};
@@ -3823,7 +3837,7 @@ function apply0(c){
    case 'to':if(phase==='pick'||phase==='place')drTimeout();break;
    case 'end':if(phase==='play'&&!over&&!canAct()){clearTimeout(autoT);autoT=0;endTurn(true)}break;
   }}
-function stHash(){const a=JSON.stringify([phase==='play'?'p':'d',phase==='play'?P:0,T,E,MV,over,RS,U.map(u=>[u.k,u.o,u.c,u.r,u.hp|0,u.mv,u.act?1:0]),phase==='play'?0:FIN.join()]);let h=5381;for(let i=0;i<a.length;i++)h=(h*33^a.charCodeAt(i))|0;return h}
+function stHash(){const a=JSON.stringify([phase==='play'?'p':'d',phase==='play'?P:0,T,E,MV,over,RS,U.map(u=>[u.k,u.o,u.c,u.r,u.hp|0,u.mv,u.act?1:0]),phase==='play'?0:FIN.join(),phase==='play'?null:TP,phase==='play'?null:SP]);let h=5381;for(let i=0;i<a.length;i++)h=(h*33^a.charCodeAt(i))|0;return h}
 setInterval(()=>{
   while(Q.length&&!LOCK){const m=Q.shift();CURG=m.g;
     try{apply(m.c)}catch(e){console.error('apply',m,e)}
@@ -3996,17 +4010,17 @@ function bAbil(u){
   const k=u.k,EN=U.filter(x=>x.hp>0&&x.o!==u.o),AT=abT(u);if(!AT.length)return null;
   const top=(f)=>{let b=null;for(const t of AT){if(!t||!(t.hp>0))continue;const v=f(t);if(!b||v>b.v)b={v,t}}return b};
   switch(k){
-    case 'dw':{const e=EN.filter(x=>!(x.k in SMN)&&!x.inv).sort((a,b)=>a.hp-b.hp)[0];return e?{v:bVal(e,820),self:1}:null}
+    case 'dw':{const e=EN.filter(x=>!(x.k in SMN)&&!(x.k in TROOPS)&&!x.inv).sort((a,b)=>a.hp-b.hp)[0];return e?{v:bVal(e,820),self:1}:null}
     case 'ali':return top(t=>bVal(t,600));
     case 'aka':return top(t=>line(u,t).ens.reduce((s,x)=>s+bVal(x,500),200));
-    case 'and':{const foes=EN.filter(x=>!x.inv&&!(x.im>0)),heroes=foes.filter(x=>!(x.k in SMN)),targets=heroes.length?heroes:foes;if(!targets.length)return null;const each=Math.min(2000,u.chg)/targets.length;return{v:targets.reduce((s,x)=>s+bVal(x,each),0),self:1}}
+    case 'and':{const foes=EN.filter(x=>!x.inv&&!(x.im>0)),heroes=foes.filter(x=>!(x.k in SMN)&&!(x.k in TROOPS)),targets=heroes.length?heroes:foes;if(!targets.length)return null;const each=Math.min(2000,u.chg)/targets.length;return{v:targets.reduce((s,x)=>s+bVal(x,each),0),self:1}}
     case 'eli':return top(t=>bVal(t,520));
     case 'ber':return top(t=>bVal(t,700));
     case 'blk':return top(t=>bVal(t,400)+(u.shd>0?150:450));
     case 'ft':return top(t=>chain(u,t).reduce((s,x,i)=>s+bVal(x,[250,200,150][i]),0));
     case 'iw':{let b=null;for(const t of AT){const n=EN.filter(x=>!(x.k in SMN)&&!x.inv&&!(x.fr>0)&&dist(x,t)===1&&!sy(x,'سرخ',2));if(!n.length)continue;const v=n.reduce((s,x)=>s+H[x.k].d*.9+150,0);if(!b||v>b.v)b={v,t}}return b}
     case 'ik':return top(t=>bVal(t,H[k].d)+H[t.k].d*.9);
-    case 'ske':return EN.some(x=>!(x.k in SMN)&&!x.inv)?{v:650,self:1}:null;
+    case 'ske':return EN.some(x=>!(x.k in SMN)&&!(x.k in TROOPS)&&!x.inv)?{v:650,self:1}:null;
     case 'doj':return{v:600+Math.min(350,u.max-u.hp),self:1};
     case 'cri':{const m=u.max-u.hp;return m>1500?{v:m*.8,self:1}:null}
     case 'mus':{const th=bThr(u,u.c,u.r);return(!(u.sh>0)&&th>500)?{v:Math.min(1100,th),self:1}:null}
