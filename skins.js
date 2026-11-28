@@ -3,7 +3,11 @@
    مدل لو‌پلی سه‌بعدی + انیمیشن بیکار/حمله/مرگ + افکت ضربه + غرش مرگ
    هر دو اژدها از یک مدل ساخته می‌شوند و فقط پالت رنگ (DGT) و افکت ضربه فرق دارد. */
 (function(){
+/* Skin Runtime v2
+   مدل‌ها و پالت‌های اصلی حفظ شده‌اند؛ مسیرهای پرتکرار پارچه زمان‌بندی شده‌اند.
+   شمارنده‌های داخلی برای بررسی عملکرد در کنسول در دسترس‌اند. */
 const V=THREE.Vector3;
+window.WLSkinRuntime=window.WLSkinRuntime||{version:'2.0.0',clothPositionHz:30,clothNormalHz:10,modelsPreserved:true,positionUpdates:0,normalUpdates:0};
 const DGT={
  fd:{mid:0xc8182a,dark:0x860e1d,hi:0xf0502f,belly:0xe9c1a8,belly2:0xd7a58e,horn:0x45101a,claw:0xeed5ac,eye:0xffd53d,glow:0xff9a1a,memA:0xe5301f,memB:0x96101f},
  ft:{mid:0x1f4fa8,dark:0x102f6e,hi:0x4189ea,belly:0xdfdbe4,belly2:0xbfc5da,horn:0x0b183c,claw:0xe8dfca,eye:0xc4f2ff,glow:0x4fc3ff,memA:0x2d68cf,memB:0x143a82}};
@@ -442,7 +446,16 @@ function gxAcro(M,team){
  const clothAnim=(c,t,sx,sz)=>{const a=c.g.attributes.position.array,b=c.base,n=a.length/3;
   for(let k=0;k<n;k++){const bx=b[k*3],by=b[k*3+1],v=Math.max(0,Math.min(1,-by/c.h)),d=Math.pow(v,1.3),sa=Math.sin(t*1.7+v*3.4+bx*3+c.ph),sb=Math.sin(t*3+v*6+bx*5+c.ph);
    a[k*3]=bx*(1+d*.04*sa)+d*(sx*.7+.02*sb)*c.k;a[k*3+1]=by+d*.02*sb-d*Math.abs(sz)*.05;a[k*3+2]=b[k*3+2]+d*(.04+.04*sa+cl(sz,.55)*.9)*c.k}
-  c.g.attributes.position.needsUpdate=true;c.g.computeVertexNormals()};
+  /* بازسازی لایهٔ پارچه: تغییر رأس‌ها با سقف 30Hz و نرمال‌ها با سقف 10Hz.
+     شکل پایه، تعداد رأس‌ها، متریال و رنگ پارچه دست‌نخورده می‌ماند. */
+  const stamp=performance.now();
+  if(c.__wlPosStamp&&stamp-c.__wlPosStamp<33)return;
+  c.__wlPosStamp=stamp;
+  c.g.attributes.position.needsUpdate=true;window.WLSkinRuntime.positionUpdates++;
+  if(!c.__wlNormalStamp||stamp-c.__wlNormalStamp>=100){
+   c.g.computeVertexNormals();c.__wlNormalStamp=stamp;window.WLSkinRuntime.normalUpdates++;
+  }
+ };
  // ---- سر ----
  const HD=new THREE.Group();HD.position.set(0,.8,0);TG.add(HD);B(Cy(.075,.09,.2,12),Sk,0,0,0,HD);
  const hr=.225,hy=.2;B(GX.ashape(new THREE.SphereGeometry(hr,44,32),hr).scale(1,1.08,1.02),Sk,0,hy,0,HD);
@@ -852,7 +865,16 @@ function gxRaf(M,team){
  const clothAnim=(c,t,sx,sz)=>{const a=c.g.attributes.position.array,b=c.base,n=a.length/3;
   for(let k=0;k<n;k++){const bx=b[k*3],by=b[k*3+1],v=Math.max(0,Math.min(1,-by/c.h)),d=Math.pow(v,1.3),sa=Math.sin(t*1.7+v*3.4+bx*3+c.ph),sb=Math.sin(t*3+v*6+bx*5+c.ph);
    a[k*3]=bx*(1+d*.04*sa)+d*(sx*.7+.02*sb)*c.k;a[k*3+1]=by+d*.02*sb-d*Math.abs(sz)*.05;a[k*3+2]=b[k*3+2]+d*(.04+.04*sa+cl(sz,.8)*.9)*c.k}
-  c.g.attributes.position.needsUpdate=true;c.g.computeVertexNormals()};
+  /* بازسازی لایهٔ پارچه: تغییر رأس‌ها با سقف 30Hz و نرمال‌ها با سقف 10Hz.
+     شکل پایه، تعداد رأس‌ها، متریال و رنگ پارچه دست‌نخورده می‌ماند. */
+  const stamp=performance.now();
+  if(c.__wlPosStamp&&stamp-c.__wlPosStamp<33)return;
+  c.__wlPosStamp=stamp;
+  c.g.attributes.position.needsUpdate=true;window.WLSkinRuntime.positionUpdates++;
+  if(!c.__wlNormalStamp||stamp-c.__wlNormalStamp>=100){
+   c.g.computeVertexNormals();c.__wlNormalStamp=stamp;window.WLSkinRuntime.normalUpdates++;
+  }
+ };
  GX.anim(G,t=>{const now=performance.now(),dt=SW.lt<0?.016:Math.min(.05,Math.max(.001,t-SW.lt));SW.lt=t;
   const br=Math.sin(t*1.4),el=G.matrixWorld.elements;
   for(let i=SL.length-1;i>=0;i--){if((now-SL[i].t0)/1000>TIM.wu+TIM.st+TIM.ho+TIM.rc)SL.splice(i,1)}
@@ -1117,7 +1139,16 @@ function gxPri(M,team){
  const clothAnim=(c,t,sx,sz)=>{const a=c.g.attributes.position.array,b=c.base,n=a.length/3;
   for(let k=0;k<n;k++){const bx=b[k*3],by=b[k*3+1],v=Math.max(0,Math.min(1,-by/c.h)),d=Math.pow(v,1.3),sa=Math.sin(t*1.7+v*3.4+bx*3+c.ph),sb=Math.sin(t*3+v*6+bx*5+c.ph);
    a[k*3]=bx*(1+d*.04*sa)+d*(sx*.7+.02*sb)*c.k;a[k*3+1]=by+d*.02*sb-d*Math.abs(sz)*.05;a[k*3+2]=b[k*3+2]+d*(.04+.04*sa+cl(sz,.55)*.9)*c.k}
-  c.g.attributes.position.needsUpdate=true;c.g.computeVertexNormals()};
+  /* بازسازی لایهٔ پارچه: تغییر رأس‌ها با سقف 30Hz و نرمال‌ها با سقف 10Hz.
+     شکل پایه، تعداد رأس‌ها، متریال و رنگ پارچه دست‌نخورده می‌ماند. */
+  const stamp=performance.now();
+  if(c.__wlPosStamp&&stamp-c.__wlPosStamp<33)return;
+  c.__wlPosStamp=stamp;
+  c.g.attributes.position.needsUpdate=true;window.WLSkinRuntime.positionUpdates++;
+  if(!c.__wlNormalStamp||stamp-c.__wlNormalStamp>=100){
+   c.g.computeVertexNormals();c.__wlNormalStamp=stamp;window.WLSkinRuntime.normalUpdates++;
+  }
+ };
  GX.anim(G,t=>{const now=performance.now(),dt=SW.lt<0?.016:Math.min(.05,Math.max(.001,t-SW.lt));SW.lt=t;
   const br=Math.sin(t*1.5),el=G.matrixWorld.elements;
   for(let i=SL.length-1;i>=0;i--){const T=TT(SL[i]);if((now-SL[i].t0)/1000>T.wu+T.st+T.ho+T.rc)SL.splice(i,1)}

@@ -1029,6 +1029,7 @@ GX.up=o=>{while(o){if(o===scene)return true;o=o.parent}return false};
 GX.idle=true;try{GX.idle=localStorage.getItem('jt_idle')!=='0'}catch(e){}
 GX.wrapAct=G=>{const U=G.userData;if(U.__aw)return;U.__aw=1;for(const k of Object.keys(U)){const o=U[k];if(o&&typeof o==='object'&&Object.getPrototypeOf(o)===Object.prototype){for(const f of Object.keys(o)){if(typeof o[f]==='function'){const fn=o[f];o[f]=function(){U.act=performance.now();return fn.apply(this,arguments)}}}}}};
 GX.tick=t=>{const idle=GX.idle!==false,now=performance.now();for(let i=GX.A.length-1;i>=0;i--){const a=GX.A[i];if(!GX.up(a.G)){if(a.G.userData.seen)GX.A.splice(i,1);continue}a.G.userData.seen=1;
+ let vis=a.G;while(vis&&vis!==scene){if(vis.visible===false)break;vis=vis.parent}if(vis!==scene)continue;
  if(!idle){GX.wrapAct(a.G);{const e=a.G.matrixWorld.elements;if(a.px!==undefined&&Math.abs(e[12]-a.px)+Math.abs(e[14]-a.pz)>.003)a.G.userData.mov=now;a.px=e[12];a.pz=e[14]}if((a.w||0)>=8&&now-(a.G.userData.act||0)>3000&&now-(a.G.userData.mov||0)>1000)continue;a.w=(a.w||0)+1}
  a.fn(t+a.ph)}};
 /* ===== GX.MG — ادغام هندسی خودکار قطعات مهره‌ها (کاهش Draw Call) =====
@@ -1179,8 +1180,8 @@ GX.MG=(function(){
  let tickN=0;
  MG.tick=function(){
   if(!MG.on)return;
-  /* پایش ساختار قطعات هر سه فریم یک‌بار انجام می‌شود؛ انیمیشن‌ها همچنان هر فریم اجرا می‌شوند.
-     تأخیر تشخیص تغییرات ساختاری حداکثر چند صدم ثانیه است و هزینهٔ اسکن کاهش می‌یابد. */
+  /* پایش تغییرات هر دو فریم یک‌بار انجام می‌شود؛ انیمیشن‌ها همچنان هر فریم اجرا می‌شوند.
+     این کار هزینهٔ اسکن همهٔ گره‌های مدل‌ها را تقریباً نصف می‌کند، بدون تغییر در ظاهر یا منطق نبرد. */
   if((++tickN&1)===0){
    for(let k=MG.recs.length-1;k>=0;k--){const r=MG.recs[k];
     try{
@@ -3065,7 +3066,7 @@ function syncTiles(){
  if(sel){ringMesh.visible=true;ringMesh.position.set(CELL_X(sel.c),.03,CELL_Z(sel.c,sel.r))}else ringMesh.visible=false}
 function loop(){
  requestAnimationFrame(loop);const dt=Math.min(.05,clock.getDelta()),t=clock.elapsedTime;
- unitG.forEach((g,u)=>{const d=g.userData,k=1-Math.exp(-dt*10);
+ unitG.forEach((g,u)=>{if(!g.visible)return;const d=g.userData,k=1-Math.exp(-dt*10);
   if(!d.anim){g.position.x+=(d.tx-g.position.x)*k;g.position.z+=(d.tz-g.position.z)*k;
   g.position.y+=(d.ty+(u.fly>0?.12*Math.sin(t*3):0)-g.position.y)*k}
   d.flash=Math.max(0,d.flash-dt*2.5);d.mats.forEach(m=>{const q=m.userData.nt?0:1,w=m.userData.nt?.45:1;m.emissive.setRGB(d.em[0]*q+d.tint[0]*w+d.flash*.8,d.em[1]*q+d.tint[1]*w+d.flash*.1,d.em[2]*q+d.tint[2]*w+d.flash*.1)});
@@ -3546,7 +3547,6 @@ function rageFX(g){burst(g.position,26,0xb44dff,{sp:3,life:.8});ring(g.position,
 {const _hit=hit;hit=function(a,t,d){const h0=t.hp,r=_hit(a,t,d);try{if(r>0&&phase==='play'&&FXI){const dl0=hitDelay(a,t);queueVis(t,h0,dl0);hitFX(a,t,r);if(t.k==='dk'&&t.hp>0)setTimeout(()=>{try{const f=dkFig(unitG.get(t));f&&f.userData.dk.hurt()}catch(e){}},dl0);xtraFX(a,t);if(a.k==='mak'&&t===a)say('I lost the gamble.',0,'mak');if(t.hp<=0){const n=performance.now();if(n-_dT>180){_dT=n;SFX.die()}}}}catch(e){}return r};
 
 /* افکت‌ها و صداهای اضافه */
-window.SFX=SFX;
 SFX.gulp=()=>{for(let i=0;i<3;i++)os('sine',320+i*40,110,.12,.3,i*.2)};
 /* ---------- صداهای جدید ---------- */
 function wn(d,f0,f1,q,g,dl,ty){const a=au();if(!a)return;if(!NBF){NBF=a.createBuffer(1,a.sampleRate,a.sampleRate);const x=NBF.getChannelData(0);for(let i=0;i<x.length;i++)x[i]=rd()*2-1}
@@ -3729,6 +3729,7 @@ function aliFX(a,t,d,ab){
 
 </script>
 <script src="skins.js"></script>
+<script src="warlord-engine.js"></script>
 <script>
 /* ===================== آنلاین =====================
    حساب کاربری/دوستی/دعوت: سرور. خود بازی: lockstep (سرور فقط دستورها را مرتب پخش می‌کند). */
