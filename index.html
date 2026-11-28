@@ -5560,4 +5560,16 @@ q('tmExit').onclick=function(){var b=q('tmExit');
  setInterval(function(){var t=performance.now(),fps=Math.round(n*1000/(t-t0)),i=(typeof renderer!=='undefined'&&renderer)?renderer.info:null;
   el.textContent=fps+' fps | worst '+Math.round(mx)+'ms'+(i?' | calls '+i.render.calls+' | tris '+Math.round(i.render.triangles/1000)+'k':'')+(typeof renderer!=='undefined'&&renderer?' | '+renderer.domElement.width+'x'+renderer.domElement.height:'');n=0;mx=0;t0=t},1000)})();
 </script>
-</body></html>
+</body></html><script>
+/* ===== عیب‌یابی سرعت: فقط با ?perf در آخر آدرس ===== */
+(function(){
+ if(!/[?&]perf/.test(location.search)||typeof loop!=='function'||!window.renderer&&typeof renderer==='undefined')return;
+ var el=document.createElement('div');el.style.cssText='position:fixed;z-index:300;left:6px;top:6px;padding:6px 9px;border-radius:7px;background:rgba(0,0,0,.82);color:#9cff9c;font:12px monospace;direction:ltr;pointer-events:none;white-space:pre';document.body.appendChild(el);
+ var js=0,rd=0,n=0,calls=0,t0=performance.now(),lp=loop,rr=renderer.render;
+ renderer.render=function(s,c){var a=performance.now(),r=rr.apply(this,arguments);if(s===scene){rd+=performance.now()-a;calls=renderer.info.render.calls}return r};
+ loop=function(){var a=performance.now();lp.apply(this,arguments);var b=performance.now();js+=b-a;n++;
+  if(b-t0>=1000){var cap='120';try{cap=localStorage.getItem('jt_fps')||'120'}catch(e){}
+   el.textContent='FPS '+Math.round(n*1000/(b-t0))+'  (limit '+cap+')\nframe CPU '+(js/n).toFixed(1)+' ms\n  render  '+(rd/n).toFixed(1)+' ms\ncalls '+calls+'\nunits '+unitG.size+'  q '+(localStorage.getItem('jt_gq')||'-');
+   js=rd=n=0;t0=b}};
+})();
+</script>
