@@ -22,13 +22,13 @@ const REF_MODE = ['off', 'shadow', 'enforce'].includes(String(process.env.REFERE
    SERVER_RNG=0       : خاموش‌کردن «شانس فقط روی سرور» (اعداد تصادفی همراه هر دستور از سرور می‌آیند)
    هر دو ویژگیِ آخر فقط وقتی فعال‌اند که مرورگرِ هر دو بازیکن نسخهٔ جدید باشد (cap>=2) و داور سالم کار کند. */
 const PRE_MODE = ['off', 'shadow', 'enforce'].includes(String(process.env.PREVALIDATE || '').toLowerCase()) ? String(process.env.PREVALIDATE).toLowerCase() : 'enforce';
-const HIDE_DRAFT = process.env.HIDE_DRAFT !== '0';
-const SERVER_RNG = process.env.SERVER_RNG !== '0';
+const HIDE_DRAFT = REF_MODE === 'enforce' && process.env.HIDE_DRAFT !== '0';
+const SERVER_RNG = REF_MODE === 'enforce' && process.env.SERVER_RNG !== '0';
 /* STRICT=0 : برگشت به رفتار قبلی (اعتماد به گزارش مرورگرها وقتی داور خراب شد).
    پیش‌فرض (STRICT روشن): سرور تنها مرجع است؛ نتیجه فقط از شبیه‌سازی خود سرور می‌آید، گزارش «نتیجه»ٔ مرورگرها نادیده گرفته می‌شود،
    پایان خودکار نوبت را خود سرور اعمال می‌کند، و اگر داور وسط بازی خراب شود بازی بدون ثبت نتیجه باطل می‌شود (نه اعتماد به مرورگر).
  */
-const STRICT = process.env.STRICT !== '0';
+const STRICT = REF_MODE === 'enforce' && process.env.STRICT !== '0';   // در حالت shadow داور هیچ دخالتی در بازی ندارد
 const PRE_STATS = { checked: 0, bad: 0, dropped: 0, reasons: {} };
 const REF_STATS = { games: 0, resOk: 0, resBad: 0, hashChecked: 0, hashBad: 0, stopped: 0, fallback: 0 };
 

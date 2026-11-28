@@ -840,7 +840,7 @@ function initScene(){
  renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
  renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.useLegacyLights=true;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=.9;renderer.shadowMap.enabled=false;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
  scene=new THREE.Scene();scene.background=new THREE.Color(0x2a1d13);scene.fog=new THREE.Fog(0x2a1d13,28,48);
- camera=new THREE.PerspectiveCamera(38,1,.5,100);clock=new THREE.Clock();raycaster=new THREE.Raycaster();
+ camera=new THREE.PerspectiveCamera(38,1,.5,100);clock=new THREE.Clock();raycaster=new THREE.Raycaster();raycaster.layers.enable(30);
  scene.add(new THREE.HemisphereLight(0xfff1dc,0x3a3128,.7));
  const sun=new THREE.DirectionalLight(0xffeccc,.8);sun.position.set(-4,16,16);sun.castShadow=true;sun.shadow.mapSize.set(512,512);
  Object.assign(sun.shadow.camera,{left:-12,right:12,top:12,bottom:-12,near:1,far:50});sun.target.position.copy(CTR);scene.add(sun,sun.target);
@@ -1055,7 +1055,7 @@ GX.MG=(function(){
   if(c.onBeforeRender!==OBR||c.onAfterRender!==OAR||c.customDepthMaterial||c.customDistanceMaterial)return false;
   const m=c.material,g=c.geometry;
   if(!m||Array.isArray(m)||!g||m.transparent||m.visible===false||m.isShaderMaterial)return false;
-  if(g.groups&&g.groups.length)return false;
+  if(!SKIN&&g.groups&&g.groups.length)return false; /* با متریال تکی، groups اثری ندارد */
   if(g.morphAttributes&&Object.keys(g.morphAttributes).length)return false;
   if(g.drawRange&&(g.drawRange.start!==0||g.drawRange.count!==Infinity))return false;
   const a=g.attributes;if(!a.position)return false;
@@ -1105,6 +1105,9 @@ GX.MG=(function(){
    if(ch){D[i]=1;r.reg.add(r.paths[i]);nf++}}
   if(nf)r.rn=r.reg.size;
   return nf}
+
+ /* در حالت اسکینی فقط تغییر هندسه/متریال مهم است؛ حرکت قطعه مشکلی ندارد */
+ function scanGeo(r){r.nodes.forEach((n,i)=>{if(r.Vr[i]===-1)return;const a=n.geometry&&n.geometry.attributes.position;if(!a||n.geometry!==r.Gm[i]||n.material!==r.Mt[i]||a.version!==r.Vr[i])r.D[i]=1})}
 
  /* ---- ساخت Meshهای ادغام‌شده ---- */
  function doMerge(r){
@@ -1158,8 +1161,80 @@ GX.MG=(function(){
   r.n1=made;r.state=1;r.pend=0;
   if(MG.log&&made)console.info('[GX.MG] '+r.key+': '+hidden+' mesh → '+made+' (متحرک: '+D.reduce((s,v)=>s+v,0)+' گره)')}
 
+ /* ===== ادغام اسکینی: قطعات متحرک هم در یک Draw Call =====
+  هر قطعه یک «استخوان» است و ماتریس خودش را هر فریم می‌دهد؛ کد انیمیشن‌ها تغییری نمی‌کند.
+  قطعهٔ اصلی فقط به لایهٔ ۳۰ می‌رود (دیده نمی‌شود ولی قابل لمس است). برای خاموش‌کردن: آدرس بازی با ?noskin */
+ const SKIN=!/[?&]noskin/.test(location.search),HIDE=1<<30,ZERO=new M4().set(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),I4=new M4();
+ if(SKIN){
+  /* نرمال درست برای مقیاس غیریکنواخت یا آینه‌ای (ماتریس همسازه) */
+  THREE.ShaderChunk.skinnormal_vertex=`#ifdef USE_SKINNING
+  mat4 skinMatrix=skinWeight.x*boneMatX+skinWeight.y*boneMatY+skinWeight.z*boneMatZ+skinWeight.w*boneMatW;
+  mat3 sm=mat3(bindMatrixInverse*skinMatrix*bindMatrix);
+  mat3 cof=mat3(cross(sm[1],sm[2]),cross(sm[2],sm[0]),cross(sm[0],sm[1]));
+  float sdet=dot(sm[0],cof[0]);
+  vec3 sn=cof*objectNormal*(sdet<0.0?-1.0:1.0);
+  objectNormal=dot(sn,sn)>0.0?normalize(sn):objectNormal;
+  #ifdef USE_TANGENT
+  objectTangent=sm*objectTangent;
+  #endif
+#endif`}
+ function release(p){if(p.on){p.on=0;p.mesh.layers.mask=1}p.bone.matrixWorld.copy(ZERO)}
+ function updateBones(r){
+  for(const p of r.parts){
+   if(!p.on)continue;
+   const c=p.mesh,a=c.geometry.attributes.position;
+   /* هندسه یا متریال عوض شد: این قطعه از ادغام بیرون می‌رود و جداگانه رسم می‌شود */
+   if(c.geometry!==p.g||c.material!==p.m||a.version!==p.v){release(p);continue}
+   let o=c,vis=true;while(o&&o!==r.fig){if(!o.visible)vis=false;o=o.parent}
+   if(!o){release(p);continue}
+   p.bone.matrixWorld.copy(vis?c.matrixWorld:ZERO)}}
+ function doSkin(r){
+  r.fig.updateWorldMatrix(true,true);
+  const inv=r.fig.matrixWorld.clone().invert(),groups=new Map(),perMat=new Map();
+  r.fig.traverse(c=>{
+   if(c===r.fig||!eligible(c))return;
+   const i=r.idx.get(c);if(i===undefined||r.D[i])return;
+   const a=c.geometry.attributes,key=c.material.uuid+'|'+(c.castShadow?1:0)+(c.receiveShadow?1:0)+'|'+(a.normal?1:0)+(a.uv?1:0)+(a.color?a.color.itemSize:0);
+   let G=groups.get(key);if(!G){G={mat:c.material,cs:c.castShadow,rs:c.receiveShadow,items:[]};groups.set(key,G)}
+   G.items.push(c);perMat.set(c.material,(perMat.get(c.material)||0)+1)});
+  const bones=[],parts=[];let made=0;const list=[];
+  groups.forEach(G=>{if(perMat.get(G.mat)>1)list.push(G)});
+  const built=list.map(G=>{
+   let V=0,I=0;G.items.forEach(c=>{const g=c.geometry;V+=g.attributes.position.count;I+=g.index?g.index.count:g.attributes.position.count});
+   const f=G.items[0].geometry.attributes,hasN=!!f.normal,hasU=!!f.uv,cs=f.color?f.color.itemSize:0;
+   const P=new Float32Array(V*3),Nn=hasN?new Float32Array(V*3):null,U=hasU?new Float32Array(V*2):null,C=cs?new Float32Array(V*cs):null,
+    X=V>65535?new Uint32Array(I):new Uint16Array(I),SI=new Uint16Array(V*4),SW=new Float32Array(V*4);
+   let vo=0,io=0;
+   G.items.forEach(c=>{
+    const g=c.geometry,a=g.attributes,cnt=a.position.count,b=bones.length,bone={matrixWorld:new M4()};
+    bones.push(bone);parts.push({mesh:c,bone,g,m:c.material,v:a.position.version,on:1});
+    const flip=inv.clone().multiply(c.matrixWorld).determinant()<0;
+    P.set(a.position.array.subarray(0,cnt*3),vo*3);
+    if(hasN)Nn.set(a.normal.array.subarray(0,cnt*3),vo*3);
+    if(hasU)U.set(a.uv.array.subarray(0,cnt*2),vo*2);
+    if(cs)C.set(a.color.array.subarray(0,cnt*cs),vo*cs);
+    for(let k=0;k<cnt;k++){SI[(vo+k)*4]=b;SW[(vo+k)*4]=1}
+    const ia=g.index&&g.index.array,n=ia?g.index.count:cnt;
+    for(let k=0;k<n;k+=3){const x=ia?ia[k]:k,y=ia?ia[k+1]:k+1,z=ia?ia[k+2]:k+2;X[io++]=x+vo;X[io++]=(flip?z:y)+vo;X[io++]=(flip?y:z)+vo}
+    vo+=cnt});
+   const geo=new THREE.BufferGeometry(),at=(n,d,s)=>geo.setAttribute(n,new THREE.BufferAttribute(d,s));
+   at('position',P,3);if(hasN)at('normal',Nn,3);if(hasU)at('uv',U,2);if(cs)at('color',C,cs);at('skinIndex',SI,4);at('skinWeight',SW,4);
+   geo.setIndex(new THREE.BufferAttribute(X,1));
+   return{G,geo}});
+  if(built.length){
+   const sk=new THREE.Skeleton(bones,bones.map(()=>new M4())),up=sk.update;
+   r.parts=parts;r.sk=sk;sk.update=function(){updateBones(r);up.call(this)};
+   built.forEach(({G,geo})=>{
+    const mm=new THREE.SkinnedMesh(geo,G.mat);mm.bind(sk,I4);mm.frustumCulled=false;mm.castShadow=G.cs;mm.receiveShadow=G.rs;mm.userData.gxm=1;mm.raycast=function(){};
+    r.fig.add(mm);r.mer.push(mm);made++});
+   parts.forEach(p=>{p.mesh.layers.mask=HIDE})}
+  r.n1=made;r.state=1;r.pend=0;
+  if(MG.log&&made)console.info('[GX.MG skin] '+r.key+': '+parts.length+' mesh → '+made)}
+
  /* ---- برگرداندن به حالت اولیه ---- */
  function unmerge(r){
+  if(r.parts){r.parts.forEach(release);r.parts=null}
+  if(r.sk){r.sk.dispose();r.sk=null}
   r.mer.forEach(m=>{if(m.parent)m.parent.remove(m);m.geometry.dispose()});
   r.hid.forEach(i=>{r.nodes[i].visible=true;r.E[i]=1});
   r.mer=[];r.hid=[];r.n1=0}
@@ -1169,6 +1244,7 @@ GX.MG=(function(){
  function step(r){
   if(r.f===0){snapshot(r);r.f=1;return}
   r.f++;
+  if(SKIN){if(r.state===0){scanGeo(r);if(r.f>=WARM&&!r.pend){r.pend=1;MG.q.push(r)}}return}
   const nf=scan(r),sa=r.rn!==r.reg.size?sync(r):false;
   if(r.state===0){if(r.f>=WARM&&!r.pend){r.pend=1;MG.q.push(r)}}
   else if(r.state===1){
@@ -1191,10 +1267,10 @@ GX.MG=(function(){
   }
   /* هر فریم حداکثر یک مهره ادغام می‌شود تا هنگام شروع بازی پرش (hitch) نداشته باشد */
   while(MG.q.length){const r=MG.q.shift();if(!r.alive||!GX.up(r.fig)){r.pend=0;continue}
-   try{doMerge(r)}catch(e){console.warn('[GX.MG] merge',e);MG.kill(r);const i=MG.recs.indexOf(r);if(i>=0)MG.recs.splice(i,1)}
+   try{if(SKIN){scanGeo(r);doSkin(r)}else doMerge(r)}catch(e){console.warn('[GX.MG] merge',e);MG.kill(r);const i=MG.recs.indexOf(r);if(i>=0)MG.recs.splice(i,1)}
    break}};
 
- MG.report=function(){let a=0,b=0,h=0;MG.recs.forEach(r=>{a+=r.n0;b+=r.mer.length;h+=r.hid.length});
+ MG.report=function(){let a=0,b=0,h=0;MG.recs.forEach(r=>{a+=r.n0;b+=r.mer.length;h+=r.parts?r.parts.filter(p=>p.on).length:r.hid.length});
   const s='مهره‌ها: '+MG.recs.length+' | Meshهای اصلی: '+a+' | پنهان‌شده: '+h+' | جایگزین‌شده با: '+b+' | کم‌شدن Draw Call تقریباً: '+(h-b);console.log(s);return s};
  return MG})();
 
@@ -3423,7 +3499,7 @@ function fxStep(dt){try{fxWarm()}catch(e){}PU.value=renderer.domElement.height/(
   if(p.f===1){const q=fireRamp(k);cr=q[0];cg=q[1];cb=q[2];al=Math.min(1,(1-k)*1.5);sz=p.s*(k<.25?.55+k*1.8:1.0-(k-.25)*.95)}
   else if(p.f===2){const q=fireRamp(Math.min(1,k*.8));cr=q[0];cg=q[1];cb=q[2];al=(1-k)*(.65+.35*Math.sin(p.l*60+p.w));sz=p.s*(1-.4*k)}
   {const o=i*4;PB.c[o]=cr;PB.c[o+1]=cg;PB.c[o+2]=cb;PB.c[o+3]=al}PB.s[i]=sz});
- const g=PTS.geometry;g.setDrawRange(0,PA.length);['position','col','size'].forEach(n=>g.attributes[n].needsUpdate=true)}
+ const g=PTS.geometry;g.setDrawRange(0,PA.length);if(PA.length)['position','col','size'].forEach(n=>g.attributes[n].needsUpdate=true)}
 /* افکت‌های رویدادی */
 const MAGC={raf:0xfff2a0,bri:0x7dff6a,and:0x7fd0ff,ear:0xd9a441,dw:0xc040ff},lvOf=u=>Math.min(4,Math.round((u.bonus|0)/200));
 function flash(g,c,n){if(g)burst(g.position,n||8,c||0xfff0b0,{sp:2,y:1.2,size:.4,life:.15,g:0,up:0,r:.2,h:.2})}

@@ -443,13 +443,11 @@ function gxAcro(M,team){
  [-1,1].forEach((s,i)=>{const c=mkCloth(.4,.98,6,11,TabF,LinB,.16,s*.3,.01,.02,TG,i*1.7+1,1);c.grp.rotation.set(0,s*.5,-s*.1)});
  const cape=mkCloth(.86,1.45,10,14,LinF,TabB,.2,-.02,.64,-.2,TG,2.2,1.2);
  const drape=mkCloth(.36,.58,5,6,TabF,LinB,.08,-.42,.6,-.03,TG,4.1,1);drape.grp.rotation.z=.16;
- const clothAnim=(c,t,sx,sz)=>{const a=c.g.attributes.position.array,b=c.base,n=a.length/3;
+ const clothAnim=(c,t,sx,sz)=>{const stamp=performance.now();if(c.__wlPosStamp&&stamp-c.__wlPosStamp<33)return;const a=c.g.attributes.position.array,b=c.base,n=a.length/3;
   for(let k=0;k<n;k++){const bx=b[k*3],by=b[k*3+1],v=Math.max(0,Math.min(1,-by/c.h)),d=Math.pow(v,1.3),sa=Math.sin(t*1.7+v*3.4+bx*3+c.ph),sb=Math.sin(t*3+v*6+bx*5+c.ph);
    a[k*3]=bx*(1+d*.04*sa)+d*(sx*.7+.02*sb)*c.k;a[k*3+1]=by+d*.02*sb-d*Math.abs(sz)*.05;a[k*3+2]=b[k*3+2]+d*(.04+.04*sa+cl(sz,.55)*.9)*c.k}
   /* بازسازی لایهٔ پارچه: تغییر رأس‌ها با سقف 30Hz و نرمال‌ها با سقف 10Hz.
      شکل پایه، تعداد رأس‌ها، متریال و رنگ پارچه دست‌نخورده می‌ماند. */
-  const stamp=performance.now();
-  if(c.__wlPosStamp&&stamp-c.__wlPosStamp<33)return;
   c.__wlPosStamp=stamp;
   c.g.attributes.position.needsUpdate=true;window.WLSkinRuntime.positionUpdates++;
   if(!c.__wlNormalStamp||stamp-c.__wlNormalStamp>=100){
@@ -862,13 +860,11 @@ function gxRaf(M,team){
  const SW={x:0,vx:0,z:0,vz:0,px:0,py:0,pz:0,lt:-1,ok:0},ST={h0:-1e9,d0:-1e9,dead:0,fl:0},SL=[];let dmats=null;
  const TIM={wu:.22,st:.12,ho:.1,rc:.5};
  const _cv=new THREE.Vector3(),visA=()=>{let o=G;while(o){if(o.visible===false)return false;o=o.parent}return true};
- const clothAnim=(c,t,sx,sz)=>{const a=c.g.attributes.position.array,b=c.base,n=a.length/3;
+ const clothAnim=(c,t,sx,sz)=>{const stamp=performance.now();if(c.__wlPosStamp&&stamp-c.__wlPosStamp<33)return;const a=c.g.attributes.position.array,b=c.base,n=a.length/3;
   for(let k=0;k<n;k++){const bx=b[k*3],by=b[k*3+1],v=Math.max(0,Math.min(1,-by/c.h)),d=Math.pow(v,1.3),sa=Math.sin(t*1.7+v*3.4+bx*3+c.ph),sb=Math.sin(t*3+v*6+bx*5+c.ph);
    a[k*3]=bx*(1+d*.04*sa)+d*(sx*.7+.02*sb)*c.k;a[k*3+1]=by+d*.02*sb-d*Math.abs(sz)*.05;a[k*3+2]=b[k*3+2]+d*(.04+.04*sa+cl(sz,.8)*.9)*c.k}
   /* بازسازی لایهٔ پارچه: تغییر رأس‌ها با سقف 30Hz و نرمال‌ها با سقف 10Hz.
      شکل پایه، تعداد رأس‌ها، متریال و رنگ پارچه دست‌نخورده می‌ماند. */
-  const stamp=performance.now();
-  if(c.__wlPosStamp&&stamp-c.__wlPosStamp<33)return;
   c.__wlPosStamp=stamp;
   c.g.attributes.position.needsUpdate=true;window.WLSkinRuntime.positionUpdates++;
   if(!c.__wlNormalStamp||stamp-c.__wlNormalStamp>=100){
@@ -1136,13 +1132,11 @@ function gxPri(M,team){
  const SL=[],SW={x:0,vx:0,z:0,vz:0,px:0,py:0,pz:0,lt:-1,ok:0},ST={h0:-1e9,d0:-1e9,dead:0};let dmats=null;
  const armPose=(sl,e)=>{const T=TT(sl),a=ez(e/T.wu),b=ez((e-T.wu)/T.st),c=ez((e-T.wu-T.st-T.ho)/T.rc);return mix(mix(mix(IDLE,WU,a),SK,b),IDLE,c)};
  const bodyPose=(sl,e)=>{const T=TT(sl),a=ez(e/T.wu),b=ez((e-T.wu)/T.st),c=ez((e-T.wu-T.st-T.ho)/T.rc);return mix(mix(mix(BI,BW,a),BS,b),BI,c)};
- const clothAnim=(c,t,sx,sz)=>{const a=c.g.attributes.position.array,b=c.base,n=a.length/3;
+ const clothAnim=(c,t,sx,sz)=>{const stamp=performance.now();if(c.__wlPosStamp&&stamp-c.__wlPosStamp<33)return;const a=c.g.attributes.position.array,b=c.base,n=a.length/3;
   for(let k=0;k<n;k++){const bx=b[k*3],by=b[k*3+1],v=Math.max(0,Math.min(1,-by/c.h)),d=Math.pow(v,1.3),sa=Math.sin(t*1.7+v*3.4+bx*3+c.ph),sb=Math.sin(t*3+v*6+bx*5+c.ph);
    a[k*3]=bx*(1+d*.04*sa)+d*(sx*.7+.02*sb)*c.k;a[k*3+1]=by+d*.02*sb-d*Math.abs(sz)*.05;a[k*3+2]=b[k*3+2]+d*(.04+.04*sa+cl(sz,.55)*.9)*c.k}
   /* بازسازی لایهٔ پارچه: تغییر رأس‌ها با سقف 30Hz و نرمال‌ها با سقف 10Hz.
      شکل پایه، تعداد رأس‌ها، متریال و رنگ پارچه دست‌نخورده می‌ماند. */
-  const stamp=performance.now();
-  if(c.__wlPosStamp&&stamp-c.__wlPosStamp<33)return;
   c.__wlPosStamp=stamp;
   c.g.attributes.position.needsUpdate=true;window.WLSkinRuntime.positionUpdates++;
   if(!c.__wlNormalStamp||stamp-c.__wlNormalStamp>=100){

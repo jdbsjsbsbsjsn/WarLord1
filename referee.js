@@ -21,12 +21,14 @@ function compile() {
   try {
     const html = fs.readFileSync(HTML, 'utf8');
     const re = /<script>([\s\S]*?)<\/script>/g;
-    let m, code = null;
+    // منطق بازی در دو اسکریپت است: «اصلی» (تعریف‌ها و قوانین) و «آنلاین» (apply0 و stHash)
+    let m, core = null, net = null;
     while ((m = re.exec(html))) {
-      if (m[1].includes('function apply0(') && m[1].includes('function stHash(')) { code = m[1]; break; }
+      if (!core && m[1].includes('const $=id=>') && m[1].includes('function RL(')) core = m[1];
+      if (!net && m[1].includes('function apply0(') && m[1].includes('function stHash(')) net = m[1];
     }
-    if (!code) throw new Error('اسکریپت منطق بازی در index.html پیدا نشد');
-    compiled = new vm.Script(code, { filename: 'game-logic.js' });
+    if (!core || !net) throw new Error('اسکریپت منطق بازی در index.html پیدا نشد');
+    compiled = (core === net ? [core] : [core, net]).map((c, i) => new vm.Script(c, { filename: 'game-logic-' + i + '.js' }));
     loadErr = null;
   } catch (e) {
     loadErr = e; compiled = null;
@@ -78,7 +80,7 @@ function __check(c, s) {
   if (!(a === 'cell' || a === 'shop' || a === 'dr' || a === 'to')) return 'phase';
   if (c.o !== s) return 'owner';
   if (a === 'cell' && !cellOk()) return 'cell';
-  if (a === 'shop' && !spOk()) return 'shop';
+  if (a === 'shop' && !(spOk() || (typeof c.k === 'string' && typeof TROOPS !== 'undefined' && Object.prototype.hasOwnProperty.call(TROOPS, c.k)))) return 'shop';
   if (a === 'dr') {
     if (c.k != null && (typeof c.k !== 'string' || !H[c.k])) return 'dr';
     if (c.t != null && (typeof c.t !== 'string' || !H[c.t])) return 'dr';
@@ -162,7 +164,7 @@ function create(serverRng) {
       this.last = Date.now();
       try {
         ctx.__s = JSON.stringify(c);
-        vm.runInContext('__LOG = []; try { __feed(JSON.parse(__s)) } catch (e) { __ERR = (__ERR | 0) + 1 }', ctx, { timeout: 3000 });   // مثل مرورگر: خطا در یک دستور بازی را نمی‌خواباند
+        vm.runInContext('__LOG = []; try { __feed(JSON.parse(__s)) } catch (e) { __ERR = (typeof __ERR === "number" ? __ERR : 0) + 1; __LASTERR = String((e && e.stack) || e) }', ctx, { timeout: 3000 });   // مثل مرورگر: خطا در یک دستور بازی را نمی‌خواباند
         if (!drain()) throw new Error('تایمرهای بازی تمام نشد');
         const r = vm.runInContext('__state()', ctx, { timeout: 1000 });
         if (r.lk && !r.ov) throw new Error('بازی روی انیمیشن/احضار گیر کرد');
@@ -200,7 +202,7 @@ function create(serverRng) {
     dispose() { timers.clear(); sims.delete(this); this.broken = true; },
   };
   try {
-    script.runInContext(ctx, { timeout: 10000 });
+    for (const part of script) part.runInContext(ctx, { timeout: 10000 });
     vm.runInContext(PATCH, ctx, { timeout: 2000 });
     if (serverRng) vm.runInContext(RNGPATCH, ctx, { timeout: 2000 });
     drain();
