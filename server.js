@@ -190,6 +190,10 @@ const server = http.createServer((req, res) => {
     const f = path.join(__dirname, p.slice(1));
     if (fs.existsSync(f)) { res.writeHead(200, { 'content-type': 'application/javascript; charset=utf-8', 'cache-control': 'no-cache' }); return fs.createReadStream(f).pipe(res); }
   }
+  if (p === '/fpstest.html') {                  // صفحهٔ تست فریم گوشی
+    const f = path.join(__dirname, 'fpstest.html');
+    if (fs.existsSync(f)) { res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-cache' }); return fs.createReadStream(f).pipe(res); }
+  }
   if (p === '/entry.mp3') {                      // موزیک ورود (اختیاری): فایل entry.mp3 کنار server.js
     const f = path.join(__dirname, 'entry.mp3');
     if (fs.existsSync(f)) { res.writeHead(200, { 'content-type': 'audio/mpeg', 'cache-control': 'public, max-age=300' }); return fs.createReadStream(f).pipe(res); }

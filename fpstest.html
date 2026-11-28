@@ -1,0 +1,16 @@
+<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>تست فریم</title>
+<style>body{margin:0;padding:16px;background:#13151a;color:#e9ecf1;font:16px/2 sans-serif}canvas{width:100%;height:120px;border-radius:8px}pre{white-space:pre-wrap;font:inherit}</style></head><body>
+<h3>تست فریم گوشی (حدود ۱۰ ثانیه)</h3><canvas id="a" width="300" height="120"></canvas><pre id="o">در حال اندازه‌گیری رشتهٔ اصلی…</pre>
+<script>
+const out=document.getElementById('o'),cv=document.getElementById('a');
+function mainRate(ms){return new Promise(res=>{let n=0,t0;const f=t=>{if(t0===undefined)t0=t;else n++;if(t-t0<ms)requestAnimationFrame(f);else res(Math.round(n*1000/(t-t0)))};requestAnimationFrame(f)})}
+const W=`onmessage=e=>{const g=e.data.getContext('webgl');if(!g||!self.requestAnimationFrame)return postMessage(-1);let n=0,t0;const f=t=>{if(t0===undefined)t0=t;else n++;g.clearColor((t/1000)%1,.5,.3,1);g.clear(g.COLOR_BUFFER_BIT);if(t-t0<4000)requestAnimationFrame(f);else postMessage(Math.round(n*1000/(t-t0)))};requestAnimationFrame(f)}`;
+function workerRate(){return new Promise(res=>{try{const w=new Worker(URL.createObjectURL(new Blob([W],{type:'text/javascript'}))),o=cv.transferControlToOffscreen();const to=setTimeout(()=>res(-1),9000);w.onmessage=e=>{clearTimeout(to);res(e.data)};w.onerror=()=>res(-1);w.postMessage(o,[o])}catch(e){res(-1)}})}
+(async()=>{const m=await mainRate(4000);out.textContent='رشتهٔ اصلی: '+m+' فریم\nدر حال اندازه‌گیری رشتهٔ جدا…';
+const w=await workerRate();
+let r='رشتهٔ اصلی (صفحهٔ خالی): '+m+' فریم\nرشتهٔ جدا (Worker): '+(w<0?'پشتیبانی نمی‌شود':w+' فریم')+'\n\nنتیجه: ';
+if(m<75&&w<75)r+='مرورگر یا صفحهٔ گوشی حتی بدون بازی هم روی حدود '+Math.max(m,w)+' فریم محدود است. چندرشته‌ای فریم را بالاتر نمی‌برد.';
+else if(m<75)r+='رشتهٔ جدا فریم بالاتری می‌دهد. ادامهٔ کار چندرشته‌ای ارزش دارد.';
+else r+='گوشی فریم بالا را پشتیبانی می‌کند. محدودیت از سنگینی بازی یا تنظیم سقف فریم است.';
+out.textContent=r})();
+</script></body></html>
