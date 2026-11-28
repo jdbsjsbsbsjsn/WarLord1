@@ -4737,7 +4737,7 @@ function rebuildUnits(){try{
 function setQ(q,msg){try{window.__UL=q==='master'||(q==='ultra'||q==='max');window.__MS=q==='high'||q==='master'||(q==='ultra'||q==='max');window.__HQ=window.__MS}catch(e){}GQ=q;HQ=q==='high'||q==='master'||(q==='ultra'||q==='max');MQ=q==='mid';MS=HQ;UL=q==='master'||(q==='ultra'||q==='max');XT=(q==='ultra'||q==='max');MX=q==='max';window.__MX=MX;window.__FXQ=UL?2:HQ?1.5:.3;window.__HQ=HQ;window.__MS=MS;window.__UL=UL;RS=1;sv(q);window.__TEX=window.__TXDEF(q);try{localStorage.setItem('jt_tx',q+':'+window.__TEX)}catch(e){}apply();try{applyBoard();if(MS)tiles.forEach(function(c){c&&c.forEach(function(t){if(t&&t.material)t.material.envMapIntensity=0})})}catch(e){}rebuildUnits();try{resize()}catch(e){}paintUI();
  if(msg&&typeof toast==='function')toast('کیفیت گرافیک: '+({low:'کم',mid:'متوسط',high:'بالا',master:'شاهکار',ultra:'فوق شاهکار',max:'حداکثر'})[q]+((window.__aaOf(q)!==AA0)?' — برای اعمال کامل صفحه رو رفرش کن':''))}
 function lt(){var o={sun:null,hemi:null,dirs:[]};scene.traverse(function(x){if(x.isDirectionalLight){if(x.castShadow||x.userData.isSun){x.userData.isSun=true;o.sun=x}else o.dirs.push(x)}else if(x.isHemisphereLight)o.hemi=x});return o}
-var RS=1;function resTarget(){return Math.round((MX?1440:XT?1350:UL?1080:HQ?900:MQ?900:720)*RS)}
+var RS=1;function resTarget(){return Math.round((MX?1440:XT?1350:UL?960:HQ?900:MQ?900:720)*RS)}
 function apply(){
  if(typeof renderer==='undefined'||!renderer)return;
   renderer.shadowMap.enabled=XT;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.shadowMap.autoUpdate=false;renderer.shadowMap.needsUpdate=true;
@@ -4798,7 +4798,7 @@ function addEmbers(){var N=UL?140:80,C=CTR,g=new THREE.BufferGeometry();embPos=n
 function addUltra(){var C=CTR;
  var st=document.getElementById('stage');
  if(st){bl=document.createElement('canvas');bl.style.cssText='position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1;mix-blend-mode:screen;opacity:.3;display:none';st.appendChild(bl);bctx=bl.getContext('2d')}}
-function bloom(){if(!bl||!bctx||(++bfr%3))return;var st=bl.parentNode,w=Math.max(8,(st.clientWidth/8)|0),h=Math.max(8,(st.clientHeight/8)|0);
+function bloom(){if(!bl||!bctx||(++bfr%6))return;var st=bl.parentNode,w=Math.max(8,(st.clientWidth/16)|0),h=Math.max(8,(st.clientHeight/16)|0);
  if(bl.width!==w||bl.height!==h){bl.width=w;bl.height=h}bctx.drawImage(renderer.domElement,0,0,w,h)}
 /* --- Per-frame --- */
 var last=0,acc=0,n=0,t0=0,degraded=false;
