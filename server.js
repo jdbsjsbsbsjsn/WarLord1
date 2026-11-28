@@ -186,8 +186,8 @@ const server = http.createServer((req, res) => {
     const f = path.join(__dirname, m[1] + m[2]);
     if (fs.existsSync(f)) { res.writeHead(200, { 'content-type': MIME[m[2]], 'cache-control': 'public, max-age=300' }); return fs.createReadStream(f).pipe(res); }
   }
-  if (p === '/skins.js') {                       // کد اسکین‌ها و افکت‌هاشون (جدا از index.html، کنار server.js)
-    const f = path.join(__dirname, 'skins.js');
+  if (p === '/skins.js' || p === '/warlord-engine.js') {   // کد اسکین‌ها و موتور گرافیکی (جدا از index.html، کنار server.js)
+    const f = path.join(__dirname, p.slice(1));
     if (fs.existsSync(f)) { res.writeHead(200, { 'content-type': 'application/javascript; charset=utf-8', 'cache-control': 'no-cache' }); return fs.createReadStream(f).pipe(res); }
   }
   if (p === '/entry.mp3') {                      // موزیک ورود (اختیاری): فایل entry.mp3 کنار server.js
