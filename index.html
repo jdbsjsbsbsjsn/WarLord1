@@ -1176,14 +1176,19 @@ GX.MG=(function(){
    if(nf)r.quiet=0;else r.quiet++;
    if(r.quiet>=r.wait&&!r.pend){r.pend=1;MG.q.push(r)}}}
 
+ let tickN=0;
  MG.tick=function(){
   if(!MG.on)return;
-  for(let k=MG.recs.length-1;k>=0;k--){const r=MG.recs[k];
-   try{
-    if(!GX.up(r.fig)){if(r.seen){MG.kill(r);MG.recs.splice(k,1)}continue}
-    r.seen=1;step(r)}
-   catch(e){console.warn('[GX.MG]',e);MG.kill(r);MG.recs.splice(k,1)}}
-  /* هر فریم حداکثر یک مهره ادغام می‌شود تا هنگام شروع بازی پرش (hitch) نداشته باشیم */
+  /* پایش تغییرات هر دو فریم یک‌بار انجام می‌شود؛ انیمیشن‌ها همچنان هر فریم اجرا می‌شوند.
+     این کار هزینهٔ اسکن همهٔ گره‌های مدل‌ها را تقریباً نصف می‌کند، بدون تغییر در ظاهر یا منطق نبرد. */
+  if((++tickN&1)===0){
+   for(let k=MG.recs.length-1;k>=0;k--){const r=MG.recs[k];
+    try{
+     if(!GX.up(r.fig)){if(r.seen){MG.kill(r);MG.recs.splice(k,1)}continue}
+     r.seen=1;step(r)}
+    catch(e){console.warn('[GX.MG]',e);MG.kill(r);MG.recs.splice(k,1)}}
+  }
+  /* هر فریم حداکثر یک مهره ادغام می‌شود تا هنگام شروع بازی پرش (hitch) نداشته باشد */
   while(MG.q.length){const r=MG.q.shift();if(!r.alive||!GX.up(r.fig)){r.pend=0;continue}
    try{doMerge(r)}catch(e){console.warn('[GX.MG] merge',e);MG.kill(r);const i=MG.recs.indexOf(r);if(i>=0)MG.recs.splice(i,1)}
    break}};
